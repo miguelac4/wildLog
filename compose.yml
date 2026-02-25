@@ -20,6 +20,9 @@ services:
     working_dir: /var/www
     volumes:
       - ./backend:/var/www
+      - ../private_wildlog:/var/www/private:ro
+    environment:
+      DOCKER_ENV: "1"
     env_file:
       - ../private_wildlog/.env.local
     ports:
