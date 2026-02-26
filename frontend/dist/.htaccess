@@ -1,0 +1,12 @@
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /wildlog/
+
+  # Redireciona requisições para arquivos existentes e diretórios existentes
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+
+  # Reescreve todas as outras requisições para index.html
+  RewriteRule ^ index.html [QSA,L]
+</IfModule>
+

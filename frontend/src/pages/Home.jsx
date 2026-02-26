@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom'
+import { MEDIA_URLS } from '../config/mediaConfig'
 import '../styles/Home.css'
 
 function Home() {
@@ -7,11 +8,11 @@ function Home() {
   return (
     <div className="home-container">
       <video className="background-video" autoPlay muted loop>
-        <source src="/media/banner.mp4" type="video/mp4" />
+        <source src={MEDIA_URLS.banner} type="video/mp4" />
       </video>
       <div className="content">
         <div className="logo-section">
-          <img src="/media/logoWM.png" alt="WildLog Logo" className="logo-image" />
+          <img src={MEDIA_URLS.logo} alt="WildLog Logo" className="logo-image" />
           <h1 className="logo-text">WildLog</h1>
           <p className="tagline">Conecte-se à Natureza</p>
         </div>

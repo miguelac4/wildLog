@@ -1,10 +1,13 @@
 services:
   db:
     image: mysql:8.4
-    env_file:
-      - ${ENV_FILE:-../private_wildlog/.env.local}
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: wildlog
+      MYSQL_USER: wildlog_user
+      MYSQL_PASSWORD: wildlog_pw
     ports:
-      - "3306:3306" # opcional
+      - "3306:3306"
     volumes:
       - db_data:/var/lib/mysql
     healthcheck:
@@ -20,9 +23,9 @@ services:
     working_dir: /var/www
     volumes:
       - ./backend:/var/www
-      - ../private_wildlog:/var/www/private:ro
+      - ../private_wildlog:/var/www/private_wildlog:ro
     environment:
-      DOCKER_ENV: "1"
+      APP_ENV: local
     env_file:
       - ../private_wildlog/.env.local
     ports:
