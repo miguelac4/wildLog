@@ -1,0 +1,64 @@
+services:
+  db:
+    image: mysql:8.4
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: wildlog
+      MYSQL_USER: wildlog_user
+      MYSQL_PASSWORD: wildlog_pw
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$${MYSQL_ROOT_PASSWORD} --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  backend:
+    build:
+      context: .
+      dockerfile: docker/backend/Dockerfile
+    working_dir: /var/www
+    volumes:
+      - ./backend:/var/www
+      - ../private_wildlog:/var/www/private_wildlog:ro
+    environment:
+      APP_ENV: local
+    env_file:
+      - ../private_wildlog/.env.local
+    ports:
+      - "8000:8000"
+    # Serve a pasta /var/www como raiz web:
+    command: php -S 0.0.0.0:8000 -t /var/www
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    image: node:20-alpine
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+      - node_modules:/app/node_modules
+    ports:
+      - "3000:3000"
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    command: sh -lc "npm install && npm run dev -- --host 0.0.0.0 --no-open"
+
+  phpmyadmin:
+    image: phpmyadmin:5-apache
+    ports:
+      - "8081:80"
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  db_data:
+  node_modules:

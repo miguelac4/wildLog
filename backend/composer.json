@@ -1,0 +1,17 @@
+{
+    "name": "miguelcordeiro/backend",
+    "autoload": {
+        "psr-4": {
+            "Miguelcordeiro\\Backend\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Miguel Cordeiro",
+            "email": "miguel.andre.cordeiro@gmail.com"
+        }
+    ],
+    "require": {
+        "vlucas/phpdotenv": "5.6"
+    }
+}
