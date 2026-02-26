@@ -2,7 +2,7 @@ CREATE TABLE `users` (
                          `id` INT NOT NULL AUTO_INCREMENT,
                          `name` VARCHAR(255) NOT NULL,
                          `email` VARCHAR(255) NOT NULL,
-                         `password_hash` VARCHAR(255) NOT NULL,
+                         `password` VARCHAR(255) NOT NULL,
                          `role` ENUM('base', 'vip') NOT NULL DEFAULT 'base',
                          `description` VARCHAR(255) NULL,
                          `avatar` VARCHAR(255) NULL,
