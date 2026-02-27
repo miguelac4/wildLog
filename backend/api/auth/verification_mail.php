@@ -1,15 +1,4 @@
 <?php
-session_start();
-
-require_once __DIR__ . '/../../includes/api_error.php';
-$requestId = api_request_id();
-
-header('Content-Type: application/json');
-
-if ($_SERVER["REQUEST_METHOD"] !== "POST") {
-    api_json_error(405, 'METHOD NOT ALLOWED', 'Método não permitido.');
-}
-
 require_once __DIR__ . '/../../includes/db.php';
 require_once __DIR__ . '/../../vendor/autoload.php';
 
@@ -206,31 +195,44 @@ function sendVerificationForEmail(PDO $pdo, string $email): array
     ];
 }
 
-// endpoint execution
+// endpoint execution (só quando chamado diretamente)
+if (basename(__FILE__) === basename($_SERVER['SCRIPT_FILENAME'])) {
 
-$input = json_decode(file_get_contents('php://input'), true);
-$email = trim($input["email"] ?? '');
-
-if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
-    api_json_error(400, 'BAD_REQUEST', 'Email inválido.');
-}
-
-try {
-    $pdo = db_connect();
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-    $result = sendVerificationForEmail($pdo, $email);
-
-    if (empty($result['success']) && isset($result['code'])) {
-        api_json_error((int)$result['code'], 'ERROR', (string)$result['message']);
+    if (session_status() !== PHP_SESSION_ACTIVE) {
+        session_start();
     }
 
-    echo json_encode($result, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-    exit;
+    require_once __DIR__ . '/../../includes/api_error.php';
+    $requestId = api_request_id();
 
-} catch (Throwable $e) {
-    api_log_exception($e, $requestId, [
-        'endpoint' => '.../auth/verification_mail.php',
-    ]);
-    api_json_error(500, 'INTERNAL_ERROR', 'Ocorreu um erro inesperado.', $requestId);
+    header('Content-Type: application/json');
+
+    if ($_SERVER["REQUEST_METHOD"] !== "POST") {
+        api_json_error(405, 'METHOD NOT ALLOWED', 'Método não permitido.');
+    }
+
+    $input = json_decode(file_get_contents('php://input'), true);
+    $email = trim($input["email"] ?? '');
+
+    if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        api_json_error(400, 'BAD_REQUEST', 'Email inválido.');
+    }
+
+    try {
+        $pdo = db_connect();
+        $result = sendVerificationForEmail($pdo, $email);
+
+        if (empty($result['success']) && isset($result['code'])) {
+            api_json_error((int)$result['code'], 'ERROR', (string)$result['message']);
+        }
+
+        echo json_encode($result, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        exit;
+
+    } catch (Throwable $e) {
+        api_log_exception($e, $requestId, [
+            'endpoint' => '.../auth/verification_mail.php',
+        ]);
+        api_json_error(500, 'INTERNAL_ERROR', 'Unexpected error.', $requestId);
+    }
 }
