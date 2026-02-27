@@ -139,7 +139,7 @@ try {
     <div style='background:linear-gradient(135deg,#000000 0%,#1a1a1a 100%);padding:40px 30px;text-align:center;border-bottom:4px solid #c0a16b;'>
       <img src='".htmlspecialchars($logoUrl, ENT_QUOTES, 'UTF-8')."' alt='WildLog' style='max-width:170px;height:auto;display:block;margin:0 auto 12px auto;' />
       <div style='color:#ffffff;font-size:13px;letter-spacing:1px;text-transform:uppercase;opacity:0.95;'>
-        The social hub for campers
+        Respect the wild.
       </div>
     </div>
 
