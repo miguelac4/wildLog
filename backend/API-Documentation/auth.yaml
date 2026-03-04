@@ -1,10 +1,11 @@
 openapi: 3.0.3
 info:
   title: WildLog API - Auth
-  version: 1.0.0
+  version: 1.1.0
   description: >
     Authentication endpoints for WildLog.
     Session-based auth using PHP sessions (cookie PHPSESSID).
+    Includes email verification and password recovery flows.
 servers:
   - url: https://wild-log.com/backend/api
     description: Production
@@ -13,7 +14,7 @@ servers:
 
 tags:
   - name: Auth
-    description: Authentication and email verification
+    description: Authentication, email verification, and password recovery
 
 components:
   securitySchemes:
@@ -151,6 +152,53 @@ components:
           type: string
           example: Conta verificada com sucesso. Já pode fazer login.
       required: [success, status, message]
+
+    PassRecoverRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          example: miguel@example.com
+      required: [email]
+
+    PassRecoverRequestResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: If the email exists, we sent a password reset link.
+      required: [success, message]
+
+    PassRecoverResetRequest:
+      type: object
+      properties:
+        token:
+          type: string
+          example: 7tnbbYM97YMQu4EBD3kKUqFA0UVPpd6k1HYrQAq8eJs
+        new_password:
+          type: string
+          minLength: 8
+          example: "newPassword123"
+        confirm_password:
+          type: string
+          minLength: 8
+          example: "newPassword123"
+      required: [token, new_password, confirm_password]
+
+    PassRecoverResetResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Password updated successfully.
+      required: [success, message]
 
 paths:
   /auth/register.php:
@@ -325,6 +373,115 @@ paths:
                 $ref: "#/components/schemas/ErrorResponse"
         "405":
           description: Method not allowed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/pass_recover_request.php:
+    post:
+      tags: [Auth]
+      summary: Request password reset email
+      description: >
+        Sends a password reset email if the user exists.
+        Always returns a neutral success response to avoid email enumeration.
+        Recommended rate limit: 1 request per hour per user.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PassRecoverRequest"
+      responses:
+        "200":
+          description: Neutral response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassRecoverRequestResponse"
+        "400":
+          description: Invalid email
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Too many requests
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/pass_recover_confirm.php:
+    get:
+      tags: [Auth]
+      summary: Validate password reset token (email link)
+      description: >
+        Validates the password reset token and redirects the user to the frontend reset password page.
+        Intended to be opened in a browser from the email link.
+      parameters:
+        - name: token
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Password reset token from email link
+      responses:
+        "302":
+          description: Redirect to frontend reset page (or error page)
+        "405":
+          description: Method not allowed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/pass_recover_reset.php:
+    post:
+      tags: [Auth]
+      summary: Reset password using token
+      description: >
+        Resets the user's password using a valid reset token.
+        Token is single-use and is marked as consumed after a successful reset.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PassRecoverResetRequest"
+      responses:
+        "200":
+          description: Password updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassRecoverResetResponse"
+        "400":
+          description: Invalid input (missing fields / password policy / mismatch)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Invalid or expired token
           content:
             application/json:
               schema:
