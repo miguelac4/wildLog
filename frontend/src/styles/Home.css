@@ -79,7 +79,7 @@
   position: relative;
   z-index: 3;
   text-align: center;
-  max-width: 800px;
+  max-width: 90vw;
   width: 100%;
   padding: 40px 20px;
   animation: slideUp 0.8s ease;
@@ -168,28 +168,23 @@
 
 .button-group {
   display: flex;
-  gap: 20px;
-  justify-content: center;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 15px;
   width: 100%;
-  margin-top: 30px;
+  max-width: 300px;
+  align-items: stretch;
 }
 
 .btn {
-  padding: 14px 40px;
+  width: 100%;
+  padding: 14px 30px;
+  border-radius: 25px;
   font-size: 1rem;
   font-weight: 600;
   border: none;
-  border-radius: 50px;
   cursor: pointer;
   transition: all 0.3s ease;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  min-width: 140px;
-  max-width: 280px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-  white-space: normal;
-  overflow: visible;
+  min-width: unset;
 }
 
 .btn:hover {
@@ -243,18 +238,19 @@
   }
 
   .button-group {
-    flex-direction: column;
-    gap: 15px;
+    max-width: 250px;
+    gap: 12px;
   }
 
   .btn {
-    width: 100%;
-    min-width: unset;
+    padding: 12px 25px;
+    font-size: 0.95rem;
   }
 }
 
 @media (max-width: 480px) {
   .content {
+    max-width: 95vw;
     padding: 20px 15px;
   }
 
@@ -277,13 +273,12 @@
   }
 
   .button-group {
-    flex-direction: column;
+    max-width: 200px;
     gap: 10px;
   }
 
   .btn {
-    padding: 12px 30px;
-    font-size: 0.85rem;
-    min-width: unset;
+    padding: 12px 20px;
+    font-size: 0.9rem;
   }
 }
