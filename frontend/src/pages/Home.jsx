@@ -177,7 +177,6 @@ function Home() {
           ══════════════════════════════════════════════════ */}
       <section className="about" ref={aboutRef}>
         <div className="section-inner">
-          <span className="section-badge">About</span>
           <h2 className="section-title">What is WildLog?</h2>
           <p className="section-text">
             WildLog is a social platform built for nature and wildlife enthusiasts.
@@ -210,7 +209,6 @@ function Home() {
           ══════════════════════════════════════════════════ */}
       <section className="contact" ref={contactRef}>
         <div className="section-inner contact-inner">
-          <span className="section-badge">Contact</span>
           <h2 className="section-title">Get in Touch</h2>
           <p className="section-text">
             Have a question, suggestion, or just want to say hello?
