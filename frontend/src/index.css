@@ -21,8 +21,35 @@
   box-sizing: border-box; /* Inclui padding e border na largura/altura total */
 }
 
-/* Previne scroll na página principal (a Home tem vídeo fullscreen) */
+/* Scroll vertical habilitado, horizontal bloqueado, scrollbar escondida */
 html {
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-width: none; /* Firefox */
+}
+
+html::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Edge */
+}
+
+/* ── Lenis smooth scrolling ────────────────────────
+   O Lenis adiciona a classe .lenis ao <html>.
+   Quando ativo, desliga o scroll-behavior nativo
+   para que a interpolação do Lenis funcione.
+   ─────────────────────────────────────────────────── */
+html.lenis, html.lenis body {
+  height: auto;
+}
+
+html.lenis {
+  scroll-behavior: auto;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
   overflow: hidden;
 }
 
@@ -31,15 +58,15 @@ body {
   font-family: 'Figtree', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
-  -webkit-font-smoothing: antialiased;   /* Suavização de texto no Chrome/Safari */
-  -moz-osx-font-smoothing: grayscale;    /* Suavização de texto no Firefox macOS */
-  background: #000000;                    /* Fundo preto (o vídeo vai por cima) */
-  min-height: 100vh;                      /* Ocupa no mínimo 100% da viewport */
-  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: #080e0b;
+  min-height: 100vh;
+  overflow-x: hidden;
 }
 
-/* Container raiz do React — ocupa toda a viewport */
+/* Container raiz do React */
 #root {
   min-height: 100vh;
-  overflow: hidden;
+  overflow-x: hidden;
 }
