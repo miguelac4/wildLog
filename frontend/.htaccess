@@ -1,3 +1,18 @@
+# ===========================================================================
+# .htaccess — Configuração Apache para WildLog SPA (Single Page Application)
+#
+# Este ficheiro é essencial para o deploy. Faz 3 coisas:
+#   1. REWRITE: Redireciona todas as rotas para index.html (SPA routing)
+#   2. PERFORMANCE: Compressão gzip e cache de assets estáticos
+#   3. SECURITY: Força HTTPS, remove www, desabilita ETags
+#
+# Suporta dois domínios:
+#   - rh360.pt/wildlog  → app numa subpasta
+#   - wild-log.com      → app na raiz do domínio
+#
+# IMPORTANTE: Este ficheiro deve ser colocado na raiz do domínio (public_html)
+# ===========================================================================
+
 <IfModule mod_rewrite.c>
   RewriteEngine On
 

@@ -1,3 +1,33 @@
+/**
+ * Auth.css — Estilos partilhados entre Login e Register
+ *
+ * Ambas as páginas usam a mesma estrutura visual:
+ *   ┌──────────────────────────────────────┐
+ *   │ .auth-container (fundo gradient)      │
+ *   │   ├── ::before (bolha decorativa)     │
+ *   │   ├── ::after  (bolha decorativa)     │
+ *   │   └── .auth-content (card branco)     │
+ *   │         ├── .auth-header              │
+ *   │         │     ├── h1 (🐾 WildLog)    │
+ *   │         │     └── .auth-title         │
+ *   │         ├── .auth-form                │
+ *   │         │     ├── .form-group (×N)    │
+ *   │         │     │     ├── label         │
+ *   │         │     │     ├── input         │
+ *   │         │     │     └── .error        │
+ *   │         │     └── .btn-submit         │
+ *   │         └── .auth-footer              │
+ *   │               ├── .link (registar)    │
+ *   │               └── .back-home          │
+ *   └──────────────────────────────────────┘
+ *
+ * Cores:
+ *   - Fundo: gradiente verde escuro (#1b4332 → #051f15)
+ *   - Card: branco semi-transparente
+ *   - Accent: verde (#4caf50, #388e3c)
+ *   - Erro: vermelho (#d32f2f)
+ */
+
 /* Auth Pages Styles */
 .auth-container {
   min-height: 100vh;
