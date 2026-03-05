@@ -1,7 +1,13 @@
-/* App container styles */
-body, html, #root {
-  margin: 0;
-  padding: 0;
-  width: 100%;
-  height: 100%;
-}
+/**
+ * App.css — Estilos específicos do componente App (raiz)
+ *
+ * NOTA: Os resets globais (margin, padding, box-sizing) estão em index.css.
+ * Este ficheiro contém apenas estilos adicionais do container #root
+ * que não estejam cobertos pelo index.css.
+ *
+ * Atualmente vazio porque o index.css já cobre tudo.
+ * Adicionar aqui estilos de layout global como:
+ *   - Navbar fixa
+ *   - Footer persistente
+ *   - Grid/Flexbox do layout principal
+ */

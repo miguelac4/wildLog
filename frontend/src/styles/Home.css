@@ -1,3 +1,33 @@
+/**
+ * Home.css — Estilos da página inicial (Landing Page)
+ *
+ * Estrutura visual:
+ *   ┌─────────────────────────────────────────────┐
+ *   │ .home-container (fullscreen)                 │
+ *   │   ├── <video> .background-video (z-index: 0) │
+ *   │   ├── ::before overlay escuro (z-index: 1)   │
+ *   │   ├── ::after bolha decorativa (z-index: 2)  │
+ *   │   └── .content (z-index: 3)                  │
+ *   │         ├── .logo-section                     │
+ *   │         │     ├── .logo-image                 │
+ *   │         │     ├── .logo-text (h1)             │
+ *   │         │     └── .tagline                    │
+ *   │         ├── .description                      │
+ *   │         └── .button-group                     │
+ *   │               ├── .btn-login                  │
+ *   │               └── .btn-register               │
+ *   └─────────────────────────────────────────────┘
+ *
+ * Animações:
+ *   - slideUp: conteúdo aparece de baixo para cima
+ *   - slideDown: logo aparece de cima para baixo
+ *   - float: bolha decorativa flutua suavemente
+ *
+ * Fonte do título "WildLog":
+ *   Usa a fonte "Figtree" (700 bold) definida no index.css.
+ */
+
+/* Container principal — ocupa viewport inteira */
 .home-container {
   min-height: 100vh;
   display: flex;
@@ -27,7 +57,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.6);
   z-index: 1;
 }
 
@@ -104,10 +134,10 @@
 }
 
 .logo-text {
-  font-size: 4rem;
+  font-size: 5rem;
   font-weight: 700;
   color: #fff;
-  margin: 0 0 10px 0;
+  margin: -40px 0 10px 0;
   letter-spacing: 2px;
   text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
 }
@@ -201,10 +231,7 @@
 
   .logo-text {
     font-size: 3rem;
-  }
-
-  .logo {
-    font-size: 3rem;
+    margin: -30px 0 10px 0;
   }
 
   .tagline {
@@ -212,7 +239,7 @@
   }
 
   .description p {
-    font-size: 1rem;
+    font-size: 0.95rem;
   }
 
   .button-group {
@@ -228,31 +255,35 @@
 
 @media (max-width: 480px) {
   .content {
-    padding: 30px 15px;
+    padding: 20px 15px;
   }
 
   .logo-image {
-    max-width: 150px;
+    max-width: 120px;
   }
 
   .logo-text {
-    font-size: 2.5rem;
-  }
-
-  .logo {
-    font-size: 2.5rem;
+    font-size: 2rem;
+    margin: -20px 0 5px 0;
   }
 
   .tagline {
-    font-size: 0.95rem;
+    font-size: 0.9rem;
+  }
+
+  .description p {
+    font-size: 0.85rem;
+    margin-bottom: 10px;
   }
 
   .button-group {
     flex-direction: column;
+    gap: 10px;
   }
 
   .btn {
     padding: 12px 30px;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
+    min-width: unset;
   }
 }
