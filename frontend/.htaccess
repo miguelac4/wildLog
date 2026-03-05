@@ -1,46 +1,36 @@
-# ===========================================================================
-# .htaccess — Configuração Apache para WildLog SPA (Single Page Application)
-#
-# Este ficheiro é essencial para o deploy. Faz 3 coisas:
-#   1. REWRITE: Redireciona todas as rotas para index.html (SPA routing)
-#   2. PERFORMANCE: Compressão gzip e cache de assets estáticos
-#   3. SECURITY: Força HTTPS, remove www, desabilita ETags
-#
-# Suporta dois domínios:
-#   - rh360.pt/wildlog  → app numa subpasta
-#   - wild-log.com      → app na raiz do domínio
-#
-# IMPORTANTE: Este ficheiro deve ser colocado na raiz do domínio (public_html)
-# ===========================================================================
-
 <IfModule mod_rewrite.c>
   RewriteEngine On
-
-  # Força HTTPS
+  
+  # ============================================
+  # HTTPS & WWW REDIRECT (Global)
+  # ============================================
+  
+  # Force HTTPS
   RewriteCond %{HTTPS} off
   RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
-
+  
   # Remove www
   RewriteCond %{HTTP_HOST} ^www\.(.*)$ [NC]
   RewriteRule ^(.*)$ https://%1%{REQUEST_URI} [L,R=301]
-
+  
   # ============================================
-  # Para rh360.pt/wildlog (em subpasta)
+  # WILDLOG ROUTES (rh360.pt/wildlog)
   # ============================================
-
-  RewriteCond %{HTTP_HOST} ^rh360\.pt$ [NC]
+  
+  RewriteCond %{HTTP_HOST} ^(www\.)?rh360\.pt$ [NC]
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
   RewriteCond %{REQUEST_URI} !^/wildlog/
   RewriteRule ^(.*)$ /wildlog/index.html [QSA,L]
-
+  
   # ============================================
-  # Para wild-log.com (na raiz)
+  # ROOT ROUTES (wild-log.com na raiz)
   # ============================================
-
+  
   RewriteCond %{HTTP_HOST} ^(www\.)?wild-log\.com$ [NC]
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteCond %{REQUEST_URI} !^/index\.html$
   RewriteRule ^(.*)$ /index.html [QSA,L]
 </IfModule>
 

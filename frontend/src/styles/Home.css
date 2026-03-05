@@ -1,136 +1,205 @@
 /**
- * Home.css — Estilos da página inicial (Landing Page)
+ * Home.css — Estilos da Landing Page (multi-secção)
  *
- * Estrutura visual:
- *   ┌─────────────────────────────────────────────┐
- *   │ .home-container (fullscreen)                 │
- *   │   ├── <video> .background-video (z-index: 0) │
- *   │   ├── ::before overlay escuro (z-index: 1)   │
- *   │   ├── ::after bolha decorativa (z-index: 2)  │
- *   │   └── .content (z-index: 3)                  │
- *   │         ├── .logo-section                     │
- *   │         │     ├── .logo-image                 │
- *   │         │     ├── .logo-text (h1)             │
- *   │         │     └── .tagline                    │
- *   │         ├── .description                      │
- *   │         └── .button-group                     │
- *   │               ├── .btn-login                  │
- *   │               └── .btn-register               │
- *   └─────────────────────────────────────────────┘
+ * Estrutura:
+ *   .home-page
+ *     ├── .pill-nav-wrapper (fixed topo)
+ *     ├── .hero           (100vh, vídeo + blur-fade)
+ *     │     ├── .hero__video
+ *     │     ├── .hero__overlay
+ *     │     ├── .hero__blur-fade  ← transição blur para About
+ *     │     └── .hero__content
+ *     ├── .about           (fundo escuro)
+ *     │     └── .section-inner → .about__cards
+ *     └── .contact          (fundo mais escuro)
+ *           └── .section-inner → .contact-form
  *
- * Animações:
- *   - slideUp: conteúdo aparece de baixo para cima
- *   - slideDown: logo aparece de cima para baixo
- *   - float: bolha decorativa flutua suavemente
- *
- * Fonte do título "WildLog":
- *   Usa a fonte "Figtree" (700 bold) definida no index.css.
+ * Paleta:
+ *   Fundo base:  #080e0b
+ *   About bg:    #0c1511
+ *   Contact bg:  #080e0b
+ *   Accent:      #8b7355 / #a0845f
+ *   Verde badge: #4caf50
  */
 
-/* Container principal — ocupa viewport inteira */
-.home-container {
-  min-height: 100vh;
+/* ══════════════════════════════════════════
+   PAGE WRAPPER
+   ══════════════════════════════════════════ */
+.home-page {
+  width: 100%;
+  overflow-x: hidden;
+  background: #080e0b;
+}
+
+/* PillNav — fixo no topo central */
+.pill-nav-wrapper {
+  position: fixed;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+}
+
+/* ── FIXED LOGIN — aparece quando o hero-login sai do viewport ── */
+.fixed-login {
+  position: fixed;
+  top: 24px;
+  right: 32px;
+  z-index: 100;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.85);
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  letter-spacing: 0.2px;
+  padding: 8px 0;
+  white-space: nowrap;
+
+  /* Começa escondido — slide de cima + fade */
+  opacity: 0;
+  transform: translateY(-12px);
+  pointer-events: none;
+  transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+              color 0.2s ease;
+}
+
+.fixed-login__icon {
+  width: 16px;
+  height: 16px;
+  transition: transform 0.3s ease;
+}
+
+.fixed-login--visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.fixed-login:hover {
+  color: #fff;
+}
+
+.fixed-login:hover .fixed-login__icon {
+  transform: translateX(2px);
+}
+
+/* ══════════════════════════════════════════
+   HERO (secção 1)
+   ══════════════════════════════════════════ */
+.hero {
+  position: relative;
+  width: 100%;
+  height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  position: relative;
-  overflow: visible;
-  padding: 20px;
+  overflow: hidden;
 }
 
-/* Background Video */
-.background-video {
-  position: fixed;
-  top: 0;
-  left: 0;
+/* Vídeo — preenche toda a secção hero (inline no iOS) */
+.hero__video {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
   z-index: 0;
+  pointer-events: none;           /* Impede interação (tap, long-press no iOS) */
+  -webkit-transform: translateZ(0); /* GPU layer no Safari → evita flicker */
 }
 
-/* Overlay escuro para melhor legibilidade do texto */
-.home-container::before {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.6);
+/* Esconde controlos nativos no iOS/Safari */
+.hero__video::-webkit-media-controls {
+  display: none !important;
+}
+.hero__video::-webkit-media-controls-panel {
+  display: none !important;
+}
+.hero__video::-webkit-media-controls-start-playback-button {
+  display: none !important;
+}
+
+/* Overlay escuro geral */
+.hero__overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
   z-index: 1;
 }
 
-.home-container::after {
-  content: '';
+/* ── BLUR-FADE ──────────────────────────────
+   Efeito de transição na base do hero:
+   - backdrop-filter: blur crescente
+   - gradiente transparent → cor de fundo do About
+   Cria uma fusão suave entre o vídeo e a secção seguinte.
+   ──────────────────────────────────────────── */
+.hero__blur-fade {
   position: absolute;
-  width: 500px;
-  height: 500px;
-  background: radial-gradient(circle, rgba(76, 175, 80, 0.05) 0%, transparent 70%);
-  border-radius: 50%;
-  top: -200px;
-  right: -100px;
-  animation: float 15s ease-in-out infinite;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 40%;
   z-index: 2;
+  pointer-events: none;
+
+  /* Gradiente de cor: transparente → fundo escuro */
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(12, 21, 17, 0.4) 35%,
+    rgba(12, 21, 17, 0.75) 65%,
+    #0c1511 100%
+  );
+
+  /* Blur progressivo (o backdrop-filter aplica-se a toda a zona) */
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+
+  /* Máscara para que o blur seja mais forte em baixo e desapareça em cima */
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 50%);
+  mask-image: linear-gradient(to bottom, transparent 0%, black 50%);
 }
 
-/* Content container - positioned above overlay */
-.content {
+/* Conteúdo do hero */
+.hero__content {
   position: relative;
   z-index: 3;
   text-align: center;
-  max-width: 90vw;
   width: 100%;
+  max-width: 800px;
   padding: 40px 20px;
-  animation: slideUp 0.8s ease;
+  animation: heroSlideUp 0.8s ease;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
 }
 
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(30px);
-  }
+@keyframes heroSlideUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.logo-section {
-  margin-bottom: 20px;
-}
+/* Logo + título */
+.logo-section { margin-bottom: 20px; }
 
 .logo-image {
   max-width: 300px;
   height: auto;
   margin-bottom: -15px;
   filter: drop-shadow(0 2px 10px rgba(0, 0, 0, 0.3));
-  animation: slideDown 0.8s ease;
+  animation: heroSlideDown 0.8s ease;
 }
 
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+@keyframes heroSlideDown {
+  from { opacity: 0; transform: translateY(-20px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 .logo-text {
@@ -161,124 +230,256 @@
   font-size: 1.1rem;
   opacity: 0.95;
 }
+.description p:last-child { margin-bottom: 0; }
 
-.description p:last-child {
-  margin-bottom: 0;
+/* CTA "Log in" com ícone tenda */
+.hero-login {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 9999px;
+  color: rgba(255, 255, 255, 0.9);
+  font-family: inherit;
+  font-size: 1.05rem;
+  font-weight: 600;
+  cursor: pointer;
+  letter-spacing: 0.3px;
+  padding: 12px 36px;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  margin-top: 10px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
-.button-group {
+.hero-login__icon {
+  width: 18px;
+  height: 18px;
+  transition: transform 0.3s ease;
+}
+
+.hero-login:hover {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.hero-login:hover .hero-login__icon {
+  transform: translateX(2px);
+}
+
+/* ══════════════════════════════════════════
+   SECÇÕES PARTILHADAS
+   ══════════════════════════════════════════ */
+.section-inner {
+  max-width: 900px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.section-badge {
+  display: inline-block;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: #4caf50;
+  margin-bottom: 14px;
+  border: 1px solid rgba(76, 175, 80, 0.3);
+  border-radius: 9999px;
+  padding: 4px 16px;
+}
+
+.section-title {
+  font-size: 2.6rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 20px;
+  line-height: 1.2;
+}
+
+.section-text {
+  font-size: 1.1rem;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.8;
+  max-width: 620px;
+  margin: 0 auto;
+}
+
+/* ══════════════════════════════════════════
+   SECÇÃO 2 — ABOUT
+   ══════════════════════════════════════════ */
+.about {
+  background: #0c1511;
+  padding: 120px 40px;
+  position: relative;
+  z-index: 5;
+}
+
+.about__cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  margin-top: 60px;
+}
+
+.about-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 36px 28px;
+  text-align: left;
+  transition: border-color 0.3s ease, transform 0.3s ease;
+}
+
+.about-card:hover {
+  border-color: rgba(139, 115, 85, 0.35);
+  transform: translateY(-4px);
+}
+
+.about-card__icon {
+  display: block;
+  font-size: 2rem;
+  margin-bottom: 16px;
+}
+
+.about-card h3 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 10px;
+}
+
+.about-card p {
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.55);
+  line-height: 1.7;
+}
+
+/* ══════════════════════════════════════════
+   SECÇÃO 3 — CONTACT
+   ══════════════════════════════════════════ */
+.contact {
+  background: #080e0b;
+  padding: 120px 40px;
+  position: relative;
+  z-index: 5;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.contact-inner { max-width: 640px; }
+
+.contact-form {
   display: flex;
   flex-direction: column;
-  gap: 15px;
-  width: 100%;
-  max-width: 300px;
-  align-items: stretch;
+  gap: 16px;
+  margin-top: 44px;
+  text-align: left;
 }
 
-.btn {
+.contact-form__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.contact-input {
   width: 100%;
-  padding: 14px 30px;
-  border-radius: 25px;
-  font-size: 1rem;
+  padding: 14px 16px;
+  font-size: 0.95rem;
+  font-family: inherit;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  outline: none;
+  transition: border-color 0.25s ease, background 0.25s ease;
+  resize: none;
+}
+
+.contact-input::placeholder {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.contact-input:focus {
+  border-color: #8b7355;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.contact-textarea { min-height: 140px; }
+
+.contact-btn {
+  align-self: flex-start;
+  padding: 14px 32px;
+  font-size: 0.95rem;
   font-weight: 600;
+  font-family: inherit;
+  color: #fff;
+  background: linear-gradient(135deg, #8b7355, #a0845f);
   border: none;
+  border-radius: 10px;
   cursor: pointer;
   transition: all 0.3s ease;
-  min-width: unset;
+  box-shadow: 0 4px 14px rgba(139, 115, 85, 0.3);
 }
 
-.btn:hover {
+.contact-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
-}
-
-.btn:active {
-  transform: translateY(0px);
-}
-
-.btn-login {
-  background: linear-gradient(135deg, #8b7355 0%, #a0845f 100%);
-  color: #fff;
-  border: 2px solid transparent;
-}
-
-.btn-login:hover {
-  background: linear-gradient(135deg, #9d8567 0%, #b39470 100%);
   box-shadow: 0 6px 20px rgba(139, 115, 85, 0.4);
 }
 
-.btn-register {
-  background: transparent;
+.contact-email {
+  margin-top: 28px;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.4);
+  text-align: center;
+}
+
+.contact-link {
   color: #8b7355;
-  border: 2px solid #8b7355;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 0.2s ease;
 }
+.contact-link:hover { color: #a0845f; }
 
-.btn-register:hover {
-  background: rgba(139, 115, 85, 0.1);
-  border-color: #a0845f;
-  color: #a0845f;
-}
-
+/* ══════════════════════════════════════════
+   RESPONSIVE
+   ══════════════════════════════════════════ */
 @media (max-width: 768px) {
-  .logo-image {
-    max-width: 200px;
+  .logo-image   { max-width: 200px; }
+  .logo-text    { font-size: 3rem; margin: -30px 0 10px 0; }
+  .tagline      { font-size: 1.1rem; }
+  .description p { font-size: 0.95rem; }
+
+  .about, .contact { padding: 80px 24px; }
+  .section-title   { font-size: 2rem; }
+
+  .about__cards {
+    grid-template-columns: 1fr;
+    gap: 16px;
   }
 
-  .logo-text {
-    font-size: 3rem;
-    margin: -30px 0 10px 0;
-  }
-
-  .tagline {
-    font-size: 1.1rem;
-  }
-
-  .description p {
-    font-size: 0.95rem;
-  }
-
-  .button-group {
-    max-width: 250px;
-    gap: 12px;
-  }
-
-  .btn {
-    padding: 12px 25px;
-    font-size: 0.95rem;
+  .contact-form__row {
+    grid-template-columns: 1fr;
   }
 }
 
 @media (max-width: 480px) {
-  .content {
-    max-width: 95vw;
-    padding: 20px 15px;
-  }
+  .pill-nav-wrapper { top: 14px; }
+  .fixed-login { top: 14px; right: 16px; font-size: 0.88rem; }
 
-  .logo-image {
-    max-width: 120px;
-  }
+  .hero__content  { max-width: 95vw; padding: 20px 15px; }
+  .logo-image     { max-width: 120px; }
+  .logo-text      { font-size: 2rem; margin: -20px 0 5px 0; }
+  .tagline        { font-size: 0.9rem; }
+  .description p  { font-size: 0.85rem; margin-bottom: 10px; }
+  .hero-login     { font-size: 0.88rem; padding: 10px 28px; }
 
-  .logo-text {
-    font-size: 2rem;
-    margin: -20px 0 5px 0;
-  }
-
-  .tagline {
-    font-size: 0.9rem;
-  }
-
-  .description p {
-    font-size: 0.85rem;
-    margin-bottom: 10px;
-  }
-
-  .button-group {
-    max-width: 200px;
-    gap: 10px;
-  }
-
-  .btn {
-    padding: 12px 20px;
-    font-size: 0.9rem;
-  }
+  .about, .contact { padding: 60px 16px; }
+  .section-title   { font-size: 1.6rem; }
+  .section-text    { font-size: 0.95rem; }
+  .contact-btn     { align-self: stretch; text-align: center; }
 }

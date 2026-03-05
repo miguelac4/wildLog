@@ -1,56 +1,32 @@
-/**
- * App.jsx — Componente raiz da aplicação
- *
- * Responsabilidades:
- *   1. Configurar o React Router (sistema de navegação SPA)
- *   2. Definir todas as rotas da aplicação
- *   3. Determinar o "basename" correto baseado no domínio
- *
- * React Router:
- *   - <BrowserRouter> usa a History API do browser (URLs limpas, sem #)
- *   - <Routes> é o container de rotas
- *   - <Route> mapeia um caminho (path) a um componente (element)
- *
- * Basename:
- *   - Em rh360.pt/wildlog → basename="/wildlog" (todas as rotas ficam /wildlog/...)
- *   - Em wild-log.com     → basename="" (rotas ficam na raiz /)
- */
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import Home from './pages/Home'
 import Login from './pages/Login'
 import Register from './pages/Register'
+import useLenis from './hooks/useLenis'
 import './App.css'
 
+/**
+ * Deteta o basename do Router com base no hostname.
+ *   - wild-log.com     → "/" (raiz)
+ *   - rh360.pt         → "/wildlog" (subpasta)
+ *   - localhost         → "/wildlog" (dev simula rh360)
+ */
+const getRouterBasename = () => {
+  if (typeof window === 'undefined') return '/wildlog'
+  const host = window.location.hostname
+  if (host.includes('wild-log.com')) return '/'
+  return '/wildlog'
+}
+
 function App() {
-  /**
-   * Detecta o basename baseado no hostname atual.
-   * Isto permite que o mesmo código funcione em ambos os domínios
-   * sem necessidade de builds separados.
-   */
-  const getBaseName = () => {
-    const hostname = window.location.hostname
-
-    // wild-log.com → app na raiz do domínio
-    if (hostname.includes('wild-log.com')) {
-      return ''
-    }
-
-    // rh360.pt (ou qualquer outro) → app na subpasta /wildlog
-    return '/wildlog'
-  }
-
-  const basename = getBaseName()
+  /* Lenis smooth scroll — efeito rubber band em toda a app */
+  useLenis()
 
   return (
-    <Router basename={basename}>
+    <Router basename={getRouterBasename()}>
       <Routes>
-        {/* Página inicial (landing page com vídeo de fundo) */}
         <Route path="/" element={<Home />} />
-
-        {/* Página de login */}
         <Route path="/login" element={<Login />} />
-
-        {/* Página de registo */}
         <Route path="/register" element={<Register />} />
       </Routes>
     </Router>

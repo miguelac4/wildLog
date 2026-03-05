@@ -48,3 +48,5 @@ export const MEDIA_URLS = {
   logo: `${BASENAME}/media/logoWM.png`,     // Logo com marca de água (usado na Home)
 }
 
+export default MEDIA_URLS
+

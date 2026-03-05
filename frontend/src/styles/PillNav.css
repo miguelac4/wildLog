@@ -1,0 +1,114 @@
+/**
+ * PillNav.css — Estilos do componente PillNav (Dark Mode)
+ *
+ * Estrutura:
+ *   ┌──────────────────────────────────────────┐
+ *   │ .pill-nav (container flex, fundo escuro)  │
+ *   │   ├── .pill-nav__indicator (pill animada) │
+ *   │   ├── .pill-nav__item (botão)             │
+ *   │   ├── .pill-nav__item (botão)             │
+ *   │   └── ...                                 │
+ *   └──────────────────────────────────────────┘
+ *
+ * Animação de entrada:
+ *   - pill-nav começa invisível e deslocado para cima
+ *   - Classe .pill-nav--loaded ativa o fade-in + slide-down
+ *
+ * Cores (dark mode, consistente com WildLog):
+ *   - Fundo nav: rgba preto/escuro com blur (glassmorphism)
+ *   - Pill indicator: castanho terra (#8b7355)
+ *   - Texto ativo: branco
+ *   - Texto inativo: cinza claro semi-transparente
+ */
+
+/* ============================================
+   NAV CONTAINER
+   ============================================ */
+.pill-nav {
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 9999px;
+  padding: 4px;
+  gap: 2px;
+
+  /* Animação de entrada: começa invisível e deslocado */
+  opacity: 0;
+  transform: translateY(-20px);
+  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Estado carregado — ativa a animação de entrada */
+.pill-nav--loaded {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ============================================
+   INDICADOR PILL (fundo animado)
+   ============================================ */
+.pill-nav__indicator {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  background: linear-gradient(135deg, #8b7355, #a0845f);
+  border-radius: 9999px;
+  transition: left 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              width 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 2px 8px rgba(139, 115, 85, 0.35);
+  z-index: 0;
+}
+
+/* ============================================
+   ITEM / BOTÃO
+   ============================================ */
+.pill-nav__item {
+  position: relative;
+  z-index: 1;
+  padding: 8px 20px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  font-family: inherit;
+  color: rgba(255, 255, 255, 0.55);
+  background: none;
+  border: none;
+  border-radius: 9999px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color 0.3s ease;
+  letter-spacing: 0.3px;
+}
+
+.pill-nav__item:hover {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/* Item ativo — texto branco */
+.pill-nav__item--active {
+  color: #fff;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 480px) {
+  .pill-nav {
+    padding: 3px;
+    gap: 1px;
+  }
+
+  .pill-nav__item {
+    padding: 7px 14px;
+    font-size: 0.82rem;
+  }
+
+  .pill-nav__indicator {
+    top: 3px;
+    bottom: 3px;
+  }
+}

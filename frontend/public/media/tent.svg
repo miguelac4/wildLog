@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Pernas cruzadas (saem do topo para além da base) -->
+  <line x1="32" y1="5" x2="72" y2="88" />
+  <line x1="68" y1="5" x2="28" y2="88" />
+  <!-- Triângulo da tenda (base com cantos arredondados) -->
+  <path d="M14 88 Q12 92 16 92 L84 92 Q88 92 86 88 L52 28 Q50 24 48 28 Z" />
+</svg>

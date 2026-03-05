@@ -299,8 +299,21 @@ npm run preview
 2. Conecta via FTP ao servidor
 3. Para **rh360.pt**: Upload de `dist/*` para `public_html/wildlog/`
 4. Para **wild-log.com**: Upload de `dist/*` para `public_html/`
-5. Copia o `.htaccess` da raiz do frontend para a raiz do domínio no servidor
+5. O `.htaccess` já está em `public/` e é copiado automaticamente para `dist/`
 6. Limpa cache do browser (Ctrl+Shift+Del)
+
+### ⚠️ Checklist de Paths (quando algo não aparece)
+
+O projecto tem **3 layers de paths** que precisam de estar sincronizados:
+
+| Layer | Ficheiro | rh360.pt/wildlog | wild-log.com |
+|-------|----------|-----------------|--------------|
+| **Vite base** | `vite.config.js` | `/wildlog/` (default) | `/` (`--mode production-root`) |
+| **Router basename** | `App.jsx` | `/wildlog` (auto) | `/` (auto) |
+| **Media URLs** | `mediaConfig.js` | `/wildlog/media/...` (auto) | `/media/...` (auto) |
+
+O **Router basename** e o **Media URLs** são detectados **automaticamente** pelo hostname.
+Só o **Vite base** precisa do `--mode` correto no build.
 
 ---
 

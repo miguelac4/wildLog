@@ -46,6 +46,11 @@ function Login() {
       {/* ===== LEFT PANEL: Formulário ===== */}
       <div className="auth-left">
         <div className="auth-left-inner">
+          {/* Brand mark */}
+          <div className="auth-brand">
+            <span>WildLog</span>
+          </div>
+
           {/* Header */}
           <div className="auth-header">
             <h1>Log In</h1>
