@@ -39,52 +39,52 @@ function Login() {
   }
 
   return (
-    <div className="auth-container">
-      <div className="auth-content">
-        {/* Cabeçalho com branding */}
-        <div className="auth-header">
-          <h1>🐾 WildLog</h1>
-          <p className="auth-title">Entrar</p>
-        </div>
-
-        {/* Formulário — onSubmit chama handleSubmit */}
-        <form onSubmit={handleSubmit} className="auth-form">
-          <div className="form-group">
-            <label htmlFor="email">Email</label>
-            <input
-              type="email"
-              id="email"
-              placeholder="seu@email.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
+      <div className="auth-container">
+        <div className="auth-content">
+          {/* Header with branding */}
+          <div className="auth-header">
+            <h1>🐾 WildLog</h1>
+            <p className="auth-title">Log In</p>
           </div>
 
-          <div className="form-group">
-            <label htmlFor="password">Palavra-passe</label>
-            <input
-              type="password"
-              id="password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
+          {/* Form — onSubmit calls handleSubmit */}
+          <form onSubmit={handleSubmit} className="auth-form">
+            <div className="form-group">
+              <label htmlFor="email">Email</label>
+              <input
+                  type="email"
+                  id="email"
+                  placeholder="your@email.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="password">Password</label>
+              <input
+                  type="password"
+                  id="password"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+              />
+            </div>
+
+            <button type="submit" className="btn btn-submit">
+              Log In
+            </button>
+          </form>
+
+          {/* Footer with navigation links */}
+          <div className="auth-footer">
+            <p>Don't have an account? <span onClick={() => navigate('/register')} className="link">Sign Up</span></p>
+            <p onClick={() => navigate('/')} className="link back-home">← Back</p>
           </div>
-
-          <button type="submit" className="btn btn-submit">
-            Entrar
-          </button>
-        </form>
-
-        {/* Footer com links de navegação */}
-        <div className="auth-footer">
-          <p>Não tem conta? <span onClick={() => navigate('/register')} className="link">Registar</span></p>
-          <p onClick={() => navigate('/')} className="link back-home">← Voltar</p>
         </div>
       </div>
-    </div>
   )
 }
 

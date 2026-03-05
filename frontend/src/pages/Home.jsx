@@ -33,32 +33,32 @@ function Home() {
 
       {/* Conteúdo sobreposto ao vídeo (z-index superior) */}
       <div className="content">
-        {/* Secção do logo e título */}
+        {/* Logo and title section */}
         <div className="logo-section">
           <img src={MEDIA_URLS.logo} alt="WildLog Logo" className="logo-image" />
           <h1 className="logo-text">WildLog</h1>
-          <p className="tagline">Conecte-se à Natureza</p>
+          <p className="tagline">Connect with Nature</p>
         </div>
 
-        {/* Descrição da plataforma */}
+        {/* Platform description */}
         <div className="description">
-          <p>Bem-vindo à WildLog, a rede social para amantes da natureza e vida selvagem!</p>
-          <p>Partilhe experiências, descubra novos lugares e conecte-se com entusiastas ao redor do mundo.</p>
+          <p>Welcome to WildLog, the social network for nature and wildlife lovers!</p>
+          <p>Share experiences, discover new places, and connect with enthusiasts around the world.</p>
         </div>
 
-        {/* Botões de ação — usam navigate() para SPA navigation */}
+        {/* Action buttons — use navigate() for SPA navigation */}
         <div className="button-group">
           <button
-            className="btn btn-login"
-            onClick={() => navigate('/login')}
+              className="btn btn-login"
+              onClick={() => navigate('/login')}
           >
-            Entrar
+            Log In
           </button>
           <button
-            className="btn btn-register"
-            onClick={() => navigate('/register')}
+              className="btn btn-register"
+              onClick={() => navigate('/register')}
           >
-            Registar
+            Sign Up
           </button>
         </div>
       </div>
