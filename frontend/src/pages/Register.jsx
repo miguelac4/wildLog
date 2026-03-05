@@ -1,8 +1,9 @@
 /**
- * Register.jsx — Página de Registo
+ * Register.jsx — Página de Registo (Split-Panel Layout)
  *
- * Formulário de criação de conta com validação client-side.
- * Campos: username, email, password, confirmPassword.
+ * Layout dividido em dois painéis:
+ *   - Esquerda: Formulário de criação de conta
+ *   - Direita: Painel decorativo com branding WildLog
  *
  * Hooks usados:
  *   - useState()    → Gere o estado do formulário e dos erros
@@ -15,12 +16,14 @@
  *   - Conditional rendering ({errors.field && <span>...})
  *
  * Ficheiros relacionados:
- *   - styles/Auth.css → Estilos partilhados entre Login e Register
+ *   - styles/Auth.css       → Estilos do layout split-panel
+ *   - config/mediaConfig.js → URLs dos assets (logo)
  *
  * TODO: Integrar com API backend (POST /api/auth/register)
  */
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { MEDIA_URLS } from '../config/mediaConfig'
 import '../styles/Auth.css'
 
 function Register() {
@@ -67,7 +70,6 @@ function Register() {
       newErrors.confirmPassword = 'Passwords do not match'
     }
 
-    // If there are errors, show them and do not submit
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors)
       return
@@ -78,70 +80,70 @@ function Register() {
   }
 
   return (
-      <div className="auth-container">
-        <div className="auth-content">
+    <div className="auth-page">
+      {/* ===== LEFT PANEL: Formulário ===== */}
+      <div className="auth-left">
+        <div className="auth-left-inner">
+          {/* Header */}
           <div className="auth-header">
-            <h1>🐾 WildLog</h1>
-            <p className="auth-title">Create Account</p>
+            <h1>Create Account</h1>
+            <p>Join the community! Fill in your details to get started.</p>
           </div>
 
+          {/* Form */}
           <form onSubmit={handleSubmit} className="auth-form">
-            {/* Field: Username */}
             <div className="form-group">
               <label htmlFor="username">Username</label>
               <input
-                  type="text"
-                  id="username"
-                  name="username"
-                  placeholder="your_username"
-                  value={formData.username}
-                  onChange={handleChange}
-                  required
+                type="text"
+                id="username"
+                name="username"
+                placeholder="Choose a username"
+                value={formData.username}
+                onChange={handleChange}
+                required
               />
               {errors.username && <span className="error">{errors.username}</span>}
             </div>
 
-            {/* Field: Email */}
             <div className="form-group">
               <label htmlFor="email">Email</label>
               <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  placeholder="your@email.com"
-                  value={formData.email}
-                  onChange={handleChange}
-                  required
+                type="email"
+                id="email"
+                name="email"
+                placeholder="Enter your email"
+                value={formData.email}
+                onChange={handleChange}
+                required
               />
               {errors.email && <span className="error">{errors.email}</span>}
             </div>
 
-            {/* Field: Password */}
             <div className="form-group">
               <label htmlFor="password">Password</label>
               <input
-                  type="password"
-                  id="password"
-                  name="password"
-                  placeholder="••••••••"
-                  value={formData.password}
-                  onChange={handleChange}
-                  required
+                type="password"
+                id="password"
+                name="password"
+                placeholder="••••••••"
+                value={formData.password}
+                onChange={handleChange}
+                required
               />
               {errors.password && <span className="error">{errors.password}</span>}
             </div>
 
-            {/* Field: Confirm Password */}
             <div className="form-group">
               <label htmlFor="confirmPassword">Confirm Password</label>
               <input
-                  type="password"
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  placeholder="••••••••"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  required
+                type="password"
+                id="confirmPassword"
+                name="confirmPassword"
+                placeholder="••••••••"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                required
               />
               {errors.confirmPassword && <span className="error">{errors.confirmPassword}</span>}
             </div>
@@ -151,19 +153,52 @@ function Register() {
             </button>
           </form>
 
+          {/* Footer */}
           <div className="auth-footer">
             <p>
               Already have an account?{' '}
-              <span onClick={() => navigate('/login')} className="link">
-              Log In
-            </span>
+              <span onClick={() => navigate('/login')} className="link">Log In</span>
             </p>
-            <p onClick={() => navigate('/')} className="link back-home">← Back</p>
+            <p onClick={() => navigate('/')} className="link back-home">← Back to Home</p>
           </div>
         </div>
       </div>
+
+      {/* ===== RIGHT PANEL: Branding decorativo ===== */}
+      <div className="auth-right">
+        <div className="auth-right-content">
+          <img src={MEDIA_URLS.logo} alt="WildLog" className="auth-right-logo" />
+          <h2>Join WildLog</h2>
+          <p>Start your journey exploring and documenting wildlife with a passionate community.</p>
+
+          {/* Card decorativo com features */}
+          <div className="auth-right-card">
+            <div className="card-stat">
+              <div className="stat-icon">📷</div>
+              <div className="stat-info">
+                <span className="stat-number">Share</span>
+                <span className="stat-label">Your wildlife photos & videos</span>
+              </div>
+            </div>
+            <div className="card-stat">
+              <div className="stat-icon">🗺️</div>
+              <div className="stat-info">
+                <span className="stat-number">Discover</span>
+                <span className="stat-label">New species & locations</span>
+              </div>
+            </div>
+            <div className="card-stat">
+              <div className="stat-icon">🤝</div>
+              <div className="stat-info">
+                <span className="stat-number">Connect</span>
+                <span className="stat-label">With nature enthusiasts</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   )
 }
 
 export default Register
-
