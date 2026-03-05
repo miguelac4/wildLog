@@ -20,6 +20,7 @@ import { useRef, useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { MEDIA_URLS } from '../config/mediaConfig'
 import PillNav from '../components/PillNav'
+import { MapPin, Binoculars, Aperture, Handshake, HandHeart, Leaf} from 'lucide-react'
 import '../styles/Home.css'
 
 function Home() {
@@ -32,9 +33,9 @@ function Home() {
   const [showFixedLogin, setShowFixedLogin] = useState(false)
 
   /* Refs para cada secção */
-  const heroRef    = useRef(null)
-  const aboutRef   = useRef(null)
-  const contactRef = useRef(null)
+  const heroRef      = useRef(null)
+  const aboutRef     = useRef(null)
+  const contactRef   = useRef(null)
   const heroLoginRef = useRef(null)
 
   /**
@@ -91,6 +92,7 @@ function Home() {
     observer.observe(el)
     return () => observer.disconnect()
   }, [])
+
 
   /** Scroll para a secção — o Lenis intercepta automaticamente */
   const scrollTo = (ref) => {
@@ -179,26 +181,41 @@ function Home() {
         <div className="section-inner">
           <h2 className="section-title">What is WildLog?</h2>
           <p className="section-text">
-            WildLog is a social platform built for nature and wildlife enthusiasts.
-            Whether you're a birdwatcher, hiker, or marine biologist — WildLog gives
-            you the tools to document, share, and explore the natural world.
+            WildLog is a social platform for people who prefer trees over traffic.
+          </p>
+          <p className="section-text">
+            Discover natural spots, share your finds, and explore the outdoors with
+            a community that respects nature.
           </p>
 
-          <div className="about__cards">
-            <div className="about-card">
-              <span className="about-card__icon">📍</span>
-              <h3>Log Sightings</h3>
-              <p>Record GPS-tagged wildlife observations with photos and notes.</p>
-            </div>
-            <div className="about-card">
-              <span className="about-card__icon">🌿</span>
-              <h3>Explore Species</h3>
-              <p>Browse a growing catalogue of species documented by the community.</p>
-            </div>
-            <div className="about-card">
-              <span className="about-card__icon">🤝</span>
-              <h3>Connect</h3>
-              <p>Follow fellow naturalists and share discoveries from around the globe.</p>
+          {/* Carrossel infinito — cards deslizam suavemente para a esquerda */}
+          <div className="about__carousel">
+            <div className="about__track">
+              {/* Conjunto original */}
+              <div className="about-card"> <Binoculars color="#9B805D" strokeWidth={1.75} size={40} />
+                <h3>Discover Places</h3>
+                <p>Find hidden natural spots shared by the community and explore nature responsibly.</p>
+              </div>
+              <div className="about-card"> <Aperture color="#9B805D" strokeWidth={1.75} size={40} />
+                <h3>Share Your Journey</h3>
+                <p>Post photos, locations and experiences from your adventures in the wild.</p>
+              </div>
+              <div className="about-card"> <Handshake color="#9B805D" strokeWidth={1.75} size={40} />
+                <h3>Nature Community</h3>
+                <p>Connect with campers and explorers who share the same passion for nature.</p>
+              </div>
+              <div className="about-card"> <Leaf color="#9B805D" strokeWidth={1.75} size={40} />
+                <h3>Respect Nature</h3>
+                <p>Promote responsible exploration and help protect the places we love.</p>
+              </div>
+              <div className="about-card"> <MapPin color="#9B805D" strokeWidth={1.75} size={40} />
+                <h3>Learn & Inspire</h3>
+                <p>Discover new locations and inspire others to explore nature consciously.</p>
+              </div>
+              <div className="about-card"> <HandHeart color="#9B805D" strokeWidth={1.75} size={40} />
+                <h3>Explore Responsibly</h3>
+                <p>Share and discover natural spaces while encouraging ethical outdoor practices.</p>
+              </div>
             </div>
           </div>
         </div>
