@@ -65,7 +65,7 @@ function sendVerificationForEmail(PDO $pdo, string $email): array
     $tokenId = (int)$pdo->lastInsertId();
 
     // URL verificação (GET)
-    $verifyUrl = "https://wild-log.com/backend/api/auth/verify_account.php?token=" . $token;
+    $verifyUrl = "https://wild-log.com/verify-email?token=" . $token;
 
     // HTML do email (usa o teu template atual)
     $name = $user["name"] ?? '';

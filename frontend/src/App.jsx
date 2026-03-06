@@ -6,6 +6,7 @@ import Main from './pages/Main'
 import useLenis from './hooks/useLenis'
 import './App.css'
 import ProtectedRoute from './components/ProtectedRoute.jsx'
+import VerifyEmail from './pages/VerifyEmail'
 
 /**
  * Deteta o basename do Router com base no hostname.
@@ -21,7 +22,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-
+          <Route path="/verify-email" element={<VerifyEmail />} />
         <Route element={<ProtectedRoute />}>
           <Route path="/app" element={<Main />} />
         </Route>
