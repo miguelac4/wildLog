@@ -29,6 +29,7 @@ import '../styles/Auth.css'
 import { authService } from '../api/authService'
 import Snackbar from '@mui/material/Snackbar'
 import Alert from '@mui/material/Alert'
+import { useAuth } from '../hooks/useAuth'
 
 /* Lista de cards — um é escolhido aleatoriamente a cada mount */
 const FEATURE_CARDS = [
@@ -53,6 +54,8 @@ function Login() {
   const [successOpen, setSuccessOpen] = useState(false)
   const [successMessage, setSuccessMessage] = useState('')
 
+  const { login } = useAuth()
+
   /* Escolhe um card aleatório uma vez por mount (não muda com re-renders) */
   const randomCard = useMemo(() => FEATURE_CARDS[Math.floor(Math.random() * FEATURE_CARDS.length)], [])
 
@@ -67,7 +70,7 @@ function Login() {
     setIsSubmitting(true)
 
     try {
-      await authService.login(email, password)
+      await login(email, password)
 
       setSuccessMessage('Login successful! Redirecting...')
       setSuccessOpen(true)

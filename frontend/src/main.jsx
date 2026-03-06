@@ -12,11 +12,23 @@
  */
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import App from './App.jsx'
+import { BrowserRouter } from 'react-router-dom'
+import App from './App'
+import { AuthProvider } from './context/AuthContext'
 import './index.css'
+const getRouterBasename = () => {
+    if (typeof window === 'undefined') return '/wildlog'
+    const host = window.location.hostname
+    if (host.includes('wild-log.com')) return '/'
+    return '/wildlog'
+}
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
+    <React.StrictMode>
+        <BrowserRouter basename={getRouterBasename()}>
+            <AuthProvider>
+                <App />
+            </AuthProvider>
+        </BrowserRouter>
+    </React.StrictMode>
 )
