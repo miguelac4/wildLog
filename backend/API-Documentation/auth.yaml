@@ -201,6 +201,44 @@ components:
       required: [success, message]
 
 paths:
+  /auth/me.php:
+    get:
+      tags: [ Auth ]
+      summary: Get current authenticated user
+      description: >
+        Returns the currently authenticated user based on the active PHP session.
+      security:
+        - sessionCookie: [ ]
+      responses:
+        "200":
+          description: Authenticated user
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: "#/components/schemas/User"
+                required: [ user ]
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "405":
+          description: Method not allowed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
   /auth/register.php:
     post:
       tags: [Auth]
