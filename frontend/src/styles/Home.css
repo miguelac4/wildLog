@@ -27,7 +27,6 @@
    ══════════════════════════════════════════ */
 .home-page {
   width: 100%;
-  overflow-x: hidden;
   background: #080e0b;
 }
 
@@ -316,13 +315,48 @@
   padding: 120px 40px;
   position: relative;
   z-index: 5;
+  overflow-x: hidden;   /* evita scrollbar horizontal durante slide-in dos cards */
 }
 
-.about__cards {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
+/* ── Carrossel contínuo para a esquerda ── */
+.about__carousel {
   margin-top: 60px;
+  overflow-x: clip;        /* esconde cards fora das bordas laterais */
+  overflow-y: visible;     /* permite hover translateY(-4px) sem cortar */
+  width: 100%;
+  padding: 8px 0;          /* espaço de respiro vertical */
+  /* Mask para desvanecer as bordas laterais */
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    black 8%,
+    black 92%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    black 8%,
+    black 92%,
+    transparent 100%
+  );
+}
+
+.about__track {
+  display: flex;
+  gap: 24px;
+  width: max-content;
+  animation: carouselSlide 40s linear infinite;
+}
+
+/* Pausa quando o utilizador passa o rato por cima */
+.about__carousel:hover .about__track {
+  animation-play-state: paused;
+}
+
+@keyframes carouselSlide {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
 }
 
 .about-card {
@@ -331,6 +365,9 @@
   border-radius: 16px;
   padding: 36px 28px;
   text-align: left;
+  min-width: 280px;
+  max-width: 300px;
+  flex-shrink: 0;
   transition: border-color 0.3s ease, transform 0.3s ease;
 }
 
@@ -457,10 +494,6 @@
   .about, .contact { padding: 80px 24px; }
   .section-title   { font-size: 2rem; }
 
-  .about__cards {
-    grid-template-columns: 1fr;
-    gap: 16px;
-  }
 
   .contact-form__row {
     grid-template-columns: 1fr;

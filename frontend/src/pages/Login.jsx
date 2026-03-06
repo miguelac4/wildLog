@@ -112,7 +112,7 @@ function Login() {
         <div className="auth-right-content">
           <img src={MEDIA_URLS.logo} alt="WildLog" className="auth-right-logo" />
           <h2>Welcome to WildLog</h2>
-          <p>Connect with nature lovers around the world. Share your discoveries and explore wildlife.</p>
+          <p>Connect with nature lovers around the world. Share your discoveries and respect the wild.</p>
 
           {/* Card decorativo com stats */}
           <div className="auth-right-card">

@@ -37,7 +37,7 @@ export default defineConfig(({ mode }) => {
     build: {
       outDir: 'dist',         // Pasta de output do build de produção
       sourcemap: false,       // Sem sourcemaps em produção (menor tamanho)
-      copyPublicDir: true     // Copia a pasta public/ para dist/
+      copyPublicDir: true,    // Copia a pasta public/ para dist/
     }
   }
 })
