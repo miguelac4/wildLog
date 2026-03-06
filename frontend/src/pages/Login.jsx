@@ -26,6 +26,9 @@ import { MEDIA_URLS } from '../config/mediaConfig'
 import SpotlightCard from '../components/SpotlightCard'
 import { Binoculars, Aperture, Handshake, Leaf, MapPin, HandHeart } from 'lucide-react'
 import '../styles/Auth.css'
+import { authService } from '../api/authService'
+import Snackbar from '@mui/material/Snackbar'
+import Alert from '@mui/material/Alert'
 
 /* Lista de cards — um é escolhido aleatoriamente a cada mount */
 const FEATURE_CARDS = [
@@ -41,7 +44,14 @@ function Login() {
   // Estado dos campos do formulário (controlled components)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [alertMessage, setAlertMessage] = useState('')
+  const [alertSeverity, setAlertSeverity] = useState('info') // Mostrar erros de login
+  const [isSubmitting, setIsSubmitting] = useState(false) // Para desabilitar o botão durante o submit
+
   const navigate = useNavigate()
+
+  const [successOpen, setSuccessOpen] = useState(false)
+  const [successMessage, setSuccessMessage] = useState('')
 
   /* Escolhe um card aleatório uma vez por mount (não muda com re-renders) */
   const randomCard = useMemo(() => FEATURE_CARDS[Math.floor(Math.random() * FEATURE_CARDS.length)], [])
@@ -50,14 +60,40 @@ function Login() {
    * Handler do submit do formulário.
    * preventDefault() evita o reload da página (comportamento default de forms HTML).
    */
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    console.log('Login:', { email, password })
-    // TODO: Chamar API de login e gerir autenticação
+
+    setAlertMessage('')
+    setIsSubmitting(true)
+
+    try {
+      await authService.login(email, password)
+
+      setSuccessMessage('Login successful! Redirecting...')
+      setSuccessOpen(true)
+
+      setTimeout(() => {
+        navigate('/app')
+      }, 1000)
+
+    } catch (error) {
+      if (error.status === 401) {
+        setAlertSeverity('warning')
+        setAlertMessage('Invalid email or password. Please try again.')
+        } else if (error.status === 403) {
+        setAlertSeverity('info')
+        setAlertMessage('Your account is not verified. Please check your email for the verification link.')
+      } else{
+        setAlertSeverity('error')
+        setAlertMessage('An unexpected error occurred. Please try again later.')      }
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
 
   return (
+      <>
     <div className="auth-page">
       {/* ===== LEFT PANEL: Formulário ===== */}
       <div className="auth-left">
@@ -99,6 +135,12 @@ function Login() {
               />
             </div>
 
+            {alertMessage && (
+                <Alert severity={alertSeverity} sx={{ mb: 2 }}>
+                  {alertMessage}
+                </Alert>
+            )}
+
             {/* Remember me + Forgot password */}
             <div className="form-extras">
               <label>
@@ -107,8 +149,8 @@ function Login() {
               <button type="button" className="forgot-link">Forgot password</button>
             </div>
 
-            <button type="submit" className="btn btn-submit">
-              Sign In
+            <button type="submit" className="btn btn-submit" disabled={isSubmitting}>
+              {isSubmitting ? 'Signing In...' : 'Sign In'}
             </button>
           </form>
 
@@ -141,7 +183,25 @@ function Login() {
         </div>
       </div>
     </div>
+
+    <Snackbar
+        open={successOpen}
+        autoHideDuration={1000}
+        onClose={() => setSuccessOpen(false)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+    >
+      <Alert
+          onClose={() => setSuccessOpen(false)}
+          severity="success"
+          variant="filled"
+          sx={{ width: '100%' }}
+      >
+        {successMessage}
+      </Alert>
+    </Snackbar>
+  </>
   )
+
 }
 
 export default Login
