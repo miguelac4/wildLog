@@ -24,6 +24,8 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { MEDIA_URLS } from '../config/mediaConfig'
+import SpotlightCard from '../components/SpotlightCard'
+import { Waypoints, Binoculars, ExternalLink} from 'lucide-react'
 import '../styles/Auth.css'
 
 function Register() {
@@ -174,32 +176,32 @@ function Register() {
         <div className="auth-right-content">
           <img src={MEDIA_URLS.logo} alt="WildLog" className="auth-right-logo" />
           <h2>Join WildLog</h2>
-          <p>Start your journey exploring and documenting wildlife with a passionate community.</p>
+          <p>Create your account and start discovering and sharing natural places with a community that respects the wild.</p>
 
-          {/* Card decorativo com features */}
-          <div className="auth-right-card">
+          {/* SpotlightCard decorativo com features */}
+          <SpotlightCard className="auth-right-card" spotlightColor="rgba(139, 115, 85, 0.25)">
             <div className="card-stat">
-              <div className="stat-icon">📷</div>
+              <div className="stat-icon"> <ExternalLink color="#9b805d" strokeWidth={1.75} /> </div>
               <div className="stat-info">
                 <span className="stat-number">Share</span>
-                <span className="stat-label">Your wildlife photos & videos</span>
+                <span className="stat-label">Post your favourite natural spots with photos and useful tips.</span>
               </div>
             </div>
             <div className="card-stat">
-              <div className="stat-icon">🗺️</div>
+              <div className="stat-icon"> <Binoculars color="#9B805D" strokeWidth={1.75} /> </div>
               <div className="stat-info">
                 <span className="stat-number">Discover</span>
-                <span className="stat-label">New species & locations</span>
+                <span className="stat-label">Find hidden places and campsites shared by the community.</span>
               </div>
             </div>
             <div className="card-stat">
-              <div className="stat-icon">🤝</div>
+              <div className="stat-icon"> <Waypoints color="#9b805d" strokeWidth={1.5} /> </div>
               <div className="stat-info">
                 <span className="stat-number">Connect</span>
-                <span className="stat-label">With nature enthusiasts</span>
+                <span className="stat-label">Join a community of campers and nature lovers who explore responsibly.</span>
               </div>
             </div>
-          </div>
+          </SpotlightCard>
         </div>
       </div>
     </div>

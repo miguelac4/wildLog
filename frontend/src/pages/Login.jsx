@@ -20,16 +20,31 @@
  *
  * TODO: Integrar com API backend (POST /api/auth/login)
  */
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { MEDIA_URLS } from '../config/mediaConfig'
+import SpotlightCard from '../components/SpotlightCard'
+import { Binoculars, Aperture, Handshake, Leaf, MapPin, HandHeart } from 'lucide-react'
 import '../styles/Auth.css'
+
+/* Lista de cards — um é escolhido aleatoriamente a cada mount */
+const FEATURE_CARDS = [
+  { Icon: Binoculars,  title: 'Discover Places',      text: 'Find hidden natural spots shared by the community and explore nature responsibly.' },
+  { Icon: Aperture,    title: 'Share Your Journey',    text: 'Post photos, locations and experiences from your adventures in the wild.' },
+  { Icon: Handshake,   title: 'Nature Community',      text: 'Connect with campers and explorers who share the same passion for nature.' },
+  { Icon: Leaf,        title: 'Respect Nature',        text: 'Promote responsible exploration and help protect the places we love.' },
+  { Icon: MapPin,      title: 'Learn & Inspire',       text: 'Discover new locations and inspire others to explore nature consciously.' },
+  { Icon: HandHeart,   title: 'Explore Responsibly',   text: 'Share and discover natural spaces while encouraging ethical outdoor practices.' },
+]
 
 function Login() {
   // Estado dos campos do formulário (controlled components)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const navigate = useNavigate()
+
+  /* Escolhe um card aleatório uma vez por mount (não muda com re-renders) */
+  const randomCard = useMemo(() => FEATURE_CARDS[Math.floor(Math.random() * FEATURE_CARDS.length)], [])
 
   /**
    * Handler do submit do formulário.
@@ -40,6 +55,7 @@ function Login() {
     console.log('Login:', { email, password })
     // TODO: Chamar API de login e gerir autenticação
   }
+
 
   return (
     <div className="auth-page">
@@ -114,30 +130,14 @@ function Login() {
           <h2>Welcome to WildLog</h2>
           <p>Connect with nature lovers around the world. Share your discoveries and respect the wild.</p>
 
-          {/* Card decorativo com stats */}
-          <div className="auth-right-card">
-            <div className="card-stat">
-              <div className="stat-icon">🌍</div>
-              <div className="stat-info">
-                <span className="stat-number">50+</span>
-                <span className="stat-label">Countries connected</span>
-              </div>
-            </div>
-            <div className="card-stat">
-              <div className="stat-icon">📸</div>
-              <div className="stat-info">
-                <span className="stat-number">10K+</span>
-                <span className="stat-label">Wildlife sightings</span>
-              </div>
-            </div>
-            <div className="card-stat">
-              <div className="stat-icon">🦎</div>
-              <div className="stat-info">
-                <span className="stat-number">2K+</span>
-                <span className="stat-label">Species catalogued</span>
-              </div>
-            </div>
-          </div>
+          {/* SpotlightCard — mostra um card aleatório a cada refresh */}
+          <SpotlightCard className="auth-right-card" spotlightColor="rgba(139, 115, 85, 0.25)">
+            <randomCard.Icon color="#9B805D" strokeWidth={1.75} size={40} />
+            <h3 className="spotlight-title">{randomCard.title}</h3>
+            <p className="spotlight-text">{randomCard.text}</p>
+          </SpotlightCard>
+
+
         </div>
       </div>
     </div>
