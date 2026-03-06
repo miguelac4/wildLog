@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../../includes/cors.php';
 ini_set('display_errors', '1');
 error_reporting(E_ALL);
 
