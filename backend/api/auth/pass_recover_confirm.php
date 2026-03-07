@@ -18,7 +18,7 @@ $token = trim((string)($_GET["token"] ?? ''));
 // TODO Ajustar URLs de redirecionamento para o frontend WildLog
 $frontendBase = "https://wild-log.com";
 $okRedirect   = $frontendBase . "/reset-password?token=" . urlencode($token);
-$errRedirect  = $frontendBase . "/reset-password?error=invalid_or_expired";
+$errRedirect  = $frontendBase . "/login?error=invalid_reset_link";
 
 if ($token === '' || !preg_match('/^[A-Za-z0-9\-_]{20,200}$/', $token)) {
     header("Location: $errRedirect", true, 302);
