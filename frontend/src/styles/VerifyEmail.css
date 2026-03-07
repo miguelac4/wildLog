@@ -1,0 +1,32 @@
+.verify-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    background: #f7f7f7;
+}
+
+.verify-card {
+    width: 100%;
+    max-width: 500px;
+    background: white;
+    padding: 2rem;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    text-align: center;
+}
+
+.verify-card h1 {
+    margin-bottom: 1rem;
+}
+
+.verify-card p {
+    margin-bottom: 1rem;
+}
+
+.verify-card a {
+    color: #2f6fed;
+    text-decoration: none;
+    font-weight: 600;
+}

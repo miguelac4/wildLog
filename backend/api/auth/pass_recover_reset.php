@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../../includes/cors.php';
 require_once __DIR__ . '/../../includes/api_error.php';
 $requestId = api_request_id();
 
