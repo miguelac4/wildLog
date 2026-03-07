@@ -7,6 +7,8 @@ import useLenis from './hooks/useLenis'
 import './App.css'
 import ProtectedRoute from './components/ProtectedRoute.jsx'
 import VerifyEmail from './pages/VerifyEmail'
+import ForgotPass from './pages/ForgotPass'
+import ResetPassword from './pages/ResetPassword'
 
 /**
  * Deteta o basename do Router com base no hostname.
@@ -23,6 +25,8 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
           <Route path="/verify-email" element={<VerifyEmail />} />
+          <Route path="/forgot-password" element={<ForgotPass />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
         <Route element={<ProtectedRoute />}>
           <Route path="/app" element={<Main />} />
         </Route>

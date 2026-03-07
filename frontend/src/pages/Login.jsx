@@ -29,6 +29,7 @@ import '../styles/Auth.css'
 import Snackbar from '@mui/material/Snackbar'
 import Alert from '@mui/material/Alert'
 import { useAuth } from '../hooks/useAuth'
+import { Link } from "react-router-dom"
 
 /* Lista de cards — um é escolhido aleatoriamente a cada mount */
 const FEATURE_CARDS = [
@@ -145,10 +146,10 @@ function Login() {
 
             {/* Remember me + Forgot password */}
             <div className="form-extras">
-              <label>
-                <input type="checkbox" /> Remember for 30 days
-              </label>
-              <button type="button" className="forgot-link">Forgot password</button>
+
+              <Link to="/forgot-password" className="forgot-link">
+                Forgot password
+              </Link>
             </div>
 
             <button type="submit" className="btn btn-submit" disabled={isSubmitting}>

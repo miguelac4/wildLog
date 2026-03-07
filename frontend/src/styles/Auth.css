@@ -465,4 +465,11 @@
     align-items: flex-start;
     gap: 6px;
   }
+
+  .link {
+    color: #8b7355;
+    font-weight: 600;
+    cursor: pointer;
+    transition: color 0.2s ease;
+  }
 }
