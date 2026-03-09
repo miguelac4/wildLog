@@ -66,7 +66,7 @@ try {
     ");
     $upd->execute([$name, $description, $id]);
 
-    // opcional: sincronizar a sessão
+    // sincronizar a sessão
     $_SESSION['user']['name'] = $name;
     $_SESSION['user']['description'] = $description;
 
