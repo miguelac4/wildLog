@@ -1,0 +1,571 @@
+openapi: 3.0.3
+info:
+  title: WildLog API - Account
+  version: 1.0.0
+  description: >
+    Account management endpoints for WildLog.
+    These endpoints allow the authenticated user to manage their own account,
+    including retrieving account data, editing profile information, changing avatar,
+    changing password, and deleting the account.
+servers:
+  - url: https://wild-log.com/backend/api
+    description: Production
+  - url: http://localhost:8000/api
+    description: Local
+
+tags:
+  - name: Account
+    description: Endpoints for authenticated account management
+
+components:
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: PHPSESSID
+
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          type: string
+          example: INTERNAL_ERROR
+        message:
+          type: string
+          example: Ocorreu um erro inesperado.
+        request_id:
+          type: string
+          example: 377b27080c24aad4
+      required:
+        - code
+        - message
+
+    Account:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 12
+        name:
+          type: string
+          example: João Silva
+        email:
+          type: string
+          format: email
+          example: joao@example.com
+        description:
+          type: string
+          nullable: true
+          example: Wildlife enthusiast and birdwatcher.
+        avatar:
+          type: string
+          nullable: true
+          example: upload/user/avatar/12/avatar.png
+        created_at:
+          type: string
+          format: date-time
+          example: 2026-03-09T12:15:00Z
+      required:
+        - id
+        - name
+        - email
+        - created_at
+
+    AccountResponse:
+      type: object
+      properties:
+        account:
+          $ref: '#/components/schemas/Account'
+      required:
+        - account
+
+    AccountInfoUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 50
+          example: João Silva
+        description:
+          type: string
+          nullable: true
+          maxLength: 255
+          example: Wildlife enthusiast and birdwatcher.
+      required:
+        - name
+
+    AccountInfoUpdateResponse:
+      type: object
+      properties:
+        account:
+          type: object
+          properties:
+            id:
+              type: integer
+              example: 12
+            name:
+              type: string
+              example: João Silva
+            description:
+              type: string
+              nullable: true
+              example: Wildlife enthusiast and birdwatcher.
+          required:
+            - id
+            - name
+      required:
+        - account
+
+    AvatarUpdateResponse:
+      type: object
+      properties:
+        account:
+          type: object
+          properties:
+            id:
+              type: integer
+              example: 12
+            avatar:
+              type: string
+              nullable: true
+              example: upload/user/avatar/12/avatar.png
+          required:
+            - id
+            - avatar
+      required:
+        - account
+
+    ChangePasswordRequest:
+      type: object
+      properties:
+        curr_password:
+          type: string
+          format: password
+          example: OldPassword123
+        new_password:
+          type: string
+          format: password
+          minLength: 8
+          example: NewPassword456
+        confirm_password:
+          type: string
+          format: password
+          minLength: 8
+          example: NewPassword456
+      required:
+        - curr_password
+        - new_password
+        - confirm_password
+
+    MessageResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Operação realizada com sucesso.
+      required:
+        - message
+
+    DeleteAccountRequest:
+      type: object
+      properties:
+        password:
+          type: string
+          format: password
+          example: MyCurrentPassword123
+        confirm_text:
+          type: string
+          example: DELETE
+      required:
+        - password
+        - confirm_text
+
+  responses:
+    Unauthorized:
+      description: Sessão inválida ou utilizador não autenticado
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            code: UNAUTHORIZED
+            message: Sessão inválida. Faça login.
+            request_id: 377b27080c24aad4
+
+    NotFound:
+      description: Conta não encontrada
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            code: NOT_FOUND
+            message: Conta não encontrada.
+            request_id: 377b27080c24aad4
+
+    MethodNotAllowed:
+      description: Método HTTP não permitido
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            code: METHOD_NOT_ALLOWED
+            message: Método não permitido.
+            request_id: 377b27080c24aad4
+
+    InternalError:
+      description: Erro interno inesperado
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            code: INTERNAL_ERROR
+            message: Ocorreu um erro inesperado.
+            request_id: 377b27080c24aad4
+
+security:
+  - sessionCookie: []
+
+paths:
+  /account/get_account.php:
+    get:
+      tags:
+        - Account
+      summary: Get authenticated account
+      description: Returns the account data of the currently authenticated user.
+      operationId: getAccount
+      responses:
+        '200':
+          description: Account retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountResponse'
+              example:
+                account:
+                  id: 12
+                  name: João Silva
+                  email: joao@example.com
+                  description: Wildlife enthusiast and birdwatcher.
+                  avatar: upload/user/avatar/12/avatar.png
+                  created_at: 2026-03-09T12:15:00Z
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /account/edit_account_info.php:
+    post:
+      tags:
+        - Account
+      summary: Edit account information
+      description: Updates the authenticated user's name and description.
+      operationId: editAccountInfo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountInfoUpdateRequest'
+            example:
+              name: João Silva
+              description: Wildlife enthusiast and birdwatcher.
+      responses:
+        '200':
+          description: Account information updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountInfoUpdateResponse'
+              example:
+                account:
+                  id: 12
+                  name: João Silva
+                  description: Wildlife enthusiast and birdwatcher.
+        '400':
+          description: Invalid request body or validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalidJson:
+                  summary: Invalid JSON body
+                  value:
+                    code: BAD_REQUEST
+                    message: Body JSON inválido.
+                    request_id: 377b27080c24aad4
+                invalidName:
+                  summary: Name validation failed
+                  value:
+                    code: BAD_REQUEST
+                    message: Nome deve ter no máximo 50 caracteres.
+                    request_id: 377b27080c24aad4
+                invalidDescription:
+                  summary: Description validation failed
+                  value:
+                    code: BAD_REQUEST
+                    message: Descrição deve ter no máximo 255 caracteres.
+                    request_id: 377b27080c24aad4
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /account/edit_avatar.php:
+    post:
+      tags:
+        - Account
+      summary: Edit account avatar
+      description: >
+        Uploads or replaces the authenticated user's avatar image.
+        Accepted formats are JPG, PNG, and WEBP, with a maximum size of 5 MB.
+      operationId: editAvatar
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                avatar:
+                  type: string
+                  format: binary
+                  description: Avatar image file
+              required:
+                - avatar
+      responses:
+        '200':
+          description: Avatar updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AvatarUpdateResponse'
+              example:
+                account:
+                  id: 12
+                  avatar: upload/user/avatar/12/avatar.png
+        '400':
+          description: Invalid file upload or validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                missingFile:
+                  summary: Missing avatar file
+                  value:
+                    code: BAD_REQUEST
+                    message: Ficheiro de avatar obrigatório.
+                    request_id: 377b27080c24aad4
+                uploadError:
+                  summary: Upload failed
+                  value:
+                    code: BAD_REQUEST
+                    message: Erro no upload do ficheiro.
+                    request_id: 377b27080c24aad4
+                fileTooLarge:
+                  summary: File too large
+                  value:
+                    code: BAD_REQUEST
+                    message: Ficheiro demasiado grande.
+                    request_id: 377b27080c24aad4
+                invalidMime:
+                  summary: Invalid file type
+                  value:
+                    code: BAD_REQUEST
+                    message: Tipo de ficheiro não permitido. Use JPG, PNG ou WEBP.
+                    request_id: 377b27080c24aad4
+                invalidUpload:
+                  summary: Invalid upload
+                  value:
+                    code: BAD_REQUEST
+                    message: Upload inválido.
+                    request_id: 377b27080c24aad4
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '500':
+          description: Internal server error or file storage error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                createDirectoryFailed:
+                  summary: Failed to create avatar directory
+                  value:
+                    code: INTERNAL_ERROR
+                    message: Falha ao criar diretoria de avatares.
+                    request_id: 377b27080c24aad4
+                saveFileFailed:
+                  summary: Failed to save image
+                  value:
+                    code: INTERNAL_ERROR
+                    message: Falha ao guardar a imagem.
+                    request_id: 377b27080c24aad4
+                generic:
+                  summary: Unexpected server error
+                  value:
+                    code: INTERNAL_ERROR
+                    message: Ocorreu um erro inesperado.
+                    request_id: 377b27080c24aad4
+
+  /account/change_password.php:
+    post:
+      tags:
+        - Account
+      summary: Change password
+      description: Changes the authenticated user's password after validating the current password.
+      operationId: changePassword
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangePasswordRequest'
+            example:
+              curr_password: OldPassword123
+              new_password: NewPassword456
+              confirm_password: NewPassword456
+      responses:
+        '200':
+          description: Password changed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+              example:
+                message: Palavra-passe alterada com sucesso.
+        '400':
+          description: Validation error or incorrect current password
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalidJson:
+                  summary: Invalid JSON body
+                  value:
+                    code: BAD_REQUEST
+                    message: Body JSON inválido.
+                    request_id: 377b27080c24aad4
+                missingFields:
+                  summary: Missing required fields
+                  value:
+                    code: BAD_REQUEST
+                    message: Palavra-passe atual, nova palavra-passe e confirmação são obrigatórias.
+                    request_id: 377b27080c24aad4
+                passwordMismatch:
+                  summary: Confirmation mismatch
+                  value:
+                    code: BAD_REQUEST
+                    message: A confirmação da nova palavra-passe não coincide.
+                    request_id: 377b27080c24aad4
+                weakPassword:
+                  summary: Password too short
+                  value:
+                    code: BAD_REQUEST
+                    message: A palavra-passe deve ter pelo menos 8 caracteres.
+                    request_id: 377b27080c24aad4
+                invalidPassword:
+                  summary: Incorrect current password
+                  value:
+                    code: INVALID_PASSWORD
+                    message: A palavra-passe atual está incorreta.
+                    request_id: 377b27080c24aad4
+                samePassword:
+                  summary: New password equals current password
+                  value:
+                    code: BAD_REQUEST
+                    message: A nova palavra-passe deve ser diferente da atual.
+                    request_id: 377b27080c24aad4
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /account/delete_account.php:
+    delete:
+      tags:
+        - Account
+      summary: Delete authenticated account
+      description: >
+        Permanently deletes the authenticated user's account after password validation
+        and explicit DELETE confirmation text.
+      operationId: deleteAccount
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeleteAccountRequest'
+            example:
+              password: MyCurrentPassword123
+              confirm_text: DELETE
+      responses:
+        '200':
+          description: Account deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+              example:
+                message: Conta eliminada com sucesso.
+        '400':
+          description: Validation error or incorrect password
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalidJson:
+                  summary: Invalid JSON body
+                  value:
+                    code: BAD_REQUEST
+                    message: Body JSON inválido.
+                    request_id: 377b27080c24aad4
+                missingFields:
+                  summary: Missing required fields
+                  value:
+                    code: BAD_REQUEST
+                    message: Palavra-passe e DELETE obrigatórios.
+                    request_id: 377b27080c24aad4
+                invalidConfirmText:
+                  summary: Invalid confirmation text
+                  value:
+                    code: BAD_REQUEST
+                    message: A confirmação DELETE não coincide.
+                    request_id: 377b27080c24aad4
+                invalidPassword:
+                  summary: Incorrect current password
+                  value:
+                    code: INVALID_PASSWORD
+                    message: A palavra-passe atual está incorreta.
+                    request_id: 377b27080c24aad4
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '500':
+          $ref: '#/components/responses/InternalError'
