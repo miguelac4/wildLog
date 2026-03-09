@@ -26,7 +26,7 @@ try {
     echo json_encode([
         'user' => [
             'id'    => (int)($user['id'] ?? 0),
-            'name'  => $user['name'] ?? '',
+            'username'  => $user['username'] ?? '',
             'email' => $user['email'] ?? '',
             'role'  => $user['role'] ?? ''
         ]

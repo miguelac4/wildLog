@@ -22,7 +22,7 @@ try {
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
     $stmt = $pdo->prepare("
-        SELECT id, name, email, description, avatar, created_at
+        SELECT id, username, name, email, description, avatar, created_at
         FROM users
         WHERE id = ?
     ");

@@ -26,7 +26,7 @@ try {
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
     // Buscar utilizador
-    $stmt = $pdo->prepare("SELECT id, name, email, password, role, email_verified_at FROM users WHERE email = ?");
+    $stmt = $pdo->prepare("SELECT id, username, email, password, role, email_verified_at FROM users WHERE email = ?");
     $stmt->execute([$email]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -42,7 +42,7 @@ try {
     $_SESSION["is_login"] = true;
     $_SESSION["user"] = [
         "id"           => (int)$user["id"],
-        "name"         => $user["name"],
+        "username"         => $user["username"],
         "email"        => $user["email"],
         "role"         => $user["role"],
     ];
@@ -50,7 +50,7 @@ try {
     echo json_encode([
         'user' => [
             'id'           => (int)$user['id'],
-            'name'         => $user['name'],
+            'username'         => $user['username'],
             'email'        => $user['email'],
             'role'         => $user['role']
         ]
