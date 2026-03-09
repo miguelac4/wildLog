@@ -16,6 +16,7 @@
  */
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import cesium from 'vite-plugin-cesium'
 
 export default defineConfig(({ mode }) => {
   // Por defeito, a app vive em /wildlog/ (subpasta no rh360.pt)
@@ -28,7 +29,7 @@ export default defineConfig(({ mode }) => {
 
   return {
     base,
-    plugins: [react()],       // Plugin oficial do React (JSX transform, Fast Refresh)
+    plugins: [react(), cesium()],       // Plugin oficial do React (JSX transform, Fast Refresh)
     publicDir: 'public',      // Pasta com ficheiros estáticos copiados tal como estão para dist/
     server: {
       port: 3000,             // Porta do servidor de desenvolvimento
