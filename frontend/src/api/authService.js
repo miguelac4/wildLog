@@ -2,11 +2,11 @@ import { apiFetch } from "./client";
 
 export const authService = {
 
-    register: async (name, email, password) => {
+    register: async (username, email, password) => {
         return apiFetch("/auth/register.php", {
             method: "POST",
             body: JSON.stringify({
-                name,
+                username,
                 email,
                 password
             })
