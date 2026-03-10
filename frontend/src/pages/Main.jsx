@@ -122,7 +122,8 @@ function Main() {
   const { user, logout } = useAuth()
 
   /* ── Estado ──────────────────────────────── */
-  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const isMobile = window.innerWidth <= 768
+  const [sidebarOpen, setSidebarOpen] = useState(!isMobile)
   const [selectedPost, setSelectedPost] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [activeView, setActiveView] = useState('explore')

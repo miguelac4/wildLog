@@ -48,7 +48,7 @@ function MainTopbar({
                         placeholder="Search places, people, tags…"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="main-search__input"
+                        className="main-search__input main-search__input--topbar"
                     />
                 </div>
             </div>

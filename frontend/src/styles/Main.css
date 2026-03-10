@@ -60,6 +60,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
+  min-width: 0;
 }
 
 .main-topbar__logo {
@@ -116,7 +117,8 @@
 
 /* ── Topbar Center (search) ── */
 .main-topbar__center {
-  flex: 1;
+  flex: 1 1 auto;
+  min-width: 0;
   display: flex;
   justify-content: center;
   max-width: 420px;
@@ -125,6 +127,7 @@
 
 .main-search--topbar {
   width: 100%;
+  min-width: 0;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -147,6 +150,7 @@
 
 .main-search__input {
   flex: 1;
+  min-width: 0;
   background: none;
   border: none;
   outline: none;
@@ -1013,25 +1017,71 @@
 /* Mobile */
 @media (max-width: 768px) {
   .main-topbar {
-    padding: 0 14px;
+    padding: 0 10px;
     height: 50px;
+    gap: 8px;
   }
 
-  .main-topbar__center {
-    max-width: 200px;
-    margin: 0 10px;
+  .main-topbar__left {
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .main-topbar__logo {
+    height: 28px;
   }
 
   .main-topbar__brand {
-    font-size: 1rem;
+    display: none;
   }
 
   .main-topbar__separator {
     display: none;
   }
 
-  .main-topbar__username {
+  .main-topbar__nav-btn {
+    padding: 6px 8px;
+    font-size: 0.76rem;
+    gap: 4px;
+  }
+
+  .main-topbar__center {
+    flex: 1;
+    min-width: 0;
+    max-width: none;
+    margin: 0;
+  }
+
+  .main-search--topbar {
+    padding: 5px 10px;
+    gap: 6px;
+  }
+
+  .main-search__icon {
+    width: 14px;
+    height: 14px;
+  }
+
+  .main-search__input--topbar {
+    font-size: 0.8rem;
+  }
+
+  .main-search__input--topbar::placeholder {
+    content: '';
+  }
+
+  .main-topbar__right {
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .main-topbar__user {
     display: none;
+  }
+
+  .main-topbar__action {
+    width: 32px;
+    height: 32px;
   }
 
   /* Sidebar vira overlay no mobile */
@@ -1052,7 +1102,6 @@
     width: 40px;
   }
 
-  /* Post panel ocupa mais espaço */
   .main-post-panel {
     padding: 12px;
     justify-content: center;
@@ -1090,20 +1139,41 @@
 /* Small mobile */
 @media (max-width: 480px) {
   .main-topbar {
-    padding: 0 10px;
+    padding: 0 8px;
     height: 46px;
+    gap: 6px;
   }
 
-  .main-topbar__center {
-    max-width: 160px;
+  .main-topbar__logo {
+    height: 24px;
+  }
+
+  .main-topbar__nav-btn {
+    padding: 5px 7px;
+    font-size: 0.72rem;
+  }
+
+  .main-topbar__nav-btn svg {
+    width: 12px;
+    height: 12px;
   }
 
   .main-search--topbar {
-    padding: 5px 10px;
+    padding: 4px 8px;
+    min-height: 32px;
   }
 
-  .main-search__input {
-    font-size: 0.8rem;
+  .main-search__input--topbar {
+    font-size: 0.78rem;
+  }
+
+  .main-search__input--topbar::placeholder {
+    color: transparent;
+  }
+
+  .main-topbar__action {
+    width: 30px;
+    height: 30px;
   }
 
   .main-sidebar--open {
