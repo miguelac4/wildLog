@@ -7,7 +7,7 @@
  *   2. Reset CSS universal (* { margin: 0; ... })
  *   3. Estilos base do body e #root
  *
- * Fonte usada: "Figtree" — fonte moderna e legível para UI
+ * Fonte usada: "Figtree"
  * https://fonts.google.com/specimen/Figtree
  */
 
@@ -56,17 +56,20 @@ html.lenis {
 /* Estilos base do body */
 body {
   font-family: 'Figtree', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+  sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background: #080e0b;
-  min-height: 100vh;
+  min-height: 100dvh;
   overflow-x: hidden;
+
+  /* Evita bounce scroll e conflitos de gesto no mobile */
+  overscroll-behavior: none;
 }
 
 /* Container raiz do React */
 #root {
-  min-height: 100vh;
+  min-height: 100dvh;
   overflow-x: hidden;
 }
