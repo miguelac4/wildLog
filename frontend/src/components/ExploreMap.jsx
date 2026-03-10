@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { MapPin, Compass } from 'lucide-react'
+import 'cesium/Build/Cesium/Widgets/widgets.css'
 
 function ExploreMap({ posts, regions, onPostClick, activeView }) {
     const [globeReady, setGlobeReady] = useState(false)
@@ -27,6 +28,8 @@ function ExploreMap({ posts, regions, onPostClick, activeView }) {
         setGlobeReady(false)
         let destroyed = false
         let handler = null
+
+        window.CESIUM_BASE_URL = `${import.meta.env.BASE_URL}cesium/`
 
         import('cesium').then((Cesium) => {
             if (destroyed || !cesiumContainerRef.current) return
@@ -60,7 +63,7 @@ function ExploreMap({ posts, regions, onPostClick, activeView }) {
                 viewer.entities.add({
                     position: Cesium.Cartesian3.fromDegrees(post.lng, post.lat),
                     billboard: {
-                        image: Cesium.buildModuleUrl('Assets/Textures/maki/marker.png'),
+                        image: `${window.CESIUM_BASE_URL}Assets/Textures/maki/marker.png`,
                         width: 32,
                         height: 32,
                         verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
@@ -137,6 +140,9 @@ function ExploreMap({ posts, regions, onPostClick, activeView }) {
                 }
             }, 0)
         })
+            .catch((err) => {
+                console.error('Erro ao carregar Cesium:', err)
+            })
 
         return () => {
             destroyed = true

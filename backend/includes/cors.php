@@ -6,6 +6,7 @@ $allowedOrigins = [
     'http://localhost:3001',
     'http://127.0.0.1:3001',
     'https://wild-log.com',
+    'https://rh360.pt',
 ];
 
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
