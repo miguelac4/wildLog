@@ -132,7 +132,14 @@ function Register() {
     } catch (error) {
       if (error.status === 409) {
         setAlertSeverity('warning')
-        setAlertMessage('This email is already registered.')
+
+        if (error.code === 'USERNAME_TAKEN') {
+          setAlertMessage('This username is already in use.')
+        } else if (error.code === 'CONFLICT') {
+          setAlertMessage('This email is already registered.')
+        } else {
+          setAlertMessage(error.message || 'Conflict detected.')
+        }
       } else if (error.status === 400) {
         setAlertSeverity('info')
         setAlertMessage(error.message || 'Please review the form fields.')
