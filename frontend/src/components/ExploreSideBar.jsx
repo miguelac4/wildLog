@@ -8,6 +8,7 @@ import {
     Heart,
     MessageCircle,
 } from 'lucide-react'
+import useLenisContainer from '../hooks/useLenisContainer'
 
 function ExploreSidebar({
                             sidebarOpen,
@@ -17,6 +18,13 @@ function ExploreSidebar({
                             onPostClick,
                             regions,
                         }) {
+
+    const sidebarListRef = useLenisContainer({
+        lerp: 0.09,
+        duration: 1.2,
+        wheelMultiplier: 0.7,
+    })
+
     return (
         <aside className={`main-sidebar ${sidebarOpen ? 'main-sidebar--open' : 'main-sidebar--closed'}`}>
             <button
@@ -37,7 +45,7 @@ function ExploreSidebar({
                         <span className="main-sidebar__count">{filteredPosts.length} spots</span>
                     </div>
 
-                    <div className="main-sidebar__list">
+                    <div className="main-sidebar__list" ref={sidebarListRef}>
                         {filteredPosts.map((post) => (
                             <button
                                 key={post.id}

@@ -1,8 +1,11 @@
 import { Heart, MessageCircle, Search } from 'lucide-react'
+import useLenisContainer from '../hooks/useLenisContainer'
 
 function FeedView({ posts, onViewPost }) {
+    const feedRef = useLenisContainer()
+
     return (
-        <div className="main-feed">
+        <div className="main-feed" ref={feedRef}>
             <div className="main-feed__container">
                 <div className="main-feed__header">
                     <h2>Community Feed</h2>
