@@ -2,13 +2,49 @@ import { useState, useRef, useEffect } from 'react'
 import { MapPin, Compass } from 'lucide-react'
 import 'cesium/Build/Cesium/Widgets/widgets.css'
 
-function ExploreMap({ posts, regions, onPostClick, activeView }) {
+function ExploreMap({ posts, regions, onPostClick, activeView, flyToTarget, onFlyComplete }) {
     const [globeReady, setGlobeReady] = useState(false)
 
     const cesiumContainerRef = useRef(null)
     const viewerRef = useRef(null)
     const coordsRef = useRef(null)
     const cursorCoordsRef = useRef(null)
+
+    /**
+     * FlyTo — reage a mudanças de flyToTarget para reposicionar o mapa.
+     *
+     * Desktop: zoom suave e ligeiro (altitude ~400km)
+     * Mobile:  zoom mais intencional (altitude ~150km) para dar foco ao local
+     */
+    useEffect(() => {
+        if (!flyToTarget) return
+
+        const viewer = viewerRef.current
+        if (!viewer || viewer.isDestroyed()) return
+
+        import('cesium').then((Cesium) => {
+            const altitude = flyToTarget.isMobile ? 150_000 : 400_000
+            const duration = flyToTarget.isMobile ? 1.8 : 1.5
+
+            viewer.camera.flyTo({
+                destination: Cesium.Cartesian3.fromDegrees(
+                    flyToTarget.lng,
+                    flyToTarget.lat,
+                    altitude,
+                ),
+                orientation: {
+                    heading: Cesium.Math.toRadians(0),
+                    pitch: Cesium.Math.toRadians(-90),
+                    roll: 0,
+                },
+                duration,
+                easingFunction: Cesium.EasingFunction.CUBIC_IN_OUT,
+                complete: () => {
+                    if (onFlyComplete) onFlyComplete()
+                },
+            })
+        })
+    }, [flyToTarget, onFlyComplete])
 
     useEffect(() => {
         if (activeView !== 'explore') {

@@ -16,7 +16,7 @@
  * - FeedView
  * - PostDetailPanel
  */
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import '../styles/Main.css'
@@ -25,6 +25,8 @@ import PostDetailPanel from '../components/PostDetailPanel'
 import MainTopbar from '../components/MainTopbar'
 import ExploreSidebar from '../components/ExploreSidebar'
 import ExploreMap from '../components/ExploreMap'
+
+const MOBILE_BREAKPOINT = 768
 
 /* ══════════════════════════════════════════
    DADOS MOCKADOS
@@ -122,12 +124,30 @@ function Main() {
   const { user, logout } = useAuth()
 
   /* ── Estado ──────────────────────────────── */
-  const isMobile = window.innerWidth <= 768
-  const [sidebarOpen, setSidebarOpen] = useState(!isMobile)
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth <= MOBILE_BREAKPOINT)
+  const [sidebarOpen, setSidebarOpen] = useState(() => window.innerWidth > MOBILE_BREAKPOINT)
   const [selectedPost, setSelectedPost] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [activeView, setActiveView] = useState('explore')
 
+  /**
+   * flyToTarget — coordenadas para onde o mapa deve voar.
+   * Estrutura: { lat, lng, isMobile } | null
+   * Sempre que muda, o ExploreMap faz flyTo para esse ponto.
+   * Usa um id único para garantir reatividade mesmo ao clicar
+   * duas vezes no mesmo post.
+   */
+  const [flyToTarget, setFlyToTarget] = useState(null)
+
+  /* ── Deteção responsiva de mobile ───────── */
+  useEffect(() => {
+    const onResize = () => {
+      const mobile = window.innerWidth <= MOBILE_BREAKPOINT
+      setIsMobile(mobile)
+    }
+    window.addEventListener('resize', onResize)
+    return () => window.removeEventListener('resize', onResize)
+  }, [])
 
   /* ── Filtro de pesquisa ──────────────────── */
   const filteredPosts = MOCK_POSTS.filter((post) => {
@@ -146,8 +166,31 @@ function Main() {
     setActiveView(view)
   }
 
+  /**
+   * handlePostClick — handler unificado para clique em pin ou post da sidebar.
+   *
+   * 1. Define o post selecionado
+   * 2. Dispara flyTo no mapa (com nível de zoom adequado a desktop/mobile)
+   * 3. No mobile, fecha a sidebar para revelar o mapa
+   */
   const handlePostClick = useCallback((post) => {
     setSelectedPost(post)
+
+    setFlyToTarget({
+      lat: post.lat,
+      lng: post.lng,
+      isMobile,
+      _id: Date.now(), // garante reatividade ao re-clicar no mesmo post
+    })
+
+    // Mobile: fechar sidebar para dar foco ao mapa + painel
+    if (isMobile) {
+      setSidebarOpen(false)
+    }
+  }, [isMobile])
+
+  const handleFlyComplete = useCallback(() => {
+    setFlyToTarget(null)
   }, [])
 
   const handleClosePost = useCallback(() => {
@@ -196,6 +239,8 @@ function Main() {
                   regions={MOCK_LOCKED_REGIONS}
                   onPostClick={handlePostClick}
                   activeView={activeView}
+                  flyToTarget={flyToTarget}
+                  onFlyComplete={handleFlyComplete}
               />
             </>
         ) : (
