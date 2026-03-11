@@ -1,7 +1,25 @@
-import { X, Camera, Heart, MessageCircle, MapPin } from 'lucide-react'
+import { X, Camera, Heart, MessageCircle, MapPin, ChevronLeft, ChevronRight } from 'lucide-react'
+import { useState, useEffect } from 'react'
 
 function PostDetailPanel({ post, onClose }) {
     if (!post) return null
+
+    const [imageIndex, setImageIndex] = useState(0)
+
+    const images = post.images || (post.image ? [post.image] : [])
+
+
+    useEffect(() => {
+        setImageIndex(0)
+    }, [post])
+
+    const prevImage = () => {
+        setImageIndex((i) => (i === 0 ? images.length - 1 : i - 1))
+    }
+
+    const nextImage = () => {
+        setImageIndex((i) => (i === images.length - 1 ? 0 : i + 1))
+    }
 
     return (
         <div className="main-post-panel">
@@ -12,8 +30,48 @@ function PostDetailPanel({ post, onClose }) {
                 </button>
 
                 <div className="main-post-panel__image">
-                    {post.image ? (
-                        <img src={post.image} alt={post.title} />
+                    {images.length > 0 ? (
+                        <>
+                            <img src={images[imageIndex]} alt={post.title} />
+
+                            {images.length > 1 && (
+                                <div className="main-post-panel__dots">
+                                    {images.map((_, index) => (
+                                        <span
+                                            key={index}
+                                            className={`main-post-panel__dot ${
+                                                index === imageIndex ? 'main-post-panel__dot--active' : ''
+                                            }`}
+                                            onClick={() => setImageIndex(index)}
+                                        />
+                                    ))}
+                                </div>
+                            )}
+
+                            {images.length > 1 && (
+                                <>
+                                    <button
+                                        className="main-post-panel__nav main-post-panel__nav--left"
+                                        onClick={(e) => {
+                                            e.stopPropagation()
+                                            prevImage()
+                                        }}
+                                    >
+                                        <ChevronLeft size={20} />
+                                    </button>
+
+                                    <button
+                                        className="main-post-panel__nav main-post-panel__nav--right"
+                                        onClick={(e) => {
+                                            e.stopPropagation()
+                                            nextImage()
+                                        }}
+                                    >
+                                        <ChevronRight size={20} />
+                                    </button>
+                                </>
+                            )}
+                        </>
                     ) : (
                         <div className="main-post-panel__image-placeholder">
                             <Camera size={40} />
