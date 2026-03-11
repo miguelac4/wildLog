@@ -18,6 +18,14 @@ function PostCard({ post, onOpen, onFavorite, isActive }) {
                 <span className="swipe-card__date">{post.createdAt}</span>
             </div>
 
+            {/* Images */}
+            {(post.images?.length || post.image) && (
+                <div className="swipe-card__image">
+                    <img src={post.images?.[0] || post.image} alt={post.title} />
+                </div>
+            )}
+
+
             {/* Title */}
             <h3 className="swipe-card__title">{post.title}</h3>
 
