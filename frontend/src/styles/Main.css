@@ -818,6 +818,90 @@
   width: 100%;
   gap: 20px;
   padding-bottom: 20px;
+  position: relative;
+}
+
+/* ── Screen-edge swipe indicators ── */
+.swipe-deck__indicators {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.swipe-indicator {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 140px;
+  display: flex;
+  align-items: center;
+  opacity: 0;
+  transition: opacity 0.08s ease-out;
+}
+
+.swipe-indicator--left {
+  left: 0;
+  justify-content: flex-start;
+}
+
+.swipe-indicator--right {
+  right: 0;
+  justify-content: flex-end;
+}
+
+/* Edge glow gradient */
+.swipe-indicator__glow {
+  position: absolute;
+  inset: 0;
+}
+
+.swipe-indicator--left .swipe-indicator__glow {
+  background: linear-gradient(
+    to right,
+    rgba(255, 100, 100, 0.20) 0%,
+    rgba(255, 100, 100, 0.08) 40%,
+    transparent 100%
+  );
+}
+
+.swipe-indicator--right .swipe-indicator__glow {
+  background: linear-gradient(
+    to left,
+    rgba(155, 128, 93, 0.16) 0%,
+    rgba(155, 128, 93, 0.06) 40%,
+    transparent 100%
+  );
+}
+
+/* Label with icon + text */
+.swipe-indicator__label {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 16px;
+}
+
+.swipe-indicator--left .swipe-indicator__label {
+  color: rgba(255, 100, 100, 0.85);
+  margin-left: 18px;
+}
+
+.swipe-indicator--right .swipe-indicator__label {
+  color: #C8A97E;
+  margin-right: 18px;
+}
+
+.swipe-indicator__label span {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .swipe-deck__stack {
@@ -908,49 +992,6 @@
 
 .swipe-card--active {
   border-color: rgba(255, 255, 255, 0.10);
-}
-
-/* ── Swipe hint overlays ── */
-.swipe-card__hint {
-  position: absolute;
-  top: 18px;
-
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-
-  padding: 6px 12px;
-
-  border-radius: 10px;
-
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.8px;
-  text-transform: uppercase;
-
-  white-space: nowrap;
-
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.12s ease;
-
-  z-index: 5;
-}
-
-.swipe-card__hint--like {
-  right: 20px;
-  color: #9B805D;
-  border: 2.5px solid #9B805D;
-  background: rgba(155, 128, 93, 0.1);
-  opacity: var(--hint-like-opacity, 0);
-}
-
-.swipe-card__hint--skip {
-  left: 20px;
-  color: rgba(255, 100, 100, 0.85);
-  border: 2.5px solid rgba(255, 100, 100, 0.6);
-  background: rgba(255, 100, 100, 0.08);
-  opacity: var(--hint-skip-opacity, 0);
 }
 
 /* ── Card content ── */
@@ -1481,6 +1522,15 @@
     height: 380px;
   }
 
+  /* Edge indicators: glow only, no labels */
+  .swipe-indicator {
+    width: 60px;
+  }
+
+  .swipe-indicator__label {
+    display: none;
+  }
+
   .swipe-card {
     padding: 20px 18px 16px;
     border-radius: 18px;
@@ -1584,6 +1634,10 @@
   /* Swipe deck small mobile */
   .swipe-deck__stack {
     height: 350px;
+  }
+
+  .swipe-indicator {
+    width: 40px;
   }
 
   .swipe-card {

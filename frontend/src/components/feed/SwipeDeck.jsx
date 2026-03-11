@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
+import { Star, X } from 'lucide-react'
 import PostCard from './PostCard'
 import SwipeControls from './SwipeControls'
 
@@ -119,8 +120,40 @@ function SwipeDeck({ posts, onViewPost, onFavorite, onSkip }) {
     // Compute hint opacity based on drag
     const hintProgress = Math.min(Math.abs(dragState.x) / SWIPE_THRESHOLD, 1)
 
+    // Compute indicator opacity: 0 when idle, ramps up with drag distance
+    const skipOpacity  = dragState.x < 0 ? hintProgress : 0
+    const favOpacity   = dragState.x > 0 ? hintProgress : 0
+
     return (
         <div className="swipe-deck">
+
+            {/* ── Screen-edge swipe indicators ── */}
+            <div className="swipe-deck__indicators" aria-hidden="true">
+                {/* Left edge — Skip */}
+                <div
+                    className="swipe-indicator swipe-indicator--left"
+                    style={{ opacity: skipOpacity }}
+                >
+                    <div className="swipe-indicator__glow" />
+                    <div className="swipe-indicator__label">
+                        <X size={30} />
+                        <span>Skip</span>
+                    </div>
+                </div>
+
+                {/* Right edge — Favorite */}
+                <div
+                    className="swipe-indicator swipe-indicator--right"
+                    style={{ opacity: favOpacity }}
+                >
+                    <div className="swipe-indicator__glow" />
+                    <div className="swipe-indicator__label">
+                        <Star size={30} />
+                        <span>Favorite</span>
+                    </div>
+                </div>
+            </div>
+
             <div className="swipe-deck__stack">
                 {isEmpty ? (
                     <div className="swipe-deck__done">
