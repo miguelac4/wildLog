@@ -1,4 +1,4 @@
-import { Heart, MessageCircle, Star, Eye } from 'lucide-react'
+import { Heart, MessageCircle, Star, Eye, SkipBack} from 'lucide-react'
 
 /**
  * PostCard — A single swipe card displaying post information.
@@ -14,10 +14,11 @@ function PostCard({ post, onOpen, onFavorite, isActive }) {
         <div className={`swipe-card ${isActive ? 'swipe-card--active' : ''}`}>
             {/* Swipe hint overlays */}
             <div className="swipe-card__hint swipe-card__hint--like">
-                <Star size={40} />
+                <Star size={18} />
                 <span>Favorite</span>
             </div>
             <div className="swipe-card__hint swipe-card__hint--skip">
+                <SkipBack size={18} />
                 <span>Skip</span>
             </div>
 

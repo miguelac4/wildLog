@@ -913,19 +913,27 @@
 /* ── Swipe hint overlays ── */
 .swipe-card__hint {
   position: absolute;
-  top: 20px;
-  display: flex;
+  top: 18px;
+
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 20px;
-  border-radius: 14px;
-  font-size: 1rem;
+  gap: 6px;
+
+  padding: 6px 12px;
+
+  border-radius: 10px;
+
+  font-size: 0.75rem;
   font-weight: 700;
-  letter-spacing: 1px;
+  letter-spacing: 0.8px;
   text-transform: uppercase;
+
+  white-space: nowrap;
+
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.1s ease;
+  transition: opacity 0.12s ease;
+
   z-index: 5;
 }
 
