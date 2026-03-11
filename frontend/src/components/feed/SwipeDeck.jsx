@@ -228,13 +228,6 @@ function SwipeDeck({ posts, onViewPost, onFavorite, onSkip }) {
                 )}
             </div>
 
-            {/* Card counter */}
-            {!isEmpty && (
-                <div className="swipe-deck__counter">
-                    {currentIndex + 1} / {posts.length}
-                </div>
-            )}
-
             <SwipeControls
                 onSkip={handleSkipBtn}
                 onFavorite={handleFavoriteBtn}

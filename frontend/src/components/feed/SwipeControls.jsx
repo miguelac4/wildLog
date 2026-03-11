@@ -29,7 +29,7 @@ function SwipeControls({ onSkip, onFavorite, onComment, disabled }) {
                 disabled={disabled}
                 title="Comment"
             >
-                <MessageCircle size={20} />
+                <MessageCircle size={22} />
             </button>
 
             <button
