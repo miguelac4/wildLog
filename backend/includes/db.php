@@ -12,13 +12,13 @@ use Dotenv\Dotenv;
 
 $loaded = false;
 
-// 1️⃣ Docker (volume montado em /var/www/private_wildlog)
+// Docker (volume montado em /var/www/private_wildlog)
 if (is_dir('/var/www/private_wildlog') && file_exists('/var/www/private_wildlog/.env.local')) {
     Dotenv::createImmutable('/var/www/private_wildlog', '.env.local')->load();
     $loaded = true;
 }
 
-// 2️⃣ Servidor cPanel (fora do public_html)
+// Servidor cPanel (fora do public_html)
 if (!$loaded) {
     $privateDir = '/home/' . get_current_user() . '/private_wildlog';
 

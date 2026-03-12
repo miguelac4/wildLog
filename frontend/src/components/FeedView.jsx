@@ -1,56 +1,50 @@
-import { Heart, MessageCircle, Search } from 'lucide-react'
+import { Search } from 'lucide-react'
 import useLenisContainer from '../hooks/useLenisContainer'
+import SwipeDeck from './feed/SwipeDeck'
 
+/**
+ * FeedView — Layout container for the Community Feed.
+ *
+ * Renders a header and delegates post rendering to SwipeDeck.
+ *
+ * Props:
+ *   posts       — filtered array of post objects
+ *   onViewPost  — callback when user opens/views a post
+ */
 function FeedView({ posts, onViewPost }) {
     const feedRef = useLenisContainer()
 
+    const handleFavorite = (post) => {
+        // TODO: integrate with API — POST /api/posts/:id/favorite
+        console.log('Favorited:', post.title)
+    }
+
+    const handleSkip = (post) => {
+        // TODO: optional analytics or dismiss logic
+        console.log('Skipped:', post.title)
+    }
+
     return (
         <div className="main-feed" ref={feedRef}>
-            <div className="main-feed__container">
+            <div className="main-feed__container main-feed__container--swipe">
                 <div className="main-feed__header">
                     <h2>Community Feed</h2>
                     <p>Discover the latest posts shared by the WildLog community.</p>
                 </div>
 
-                <div className="main-feed__list">
-                    {posts.map((post) => (
-                        <article key={post.id} className="main-feed-card">
-                            <div className="main-feed-card__meta">
-                                <span>@{post.author}</span>
-                                <span>{post.createdAt}</span>
-                            </div>
-
-                            <h3 className="main-feed-card__title">{post.title}</h3>
-                            <p className="main-feed-card__desc">{post.description}</p>
-
-                            <div className="main-feed-card__tags">
-                                {post.tags.map((tag) => (
-                                    <span key={tag} className="main-feed-card__tag">#{tag}</span>
-                                ))}
-                            </div>
-
-                            <div className="main-feed-card__footer">
-                                <span><Heart size={14} /> {post.likes}</span>
-                                <span><MessageCircle size={14} /> {post.comments}</span>
-
-                                <button
-                                    type="button"
-                                    className="main-feed-card__view-btn"
-                                    onClick={() => onViewPost(post)}
-                                >
-                                    View post
-                                </button>
-                            </div>
-                        </article>
-                    ))}
-
-                    {posts.length === 0 && (
-                        <div className="main-sidebar__empty">
-                            <Search size={32} />
-                            <p>No posts found</p>
-                        </div>
-                    )}
-                </div>
+                {posts.length === 0 ? (
+                    <div className="main-sidebar__empty">
+                        <Search size={32} />
+                        <p>No posts found</p>
+                    </div>
+                ) : (
+                    <SwipeDeck
+                        posts={posts}
+                        onViewPost={onViewPost}
+                        onFavorite={handleFavorite}
+                        onSkip={handleSkip}
+                    />
+                )}
             </div>
         </div>
     )
