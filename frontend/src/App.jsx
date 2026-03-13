@@ -9,6 +9,9 @@ import ProtectedRoute from './components/ProtectedRoute.jsx'
 import VerifyEmail from './pages/VerifyEmail'
 import ForgotPass from './pages/ForgotPass'
 import ResetPassword from './pages/ResetPassword'
+import { useState } from 'react'
+import { AnimatePresence } from 'framer-motion'
+import IntroLogo from './components/intro/IntroLogo'
 
 /**
  * Deteta o basename do Router com base no hostname.
@@ -19,7 +22,17 @@ import ResetPassword from './pages/ResetPassword'
 function App() {
   useLenis()
 
+  const [showIntro, setShowIntro] = useState(true)
+
   return (
+    <>
+      {/* Cinematic intro overlay — plays once on app load */}
+      <AnimatePresence>
+        {showIntro && (
+          <IntroLogo onComplete={() => setShowIntro(false)} />
+        )}
+      </AnimatePresence>
+
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
@@ -31,6 +44,7 @@ function App() {
           <Route path="/app" element={<Main />} />
         </Route>
       </Routes>
+    </>
   )
 }
 

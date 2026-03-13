@@ -13,6 +13,7 @@
     "@emotion/styled": "^11.14.1",
     "@mui/material": "^7.3.9",
     "cesium": "^1.139.1",
+    "framer-motion": "^12.36.0",
     "lenis": "^1.1.18",
     "lucide-react": "^0.577.0",
     "react": "^18.2.0",
