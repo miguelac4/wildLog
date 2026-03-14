@@ -646,6 +646,9 @@
   overflow: auto;
   overscroll-behavior: contain;
   padding: 28px 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   background:
           radial-gradient(circle at top, rgba(139, 115, 85, 0.08), transparent 28%),
           linear-gradient(180deg, rgba(10, 20, 16, 0.96) 0%, #060d09 100%);
@@ -670,10 +673,15 @@
   width: 100%;
   max-width: 920px;
   margin: 0 auto;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .main-feed__header {
   margin-bottom: 24px;
+  flex-shrink: 0;
 }
 
 .main-feed__header h2 {
@@ -807,7 +815,31 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  max-width: 480px;
+  max-width: 520px;
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+}
+
+/* When in swipe mode, the feed should not scroll — the deck handles navigation */
+.main-feed:has(.main-feed__container--swipe) {
+  overflow: hidden;
+  padding: 16px 20px 12px;
+}
+
+/* Compact header in swipe mode */
+.main-feed__container--swipe .main-feed__header {
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.main-feed__container--swipe .main-feed__header h2 {
+  font-size: 1.5rem;
+  margin-bottom: 4px;
+}
+
+.main-feed__container--swipe .main-feed__header p {
+  font-size: 0.85rem;
 }
 
 /* SWIPE DECK */
@@ -816,8 +848,10 @@
   flex-direction: column;
   align-items: center;
   width: 100%;
-  gap: 20px;
-  padding-bottom: 20px;
+  flex: 1;
+  min-height: 0;
+  gap: 8px;
+  padding-bottom: 12px;
   position: relative;
 }
 
@@ -909,7 +943,8 @@
   position: relative;
   width: 100%;
   max-width: 420px;
-  height: 550px;
+  flex: 1;
+  min-height: 0;
   perspective: 1000px;
 }
 
@@ -919,6 +954,7 @@
   top: 0;
   left: 0;
   width: 100%;
+  height: 100%;
   cursor: grab;
   will-change: transform;
 }
@@ -933,6 +969,7 @@
   color: rgba(255, 255, 255, 0.35);
   letter-spacing: 1px;
   font-weight: 500;
+  flex-shrink: 0;
 }
 
 /* ── Empty / Done state ── */
@@ -972,13 +1009,55 @@
   color: #fff;
 }
 
+/* ── Scroll navigation row (prev + next, side by side) ── */
+.swipe-deck__nav-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.swipe-deck__scroll-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.45);
+  cursor: pointer;
+  transition: all 0.25s ease;
+  flex-shrink: 0;
+}
+
+.swipe-deck__scroll-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.swipe-deck__scroll-btn:disabled {
+  opacity: 0.22;
+  cursor: default;
+  pointer-events: none;
+}
+
+/* ── Card wrapper scroll transition ── */
+.swipe-deck__card-wrapper--scrolling {
+  pointer-events: none;
+}
+
 /* SWIPE CARD (PostCard) */
 .swipe-card {
   width: 100%;
+  height: 100%;
   background: rgba(12, 20, 16, 0.95);
   border: 1px solid rgba(255, 255, 255, 0.07);
   border-radius: 22px;
-  padding: 24px 24px 20px;
+  padding: 20px 22px 16px;
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   box-shadow:
@@ -993,15 +1072,17 @@
 
 .swipe-card--active {
   border-color: rgba(255, 255, 255, 0.10);
+  cursor: pointer;
 }
 
 /* ── Card image preview ── */
 .swipe-card__image {
   width: 100%;
-  height: 220px;
+  flex: 1 1 0;
+  min-height: 80px;
   border-radius: 14px;
   overflow: hidden;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
   background: #0a1f14;
 }
 
@@ -1018,7 +1099,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 14px;
+  margin-bottom: 10px;
+  flex-shrink: 0;
 }
 
 .swipe-card__author {
@@ -1033,30 +1115,32 @@
 }
 
 .swipe-card__title {
-  margin: 0 0 12px 0;
-  font-size: 1.25rem;
+  margin: 0 0 8px 0;
+  font-size: 1.15rem;
   font-weight: 700;
   color: #fff;
   line-height: 1.35;
+  flex-shrink: 0;
 }
 
 .swipe-card__desc {
-  margin: 0 0 16px 0;
-  font-size: 0.92rem;
-  line-height: 1.7;
+  margin: 0 0 10px 0;
+  font-size: 0.88rem;
+  line-height: 1.6;
   color: rgba(255, 255, 255, 0.6);
-  /* Limit lines for consistent card height */
   display: -webkit-box;
-  -webkit-line-clamp: 4;
+  -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  flex-shrink: 0;
 }
 
 .swipe-card__tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 18px;
+  gap: 6px;
+  margin-bottom: 12px;
+  flex-shrink: 0;
 }
 
 .swipe-card__tag {
@@ -1073,9 +1157,10 @@
   display: flex;
   align-items: center;
   gap: 18px;
-  padding-top: 14px;
+  padding-top: 10px;
   border-top: 1px solid rgba(255, 255, 255, 0.06);
-  margin-bottom: 16px;
+  margin-bottom: 12px;
+  flex-shrink: 0;
 }
 
 .swipe-card__stat {
@@ -1092,6 +1177,7 @@
   align-items: center;
   justify-content: center;
   gap: 12px;
+  flex-shrink: 0;
 }
 
 .swipe-card__action-btn {
@@ -1138,6 +1224,7 @@
   align-items: center;
   justify-content: center;
   gap: 24px;
+  flex-shrink: 0;
 }
 
 .swipe-controls__btn {
@@ -1228,7 +1315,7 @@
   position: relative;
   z-index: 2;
   width: 100%;
-  max-width: 420px;
+  max-width: 580px;
   max-height: calc(100vh - 48px);
   background: rgba(12, 21, 17, 0.95);
   backdrop-filter: blur(20px);
@@ -1236,6 +1323,9 @@
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 20px;
   overflow-y: auto;
+  scroll-behavior: smooth;
+  display: flex;
+  flex-direction: column;
   animation: panelSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 
   /* Scrollbar */
@@ -1260,35 +1350,45 @@
 /* Close button */
 .main-post-panel__close {
   position: absolute;
-  top: 16px;
-  right: 16px;
+  top: 14px;
+  right: 14px;
   z-index: 5;
-  width: 36px;
-  height: 36px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
-  background: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.7);
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.75);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.25s ease;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
 }
 
 .main-post-panel__close:hover {
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.55);
+  border-color: rgba(255, 255, 255, 0.2);
   color: #fff;
+  transform: scale(1.08);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+}
+
+.main-post-panel__close:active {
+  transform: scale(0.95);
 }
 
 /* Imagem do post */
 .main-post-panel__image {
   width: 100%;
-  height: 200px;
+  aspect-ratio: 16 / 10;
   overflow: hidden;
-  position: relative; /* necessário para as setas */
+  position: relative;
+  flex-shrink: 0;
+  background: #0a1f14;
 }
 
 /* Navegação entre imagens */
@@ -1296,35 +1396,45 @@
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
-  border: none;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
 
-  background: rgba(0,0,0,0.45);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 
-  color: #fff;
+  color: rgba(255, 255, 255, 0.8);
   display: flex;
   align-items: center;
   justify-content: center;
 
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  opacity: 0.7;
 }
 
 .main-post-panel__nav:hover {
-  background: rgba(0,0,0,0.7);
+  background: rgba(0, 0, 0, 0.5);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  opacity: 1;
+  transform: translateY(-50%) scale(1.1);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+.main-post-panel__nav:active {
+  transform: translateY(-50%) scale(0.93);
 }
 
 .main-post-panel__nav--left {
-  left: 10px;
+  left: 12px;
 }
 
 .main-post-panel__nav--right {
-  right: 10px;
+  right: 12px;
 }
 
 /* Indicadores de imagem */
@@ -1443,6 +1553,118 @@
   color: rgba(255, 255, 255, 0.4);
   padding-top: 10px;
   border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* ── Comments section ── */
+.main-post-panel__comments {
+  padding: 20px 24px 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.main-post-panel__comments-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0;
+}
+
+.main-post-panel__comments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.main-post-panel__comment {
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+}
+
+.main-post-panel__comment-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.main-post-panel__comment-author {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #a0845f;
+}
+
+.main-post-panel__comment-time {
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.25);
+}
+
+.main-post-panel__comment-text {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.55);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Comment input */
+.main-post-panel__comment-form {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.main-post-panel__comment-input {
+  flex: 1;
+  height: 38px;
+  padding: 0 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+  color: #fff;
+  font-family: inherit;
+  font-size: 0.84rem;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.main-post-panel__comment-input::placeholder {
+  color: rgba(255, 255, 255, 0.25);
+}
+
+.main-post-panel__comment-input:focus {
+  border-color: rgba(139, 115, 85, 0.35);
+}
+
+.main-post-panel__comment-send {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  border: 1px solid rgba(139, 115, 85, 0.25);
+  background: rgba(139, 115, 85, 0.12);
+  color: #a0845f;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.main-post-panel__comment-send:hover:not(:disabled) {
+  background: rgba(139, 115, 85, 0.22);
+  color: #C8A97E;
+}
+
+.main-post-panel__comment-send:disabled {
+  opacity: 0.3;
+  cursor: default;
 }
 
 /* ══════════════════════════════════════════
@@ -1571,6 +1793,18 @@
     border-radius: 16px;
   }
 
+  .main-post-panel__image {
+    aspect-ratio: 16 / 9;
+  }
+
+  .main-post-panel__body {
+    padding: 18px;
+  }
+
+  .main-post-panel__comments {
+    padding: 16px 18px 20px;
+  }
+
   .main-feed {
     padding: 18px 16px;
   }
@@ -1596,7 +1830,15 @@
   /* Swipe deck mobile */
   .swipe-deck__stack {
     max-width: 100%;
-    min-height: 520px;
+  }
+
+  .swipe-deck__scroll-btn {
+    width: 30px;
+    height: 30px;
+  }
+
+  .swipe-deck__nav-row {
+    gap: 10px;
   }
 
   /* Edge indicators: glow only, no labels */
@@ -1615,15 +1857,7 @@
 
   /* ── Card image preview ── */
   .swipe-card__image {
-    height: 180px;
-  }
-
-  .swipe-card__image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: center;
-    display: block;
+    min-height: 60px;
   }
 
   .swipe-card__title {
@@ -1698,7 +1932,23 @@
   }
 
   .main-post-panel__body {
-    padding: 18px;
+    padding: 16px;
+    gap: 10px;
+  }
+
+  .main-post-panel__comments {
+    padding: 14px 16px 18px;
+    gap: 10px;
+  }
+
+  .main-post-panel__comment-input {
+    height: 34px;
+    font-size: 0.8rem;
+  }
+
+  .main-post-panel__comment-send {
+    width: 34px;
+    height: 34px;
   }
 
   .main-feed {
@@ -1723,7 +1973,16 @@
 
   /* Swipe deck small mobile */
   .swipe-deck__stack {
-    min-height: 500px;
+    max-width: 100%;
+  }
+
+  .swipe-deck__scroll-btn {
+    width: 26px;
+    height: 26px;
+  }
+
+  .swipe-deck__nav-row {
+    gap: 8px;
   }
 
   .swipe-indicator {

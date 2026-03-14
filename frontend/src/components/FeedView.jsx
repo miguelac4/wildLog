@@ -1,18 +1,20 @@
+import { useRef } from 'react'
 import { Search } from 'lucide-react'
-import useLenisContainer from '../hooks/useLenisContainer'
 import SwipeDeck from './feed/SwipeDeck'
 
 /**
  * FeedView — Layout container for the Community Feed.
  *
  * Renders a header and delegates post rendering to SwipeDeck.
+ * In swipe mode, Lenis is NOT used — the SwipeDeck manages
+ * its own scroll/wheel navigation.
  *
  * Props:
  *   posts       — filtered array of post objects
  *   onViewPost  — callback when user opens/views a post
  */
 function FeedView({ posts, onViewPost }) {
-    const feedRef = useLenisContainer()
+    const feedRef = useRef(null)
 
     const handleFavorite = (post) => {
         // TODO: integrate with API — POST /api/posts/:id/favorite

@@ -1,17 +1,17 @@
-import { Heart, MessageCircle, Star, Eye, SkipBack} from 'lucide-react'
+import { Heart, MessageCircle } from 'lucide-react'
 
 /**
  * PostCard — A single swipe card displaying post information.
  *
  * Props:
  *   post        — post object { id, author, createdAt, title, description, tags, likes, comments }
- *   onOpen      — callback when user clicks "open"
- *   onFavorite  — callback when user clicks "favorite" icon
  *   isActive    — whether this is the top (interactive) card
  */
-function PostCard({ post, onOpen, onFavorite, isActive }) {
+function PostCard({ post, isActive }) {
     return (
-        <div className={`swipe-card ${isActive ? 'swipe-card--active' : ''}`}>
+        <div
+            className={`swipe-card ${isActive ? 'swipe-card--active' : ''}`}
+        >
             {/* Author + date */}
             <div className="swipe-card__meta">
                 <span className="swipe-card__author">@{post.author}</span>
@@ -47,35 +47,6 @@ function PostCard({ post, onOpen, onFavorite, isActive }) {
                 <span className="swipe-card__stat">
                     <MessageCircle size={14} /> {post.comments}
                 </span>
-            </div>
-
-            {/* Action row */}
-            <div className="swipe-card__actions">
-                <button
-                    type="button"
-                    className="swipe-card__action-btn"
-                    onClick={(e) => { e.stopPropagation(); onFavorite?.(post); }}
-                    title="Favorite"
-                >
-                    <Star size={16} />
-                </button>
-                <button
-                    type="button"
-                    className="swipe-card__action-btn swipe-card__action-btn--open"
-                    onClick={(e) => { e.stopPropagation(); onOpen?.(post); }}
-                    title="View post"
-                >
-                    <Eye size={16} />
-                    <span>Open</span>
-                </button>
-                <button
-                    type="button"
-                    className="swipe-card__action-btn"
-                    onClick={(e) => { e.stopPropagation(); onFavorite?.(post); }}
-                    title="Comment"
-                >
-                    <MessageCircle size={16} />
-                </button>
             </div>
         </div>
     )

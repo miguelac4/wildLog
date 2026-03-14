@@ -17,10 +17,10 @@ import App from './App'
 import { AuthProvider } from './context/AuthContext'
 import './index.css'
 const getRouterBasename = () => {
-    if (typeof window === 'undefined') return '/wildlog'
+    if (typeof window === 'undefined') return '/wildlog/'
     const host = window.location.hostname
     if (host.includes('wild-log.com')) return '/'
-    return '/wildlog'
+    return '/wildlog/'
 }
 
 ReactDOM.createRoot(document.getElementById('root')).render(

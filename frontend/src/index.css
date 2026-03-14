@@ -73,3 +73,17 @@ body {
   min-height: 100dvh;
   overflow-x: hidden;
 }
+
+/* =========================
+   Text Selection - WildLog
+========================= */
+
+::selection {
+  background: rgba(155, 128, 93, 0.45);
+  color: #0f1a14;
+}
+
+::-moz-selection {
+  background: rgba(155, 128, 93, 0.40);
+  color: #ffffff;
+}

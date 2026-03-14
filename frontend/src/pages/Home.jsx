@@ -38,6 +38,18 @@ function Home() {
   const contactRef   = useRef(null)
   const heroLoginRef = useRef(null)
 
+  const carouselRef    = useRef(null)
+  const trackRef       = useRef(null)
+  const dragState      = useRef({ dragging: false, startX: 0, offsetAtStart: 0 })
+  const autoScroll     = useRef({ raf: null, offset: 0, paused: false })
+
+  useEffect(() => {
+    if ('scrollRestoration' in window.history) {
+      window.history.scrollRestoration = 'manual'
+    }
+    window.scrollTo(0, 0)
+  }, [])
+
   /**
    * IntersectionObserver — deteta qual secção ocupa a maior parte do viewport.
    * threshold: 0.4 → a secção precisa de estar 40% visível para ser considerada ativa.
@@ -51,19 +63,18 @@ function Home() {
     ]
 
     const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const match = sections.find((s) => s.ref.current === entry.target)
-            if (match) setActiveSection(match.index)
-          }
-        })
-      },
-      {
-        root: null,
-        rootMargin: '-40% 0px -40% 0px', // Activa quando a secção cruza o centro
-        threshold: 0,
-      }
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              const match = sections.find((s) => s.ref.current === entry.target)
+              if (match) setActiveSection(match.index)
+            }
+          })
+        },
+        {
+          root: null,
+          threshold: 0.35
+        }
     )
 
     sections.forEach(({ ref }) => {
@@ -71,6 +82,113 @@ function Home() {
     })
 
     return () => observer.disconnect()
+  }, [])
+
+  /**
+   * Carousel — auto-scroll + drag + wheel totalmente controlados por JS.
+   *
+   * Estratégia:
+   *  - Um loop RAF avança `offset` continuamente (px/frame).
+   *  - `offset` é aplicado via `transform: translateX(-Xpx)` no track.
+   *  - O loop reinicia quando `offset >= trackHalf` (loop infinito).
+   *  - Durante drag/wheel o auto-scroll é pausado; retoma ao soltar.
+   *  - Não usa animation-delay nem CSS animation — zero conflitos.
+   */
+  useEffect(() => {
+    const carousel = carouselRef.current
+    const track    = trackRef.current
+    if (!carousel || !track) return
+
+    const SPEED = 0.6           // px por frame (~36px/s a 60fps)
+    const state = autoScroll.current
+    state.offset = 0
+    state.paused = false
+
+    const tick = () => {
+      const trackHalf = track.scrollWidth / 2
+      if (!state.paused && trackHalf > 0) {
+        state.offset += SPEED
+        if (state.offset >= trackHalf) state.offset -= trackHalf
+      }
+      track.style.transform = `translateX(${-state.offset}px)`
+      state.raf = requestAnimationFrame(tick)
+    }
+    state.raf = requestAnimationFrame(tick)
+
+    /* ── Pausa o auto-scroll durante hover ── */
+    const onMouseEnter = () => { state.paused = true  }
+    const onMouseLeave = () => {
+      if (!dragState.current.dragging) state.paused = false
+    }
+
+    /* ══ POINTER DOWN ══ */
+    const onPointerDown = (e) => {
+      if (e.button !== 0) return
+      e.preventDefault()
+      state.paused = true
+      dragState.current = {
+        dragging: true,
+        startX: e.clientX,
+        offsetAtStart: state.offset,
+      }
+      carousel.classList.add('about__carousel--dragging')
+      carousel.setPointerCapture(e.pointerId)
+    }
+
+    /* ══ POINTER MOVE ══ */
+    const onPointerMove = (e) => {
+      if (!dragState.current.dragging) return
+      const delta = e.clientX - dragState.current.startX
+      const trackHalf = track.scrollWidth / 2
+      // delta negativo → mover para a esquerda (avançar), positivo → recuar
+      let newOffset = dragState.current.offsetAtStart - delta
+      // normaliza dentro do loop
+      newOffset = ((newOffset % trackHalf) + trackHalf) % trackHalf
+      state.offset = newOffset
+    }
+
+    /* ══ POINTER UP ══ */
+    const onPointerUp = () => {
+      if (!dragState.current.dragging) return
+      dragState.current.dragging = false
+      carousel.classList.remove('about__carousel--dragging')
+      // retoma auto-scroll só se o rato não estiver em cima
+      if (!carousel.matches(':hover')) state.paused = false
+    }
+
+    /* ══ WHEEL ══ */
+    const onWheel = (e) => {
+      e.preventDefault()
+      const trackHalf = track.scrollWidth / 2
+      let newOffset = state.offset + e.deltaY * 0.5
+      newOffset = ((newOffset % trackHalf) + trackHalf) % trackHalf
+      state.offset = newOffset
+      state.paused = true
+      clearTimeout(carousel._wheelTimer)
+      carousel._wheelTimer = setTimeout(() => {
+        state.paused = false
+      }, 600)
+    }
+
+    carousel.addEventListener('mouseenter',    onMouseEnter)
+    carousel.addEventListener('mouseleave',    onMouseLeave)
+    carousel.addEventListener('pointerdown',   onPointerDown)
+    carousel.addEventListener('pointermove',   onPointerMove)
+    carousel.addEventListener('pointerup',     onPointerUp)
+    carousel.addEventListener('pointercancel', onPointerUp)
+    carousel.addEventListener('wheel',         onWheel, { passive: false })
+
+    return () => {
+      cancelAnimationFrame(state.raf)
+      clearTimeout(carousel._wheelTimer)
+      carousel.removeEventListener('mouseenter',    onMouseEnter)
+      carousel.removeEventListener('mouseleave',    onMouseLeave)
+      carousel.removeEventListener('pointerdown',   onPointerDown)
+      carousel.removeEventListener('pointermove',   onPointerMove)
+      carousel.removeEventListener('pointerup',     onPointerUp)
+      carousel.removeEventListener('pointercancel', onPointerUp)
+      carousel.removeEventListener('wheel',         onWheel)
+    }
   }, [])
 
   /**
@@ -96,7 +214,12 @@ function Home() {
 
   /** Scroll para a secção — o Lenis intercepta automaticamente */
   const scrollTo = (ref) => {
-    ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    if (!ref.current) return
+
+    window.scrollTo({
+      top: ref.current.offsetTop,
+      behavior: 'smooth'
+    })
   }
 
   const navItems = [
@@ -189,8 +312,8 @@ function Home() {
           </p>
 
           {/* Carrossel infinito — cards deslizam suavemente para a esquerda */}
-          <div className="about__carousel">
-            <div className="about__track">
+          <div className="about__carousel" ref={carouselRef}>
+            <div className="about__track" ref={trackRef}>
               {/* Conjunto original */}
               <div className="about-card"> <Binoculars color="#9B805D" strokeWidth={1.75} size={40} />
                 <h3>Discover Places</h3>
@@ -213,6 +336,31 @@ function Home() {
                 <p>Discover new locations and inspire others to explore nature consciously.</p>
               </div>
               <div className="about-card"> <HandHeart color="#9B805D" strokeWidth={1.75} size={40} />
+                <h3>Explore Responsibly</h3>
+                <p>Share and discover natural spaces while encouraging ethical outdoor practices.</p>
+              </div>
+              {/* Cópia para loop infinito (aria-hidden para acessibilidade) */}
+              <div className="about-card" aria-hidden="true"> <Binoculars color="#9B805D" strokeWidth={1.75} size={40} />
+                <h3>Discover Places</h3>
+                <p>Find hidden natural spots shared by the community and explore nature responsibly.</p>
+              </div>
+              <div className="about-card" aria-hidden="true"> <Aperture color="#9B805D" strokeWidth={1.75} size={40} />
+                <h3>Share Your Journey</h3>
+                <p>Post photos, locations and experiences from your adventures in the wild.</p>
+              </div>
+              <div className="about-card" aria-hidden="true"> <Handshake color="#9B805D" strokeWidth={1.75} size={40} />
+                <h3>Nature Community</h3>
+                <p>Connect with campers and explorers who share the same passion for nature.</p>
+              </div>
+              <div className="about-card" aria-hidden="true"> <Leaf color="#9B805D" strokeWidth={1.75} size={40} />
+                <h3>Respect Nature</h3>
+                <p>Promote responsible exploration and help protect the places we love.</p>
+              </div>
+              <div className="about-card" aria-hidden="true"> <MapPin color="#9B805D" strokeWidth={1.75} size={40} />
+                <h3>Learn & Inspire</h3>
+                <p>Discover new locations and inspire others to explore nature consciously.</p>
+              </div>
+              <div className="about-card" aria-hidden="true"> <HandHeart color="#9B805D" strokeWidth={1.75} size={40} />
                 <h3>Explore Responsibly</h3>
                 <p>Share and discover natural spaces while encouraging ethical outdoor practices.</p>
               </div>

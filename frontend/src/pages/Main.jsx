@@ -38,7 +38,7 @@ const MOCK_POSTS = [
   {
     id: 1,
     title: 'Camping Ferreira do Zêzere',
-    author: 'naturelover42',
+    author: 'catemadonatureza',
     avatar: null,
     images: [
       '/wildlog/media/post/ferreira_1.jpeg',
@@ -55,38 +55,50 @@ const MOCK_POSTS = [
   },
   {
     id: 2,
-    title: 'Hidden Waterfall in Gerês',
-    author: 'wildexplorer',
+    title: 'Hidden Waterfall in Bergen',
+    author: 'belamarela',
     avatar: null,
-    images: null,
+    images: [
+      '/wildlog/media/post/norway_1.jpeg',
+      '/wildlog/media/post/norway_2.jpeg',
+      '/wildlog/media/post/norway_3.jpeg',
+      '/wildlog/media/post/norway_4.jpeg'
+    ],
     description: 'Found this hidden gem after a 3-hour hike through dense forest. Worth every step.',
     lat: 41.7215,
     lng: -8.1528,
     likes: 256,
     comments: 45,
-    tags: ['waterfall', 'hiking', 'gerês'],
+    tags: ['waterfall', 'hiking', 'norway'],
     createdAt: '2026-03-01',
   },
   {
     id: 3,
-    title: 'Dawn at Ria Formosa',
-    author: 'birdwatcher_pt',
+    title: 'Cave Surfing in Ericeira',
+    author: 'miguelac4',
     avatar: null,
-    images: null,
-    description: 'Early morning birdwatching session. Spotted flamingos and rare migratory species.',
+    images: [
+      '/wildlog/media/post/ericeira_1.jpeg',
+      '/wildlog/media/post/ericeira_2.jpeg'
+    ],
+    description: 'Afternoon birdwatching session. Spotted big waves and rare migratory species.',
     lat: 37.0194,
     lng: -7.8322,
     likes: 89,
     comments: 12,
-    tags: ['birds', 'wetlands', 'algarve'],
+    tags: ['birds', 'waves', 'ericeira'],
     createdAt: '2026-03-05',
   },
   {
     id: 4,
-    title: 'Camping under the Milky Way',
+    title: 'Camping in Montains of Romania',
     author: 'astrocamper',
     avatar: null,
-    images: null,
+    images: [
+      '/wildlog/media/post/romenia_1.jpeg',
+      '/wildlog/media/post/romenia_2.jpeg',
+      '/wildlog/media/post/romenia_3.jpeg'
+    ],
     description: 'Dark sky reserve in Alentejo. Zero light pollution and a crystal clear night.',
     lat: 38.5630,
     lng: -7.9135,
@@ -100,7 +112,11 @@ const MOCK_POSTS = [
     title: 'Cliffs of Sagres',
     author: 'coastal_hiker',
     avatar: null,
-    images: null,
+    images: [
+      '/wildlog/media/post/ferreira_1.jpeg',
+      '/wildlog/media/post/ferreira_2.jpeg',
+      '/wildlog/media/post/ferreira_3.jpeg'
+    ],
     description: 'Standing at the edge of Europe. The raw power of the Atlantic crashing below.',
     lat: 37.0079,
     lng: -8.9463,

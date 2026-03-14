@@ -76,6 +76,7 @@ function Login() {
       setSuccessOpen(true)
 
       setTimeout(() => {
+        sessionStorage.setItem("playIntro", "1")
         navigate('/app')
       }, 1000)
 
