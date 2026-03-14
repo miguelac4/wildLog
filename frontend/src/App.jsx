@@ -28,7 +28,11 @@ function App() {
     const location = useLocation()
 
     useEffect(() => {
-        if (sessionStorage.getItem("playIntro") === "1") {
+        const shouldPlayIntro =
+            sessionStorage.getItem("playIntro") === "1" ||
+            location.pathname.startsWith("/app")
+
+        if (shouldPlayIntro) {
             setShowIntro(true)
         }
     }, [location])
