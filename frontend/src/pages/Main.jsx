@@ -58,7 +58,11 @@ const MOCK_POSTS = [
     title: 'Hidden Waterfall in Gerês',
     author: 'wildexplorer',
     avatar: null,
-    images: null,
+    images: [
+      '/wildlog/media/post/ferreira_1.jpeg',
+      '/wildlog/media/post/ferreira_2.jpeg',
+      '/wildlog/media/post/ferreira_3.jpeg'
+    ],
     description: 'Found this hidden gem after a 3-hour hike through dense forest. Worth every step.',
     lat: 41.7215,
     lng: -8.1528,
@@ -72,7 +76,11 @@ const MOCK_POSTS = [
     title: 'Dawn at Ria Formosa',
     author: 'birdwatcher_pt',
     avatar: null,
-    images: null,
+    images: [
+      '/wildlog/media/post/ferreira_1.jpeg',
+      '/wildlog/media/post/ferreira_2.jpeg',
+      '/wildlog/media/post/ferreira_3.jpeg'
+    ],
     description: 'Early morning birdwatching session. Spotted flamingos and rare migratory species.',
     lat: 37.0194,
     lng: -7.8322,
@@ -86,7 +94,11 @@ const MOCK_POSTS = [
     title: 'Camping under the Milky Way',
     author: 'astrocamper',
     avatar: null,
-    images: null,
+    images: [
+      '/wildlog/media/post/ferreira_1.jpeg',
+      '/wildlog/media/post/ferreira_2.jpeg',
+      '/wildlog/media/post/ferreira_3.jpeg'
+    ],
     description: 'Dark sky reserve in Alentejo. Zero light pollution and a crystal clear night.',
     lat: 38.5630,
     lng: -7.9135,
@@ -100,7 +112,11 @@ const MOCK_POSTS = [
     title: 'Cliffs of Sagres',
     author: 'coastal_hiker',
     avatar: null,
-    images: null,
+    images: [
+      '/wildlog/media/post/ferreira_1.jpeg',
+      '/wildlog/media/post/ferreira_2.jpeg',
+      '/wildlog/media/post/ferreira_3.jpeg'
+    ],
     description: 'Standing at the edge of Europe. The raw power of the Atlantic crashing below.',
     lat: 37.0079,
     lng: -8.9463,
