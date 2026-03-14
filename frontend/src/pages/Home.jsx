@@ -38,6 +38,13 @@ function Home() {
   const contactRef   = useRef(null)
   const heroLoginRef = useRef(null)
 
+  useEffect(() => {
+    if ('scrollRestoration' in window.history) {
+      window.history.scrollRestoration = 'manual'
+    }
+    window.scrollTo(0, 0)
+  }, [])
+
   /**
    * IntersectionObserver — deteta qual secção ocupa a maior parte do viewport.
    * threshold: 0.4 → a secção precisa de estar 40% visível para ser considerada ativa.
