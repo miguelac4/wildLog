@@ -1072,6 +1072,7 @@
 
 .swipe-card--active {
   border-color: rgba(255, 255, 255, 0.10);
+  cursor: pointer;
 }
 
 /* ── Card image preview ── */

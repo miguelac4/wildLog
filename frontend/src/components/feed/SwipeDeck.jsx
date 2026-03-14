@@ -173,12 +173,16 @@ function SwipeDeck({ posts, onViewPost, onFavorite, onSkip }) {
             else goToPrev()
             setDragState({ x: 0, y: 0, dragging: false })
         } else {
+            /* No significant drag — treat as tap → open post */
             setDragState({ x: 0, y: 0, dragging: false })
+            if (absDx < MIN_DRAG_DISTANCE && absDy < MIN_DRAG_DISTANCE && activePost) {
+                onViewPost?.(activePost)
+            }
         }
 
         dragIntentRef.current = null
         setDragIntent(null)
-    }, [flyAway, advanceCard, goToNext, goToPrev])
+    }, [flyAway, advanceCard, goToNext, goToPrev, activePost, onViewPost])
 
     /* ── Button handlers ──────────── */
     const handleSkipBtn = useCallback(() => {
@@ -194,14 +198,6 @@ function SwipeDeck({ posts, onViewPost, onFavorite, onSkip }) {
     const handleCommentBtn = useCallback(() => {
         if (activePost) onViewPost?.(activePost)
     }, [activePost, onViewPost])
-
-    const handleOpenPost = useCallback((post) => {
-        onViewPost?.(post)
-    }, [onViewPost])
-
-    const handleFavoritePost = useCallback(() => {
-        if (!flyAway) advanceCard('right')
-    }, [flyAway, advanceCard])
 
     /* ── Restart deck ──────────────── */
     const handleRestart = useCallback(() => {
@@ -323,8 +319,6 @@ function SwipeDeck({ posts, onViewPost, onFavorite, onSkip }) {
                                 <PostCard
                                     post={post}
                                     isActive={isTop}
-                                    onOpen={handleOpenPost}
-                                    onFavorite={handleFavoritePost}
                                 />
                             </div>
                         )
