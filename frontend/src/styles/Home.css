@@ -325,6 +325,8 @@
   overflow-y: visible;     /* permite hover translateY(-4px) sem cortar */
   width: 100%;
   padding: 8px 0;          /* espaço de respiro vertical */
+  cursor: grab;
+  user-select: none;
   /* Mask para desvanecer as bordas laterais */
   -webkit-mask-image: linear-gradient(
     to right,
@@ -342,22 +344,18 @@
   );
 }
 
+.about__carousel--dragging {
+  cursor: grabbing;
+}
+
 .about__track {
   display: flex;
   gap: 24px;
   width: max-content;
-  animation: carouselSlide 40s linear infinite;
+  will-change: transform;
 }
 
-/* Pausa quando o utilizador passa o rato por cima */
-.about__carousel:hover .about__track {
-  animation-play-state: paused;
-}
-
-@keyframes carouselSlide {
-  0%   { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
-}
+/* Pausa visual — cursor gerido pela classe --dragging */
 
 .about-card {
   background: rgba(255, 255, 255, 0.04);
