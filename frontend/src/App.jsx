@@ -12,6 +12,8 @@ import ResetPassword from './pages/ResetPassword'
 import { useState } from 'react'
 import { AnimatePresence } from 'framer-motion'
 import IntroLogo from './components/intro/IntroLogo'
+import { useLocation } from 'react-router-dom'
+import { useEffect } from 'react'
 
 /**
  * Deteta o basename do Router com base no hostname.
@@ -22,14 +24,26 @@ import IntroLogo from './components/intro/IntroLogo'
 function App() {
   useLenis()
 
-  const [showIntro, setShowIntro] = useState(true)
+    const [showIntro, setShowIntro] = useState(false)
+    const location = useLocation()
+
+    useEffect(() => {
+        if (sessionStorage.getItem("playIntro") === "1") {
+            setShowIntro(true)
+        }
+    }, [location])
 
   return (
     <>
       {/* Cinematic intro overlay — plays once on app load */}
       <AnimatePresence>
         {showIntro && (
-          <IntroLogo onComplete={() => setShowIntro(false)} />
+            <IntroLogo
+                onComplete={() => {
+                    sessionStorage.removeItem("playIntro")
+                    setShowIntro(false)
+                }}
+            />
         )}
       </AnimatePresence>
 
