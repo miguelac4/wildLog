@@ -58,19 +58,18 @@ function Home() {
     ]
 
     const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const match = sections.find((s) => s.ref.current === entry.target)
-            if (match) setActiveSection(match.index)
-          }
-        })
-      },
-      {
-        root: null,
-        rootMargin: '-40% 0px -40% 0px', // Activa quando a secção cruza o centro
-        threshold: 0,
-      }
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              const match = sections.find((s) => s.ref.current === entry.target)
+              if (match) setActiveSection(match.index)
+            }
+          })
+        },
+        {
+          root: null,
+          threshold: 0.35
+        }
     )
 
     sections.forEach(({ ref }) => {
@@ -103,7 +102,12 @@ function Home() {
 
   /** Scroll para a secção — o Lenis intercepta automaticamente */
   const scrollTo = (ref) => {
-    ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    if (!ref.current) return
+
+    window.scrollTo({
+      top: ref.current.offsetTop,
+      behavior: 'smooth'
+    })
   }
 
   const navItems = [
