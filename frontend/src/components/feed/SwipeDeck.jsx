@@ -238,7 +238,7 @@ function SwipeDeck({ posts, onViewPost, onFavorite, onSkip }) {
                     <div className="swipe-indicator__glow" />
                     <div className="swipe-indicator__label">
                         <Star size={30} />
-                        <span>Favorite</span>
+                        <span>Want To Visit</span>
                     </div>
                 </div>
             </div>
