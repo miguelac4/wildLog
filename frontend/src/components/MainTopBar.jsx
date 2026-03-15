@@ -9,6 +9,7 @@ function MainTopbar({
                         user,
                         onLogout,
                     }) {
+
     return (
         <header className="main-topbar">
             <div className="main-topbar__left">
@@ -52,14 +53,21 @@ function MainTopbar({
                     />
                 </div>
             </div>
-
             <div className="main-topbar__right">
-                <div className="main-topbar__user">
-                    <div className="main-topbar__avatar">
-                        <User size={16} />
+                <button
+                    className={`main-topbar__nav-btn ${activeView === 'account' ? 'main-topbar__nav-btn--active' : ''}`}
+                    onClick={() => onChangeView('account')}
+                    type="button"
+                    title="Ver Perfil"
+                    style={{ paddingLeft: '6px' }}
+                >
+                    <div className="main-topbar__avatar" style={{ width: '26px', height: '26px' }}>
+                        <User size={14} />
                     </div>
-                    <span className="main-topbar__username">{user?.username || 'Explorer'}</span>
-                </div>
+                    <span style={{ fontWeight: 600, letterSpacing: '0.2px' }}>
+                        {user?.username || 'Explorer'}
+                    </span>
+                </button>
 
                 <button className="main-topbar__action" onClick={onLogout} title="Log out">
                     <LogOut size={18} />

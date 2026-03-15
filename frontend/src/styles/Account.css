@@ -1,0 +1,221 @@
+/* Layout da Página de Conta */
+.account-page-wrapper {
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    background: #080e0b; /* Fundo oficial WildLog */
+}
+
+.account-stats-container {
+    background: rgba(10, 31, 20, 0.8);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(160, 132, 95, 0.3);
+    border-radius: 16px;
+    padding: 2rem;
+}
+
+.account-split-view {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* 50% para cada lado */
+    gap: 2rem;
+    min-height: 500px;
+}
+
+.account-content-box {
+    background: rgba(10, 31, 20, 0.8);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(160, 132, 95, 0.3);
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.account-section-title {
+    color: #a0845f;
+    padding: 1rem;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+
+/* --- COMPONENTE: AccountStats --- */
+.account-stats-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    width: 100%;
+}
+
+.account-stats-header {
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+}
+
+.account-stats-avatar {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    background: rgba(160, 132, 95, 0.1);
+    border: 2px solid #a0845f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.account-stats-title-row {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.account-stats-name {
+    margin: 0;
+    font-size: 1.6rem;
+    color: #f1f0ee;
+}
+
+.account-btn-edit {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: transparent;
+    border: 1px solid rgba(160, 132, 95, 0.4);
+    color: #a0845f;
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+}
+
+.account-btn-edit:hover {
+    background: rgba(160, 132, 95, 0.1);
+}
+
+.account-stats-bio {
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: #c9c7c2;
+    max-width: 600px;
+}
+
+.account-stats-numbers {
+    display: flex;
+    gap: 2rem;
+    border-top: 1px solid rgba(160, 132, 95, 0.2);
+    padding-top: 1.5rem;
+}
+
+.account-number-box {
+    display: flex;
+    flex-direction: column;
+}
+
+.account-number-val {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #f1f0ee;
+}
+
+.account-number-label {
+    font-size: 0.85rem;
+    color: #8b7355;
+}
+
+/* --- COMPONENTE: AccountPosts --- */
+.account-posts-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+}
+
+.account-post-item {
+    aspect-ratio: 1 / 1; /* Garante que é um quadrado perfeito */
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+    cursor: pointer;
+}
+
+.account-post-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.account-post-no-image {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(160, 132, 95, 0.4);
+}
+
+.account-post-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(10, 31, 20, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    color: #f1f0ee;
+    font-weight: 500;
+    font-size: 0.9rem;
+    padding: 1rem;
+    text-align: center;
+}
+
+.account-post-item:hover img {
+    transform: scale(1.05);
+}
+
+.account-post-item:hover .account-post-overlay {
+    opacity: 1;
+}
+
+/* --- COMPONENTE: AccountMap --- */
+.account-cesium-wrapper {
+    position: relative;
+    flex: 1;
+    width: 100%;
+    height: 100%;
+    min-height: 300px; /* Altura mínima para o globo */
+}
+
+.account-cesium-container {
+    width: 100%;
+    height: 100%;
+    border-bottom-left-radius: 16px;
+    border-bottom-right-radius: 16px;
+    overflow: hidden;
+}
+
+.account-cesium-loading {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    color: #a0845f;
+}
+
+.spin-animation {
+    animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+    100% { transform: rotate(360deg); }
+}

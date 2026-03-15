@@ -25,6 +25,10 @@ import PostDetailPanel from '../components/PostDetailPanel'
 import MainTopbar from '../components/MainTopbar'
 import ExploreSidebar from '../components/ExploreSidebar'
 import ExploreMap from '../components/ExploreMap'
+// imports para oa ccount
+import AccountStats from "../components/Account/AccountStats.jsx"
+import AccountPosts from "../components/Account/AccountPosts.jsx";
+import AccountMap from "../components/Account/AccountMap.jsx";
 
 const MOBILE_BREAKPOINT = 768
 
@@ -238,12 +242,13 @@ function Main() {
       />
 
       {/* ══════════════════════════════════════
-          CORPO PRINCIPAL - Explore ou Feed
+          CORPO PRINCIPAL - Explore, Feed ou Account
           ══════════════════════════════════════ */}
       <div className="main-body">
-        {activeView === 'explore' ? (
+
+        {/* ── VISTA: EXPLORE (Mapa + Sidebar) ── */}
+        {activeView === 'explore' && (
             <>
-              {/* ── SIDEBAR ──────────────────────── */}
               <ExploreSidebar
                   sidebarOpen={sidebarOpen}
                   setSidebarOpen={setSidebarOpen}
@@ -252,8 +257,6 @@ function Main() {
                   onPostClick={handlePostClick}
                   regions={MOCK_LOCKED_REGIONS}
               />
-
-              {/* ── GLOBO (protagonista visual) ── */}
               <ExploreMap
                   posts={MOCK_POSTS}
                   regions={MOCK_LOCKED_REGIONS}
@@ -263,11 +266,37 @@ function Main() {
                   onFlyComplete={handleFlyComplete}
               />
             </>
-        ) : (
+        )}
+
+        {/* ── VISTA: FEED (Swipe Deck) ── */}
+        {activeView === 'feed' && (
             <FeedView posts={filteredPosts} onViewPost={setSelectedPost} />
+        )}
+
+        {/* ── VISTA: ACCOUNT (Perfil com as tuas 3 classes) ── */}
+        {activeView === 'account' && (
+            <div className="account-page-wrapper">
+
+              {/* 1. Classe das Estatísticas e Bio no topo */}
+              <div className="account-stats-container">
+                <AccountStats user={user} />
+              </div>
+
+              {/* 2. Classes de Posts e Mapa lado a lado */}
+              <div className="account-split-view">
+                <div className="account-content-box">
+                  <AccountPosts />
+                </div>
+                <div className="account-content-box" style={{ padding: 0 }}>
+                  <AccountMap />
+                </div>
+              </div>
+
+            </div>
         )}
       </div>
 
+      {/* Painel de detalhe que abre ao clicar num post (funciona em todas as vistas) */}
       {selectedPost && (
           <PostDetailPanel post={selectedPost} onClose={handleClosePost} />
       )}
