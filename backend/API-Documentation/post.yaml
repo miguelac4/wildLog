@@ -1,0 +1,379 @@
+openapi: 3.0.3
+info:
+  title: WildLog API - Posts
+  version: 1.0.0
+  description: >
+    Post management endpoints for WildLog.
+    Handles creation, editing, deletion and retrieval of posts.
+    Session-based authentication using PHP sessions (cookie PHPSESSID).
+
+servers:
+  - url: https://wild-log.com/backend/api
+    description: Production
+  - url: http://localhost:8000/api
+    description: Local
+
+tags:
+  - name: Posts
+    description: Create, edit, delete and retrieve posts
+
+components:
+
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: PHPSESSID
+
+  schemas:
+
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          type: string
+          example: INTERNAL_ERROR
+        message:
+          type: string
+          example: Ocorreu um erro inesperado.
+        request_id:
+          type: string
+          example: 377b27080c24aad4
+      required: [code, message]
+
+    Post:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 25
+        title:
+          type: string
+          example: Red fox in the forest
+        description:
+          type: string
+          example: I spotted this fox early in the morning.
+        visibility:
+          type: string
+          enum: [private, public]
+        created_at:
+          type: string
+          format: date-time
+      required: [id, title]
+
+    FeedPost:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        author:
+          type: string
+        image_url:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        likes:
+          type: integer
+        comments:
+          type: integer
+
+paths:
+
+  /post/create.php:
+    post:
+      tags: [Posts]
+      summary: Create a new post
+      description: >
+        Creates a new post with images, location and tags.
+        Images are converted to WEBP format and stored on the server.
+
+      security:
+        - sessionCookie: []
+
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  maxLength: 100
+                description:
+                  type: string
+                  maxLength: 500
+                lat:
+                  type: number
+                lng:
+                  type: number
+                visibility:
+                  type: string
+                  enum: [private, public]
+                tags:
+                  type: array
+                  items:
+                    type: string
+                images:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+              required: [title, lat, lng, visibility, images]
+
+      responses:
+        "200":
+          description: Post created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  created:
+                    type: boolean
+                  post:
+                    $ref: "#/components/schemas/Post"
+                  tags:
+                    type: array
+                    items:
+                      type: string
+                  images:
+                    type: array
+                    items:
+                      type: string
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /post/delete.php:
+    delete:
+      tags: [Posts]
+      summary: Delete a post
+
+      security:
+        - sessionCookie: []
+
+      parameters:
+        - name: post_id
+          in: query
+          required: true
+          schema:
+            type: integer
+
+      responses:
+        "200":
+          description: Post deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  deleted:
+                    type: boolean
+                  id:
+                    type: integer
+        "404":
+          description: Post not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Post cannot be deleted due to relational constraints
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /post/edit.php:
+    patch:
+      tags: [Posts]
+      summary: Edit post fields
+
+      security:
+        - sessionCookie: []
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                post_id:
+                  type: integer
+                title:
+                  type: string
+                description:
+                  type: string
+                visibility:
+                  type: string
+                  enum: [private, public]
+              required: [post_id]
+
+      responses:
+        "200":
+          description: Post updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  updated:
+                    type: boolean
+                  post:
+                    $ref: "#/components/schemas/Post"
+        "404":
+          description: Post not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /post/get_feed.php:
+    get:
+      tags: [Posts]
+      summary: Get public feed
+
+      security:
+        - sessionCookie: []
+
+      parameters:
+        - name: cursor
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Timestamp cursor for pagination
+
+      responses:
+        "200":
+          description: Feed results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  feed:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/FeedPost"
+                  next_cursor:
+                    type: string
+                    nullable: true
+
+  /post/get_post.php:
+    get:
+      tags: [Posts]
+      summary: Get single post with images and comments
+
+      security:
+        - sessionCookie: []
+
+      parameters:
+        - name: post_id
+          in: query
+          required: true
+          schema:
+            type: integer
+
+      responses:
+        "200":
+          description: Post details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  post:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      title:
+                        type: string
+                      description:
+                        type: string
+                      created_at:
+                        type: string
+                      author:
+                        type: string
+                      tags:
+                        type: array
+                        items:
+                          type: string
+                      likes:
+                        type: integer
+                      images:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            image_url:
+                              type: string
+                            position:
+                              type: integer
+                      comments:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: integer
+                            comment:
+                              type: string
+                            created_at:
+                              type: string
+                            author:
+                              type: string
+
+  /post/get_user_post.php:
+    get:
+      tags: [Posts]
+      summary: Get posts created by the authenticated user
+
+      security:
+        - sessionCookie: []
+
+      responses:
+        "200":
+          description: User posts
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  posts:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/FeedPost"
