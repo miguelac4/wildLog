@@ -1,11 +1,11 @@
 <?php
-require_once __DIR__ . '/../../includes/cors.php';
+require_once __DIR__ . '/../../../includes/cors.php';
 session_start();
 
-require_once __DIR__ . '/../../includes/api_error.php';
+require_once __DIR__ . '/../../../includes/api_error.php';
 $requestId = api_request_id();
 
-require_once __DIR__ . '/../../includes/db.php';
+require_once __DIR__ . '/../../../includes/db.php';
 
 header('Content-Type: application/json; charset=utf-8');
 
@@ -117,7 +117,7 @@ try {
 
 } catch (Throwable $e) {
     api_log_exception($e, $requestId, [
-        'endpoint' => '/post/edit.php',
+        'endpoint' => '/post/explore/edit.php',
         'userId'   => $_SESSION['user']['id'] ?? null
     ]);
 

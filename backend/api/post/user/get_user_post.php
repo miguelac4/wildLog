@@ -1,11 +1,11 @@
 <?php
-require_once __DIR__ . '/../../includes/cors.php';
+require_once __DIR__ . '/../../../includes/cors.php';
 session_start();
 
-require_once __DIR__ . '/../../includes/api_error.php';
+require_once __DIR__ . '/../../../includes/api_error.php';
 $requestId = api_request_id();
 
-require_once __DIR__ . '/../../includes/db.php';
+require_once __DIR__ . '/../../../includes/db.php';
 
 if ($_SERVER["REQUEST_METHOD"] !== "GET") {
     api_json_error(405, 'METHOD_NOT_ALLOWED', 'Método não permitido.');
@@ -78,7 +78,7 @@ ORDER BY p.created_at DESC
 
 } catch (Throwable $e) {
     api_log_exception($e, $requestId, [
-        'endpoint' => '.../post/get_user_post.php',
+        'endpoint' => '.../post/explore/get_user_post.php',
         'userId'   => $_SESSION['user']['id'] ?? null,
     ]);
 

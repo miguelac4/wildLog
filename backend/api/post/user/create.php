@@ -1,12 +1,12 @@
 <?php
-require_once __DIR__ . '/../../includes/cors.php';
+require_once __DIR__ . '/../../../includes/cors.php';
 session_start();
 
-require_once __DIR__ . '/../../includes/api_error.php';
-require_once __DIR__ . '/../../includes/image_lib.php';
+require_once __DIR__ . '/../../../includes/api_error.php';
+require_once __DIR__ . '/../../../includes/image_lib.php';
 $requestId = api_request_id();
 
-require_once __DIR__ . '/../../includes/db.php';
+require_once __DIR__ . '/../../../includes/db.php';
 
 header('Content-Type: application/json');
 
@@ -141,7 +141,7 @@ try {
     $idPost = (int)$pdo->lastInsertId();
 
     // Create post directory for images
-    $postDir = __DIR__ . "/../../upload/user/post/{$idPost}";
+    $postDir = __DIR__ . "/../../../upload/user/post/{$idPost}";
 
     if (!is_dir($postDir) && !mkdir($postDir, 0755, true)) {
         $pdo->rollBack();
@@ -255,7 +255,7 @@ try {
     }
 
     api_log_exception($e, $requestId, [
-        'endpoint' => '.../post/create.php',
+        'endpoint' => '.../post/explore/create.php',
         'userId'   => $_SESSION['user']['id'] ?? null
     ]);
 
