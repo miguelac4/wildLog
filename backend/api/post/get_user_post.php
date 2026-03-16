@@ -26,6 +26,7 @@ SELECT
     p.id,
     p.title,
     p.description,
+    p.visibility,
     p.created_at,
     MAX(img.image_url) AS image_url,
     GROUP_CONCAT(DISTINCT t.name) AS tags,
