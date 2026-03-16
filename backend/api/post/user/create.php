@@ -255,7 +255,7 @@ try {
     }
 
     api_log_exception($e, $requestId, [
-        'endpoint' => '.../post/explore/create.php',
+        'endpoint' => '.../post/user/create.php',
         'userId'   => $_SESSION['user']['id'] ?? null
     ]);
 

@@ -117,7 +117,7 @@ try {
 
 } catch (Throwable $e) {
     api_log_exception($e, $requestId, [
-        'endpoint' => '/post/explore/edit.php',
+        'endpoint' => '/post/user/edit.php',
         'userId'   => $_SESSION['user']['id'] ?? null
     ]);
 

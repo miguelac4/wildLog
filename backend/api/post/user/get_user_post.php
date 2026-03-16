@@ -78,7 +78,7 @@ ORDER BY p.created_at DESC
 
 } catch (Throwable $e) {
     api_log_exception($e, $requestId, [
-        'endpoint' => '.../post/explore/get_user_post.php',
+        'endpoint' => '.../post/user/get_user_post.php',
         'userId'   => $_SESSION['user']['id'] ?? null,
     ]);
 

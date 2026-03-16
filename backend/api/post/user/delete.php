@@ -62,7 +62,7 @@ AND user_id = ?
 
 } catch (Throwable $e) {
     api_log_exception($e, $requestId, [
-        'endpoint' => '.../post/explore/delete.php',
+        'endpoint' => '.../post/user/delete.php',
         'userId'   => $_SESSION['user']['id'] ?? null,
         'id_post'     => $post_id,
     ]);
