@@ -1,0 +1,335 @@
+openapi: 3.0.3
+info:
+  title: WildLog API - Explore
+  version: 1.0.0
+  description: >
+    Explore endpoints used for map discovery features.
+    Includes map pins, nearby posts and full post retrieval.
+
+servers:
+  - url: https://wild-log.com/backend/api
+    description: Production
+  - url: http://localhost:8000/api
+    description: Local
+
+tags:
+  - name: Explore
+    description: Map exploration and discovery endpoints
+
+components:
+
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: PHPSESSID
+
+  schemas:
+
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          type: string
+          example: INTERNAL_ERROR
+        message:
+          type: string
+          example: Ocorreu um erro inesperado.
+        request_id:
+          type: string
+          example: 377b27080c24aad4
+      required: [code, message]
+
+    MapPost:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 12
+        lat:
+          type: number
+          example: 38.7223
+        lng:
+          type: number
+          example: -9.1393
+      required: [id, lat, lng]
+
+    NearbyPost:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 12
+        author:
+          type: string
+          example: catemadonatureza
+        title:
+          type: string
+          example: Camping Ferreira do Zêzere
+        created_at:
+          type: string
+          format: date-time
+        tags:
+          type: array
+          items:
+            type: string
+        likes:
+          type: integer
+          example: 128
+        comments:
+          type: integer
+          example: 23
+        distance:
+          type: number
+          example: 12.3
+
+    Image:
+      type: object
+      properties:
+        image_url:
+          type: string
+          example: /backend/upload/user/post/12/image.webp
+        position:
+          type: integer
+          example: 0
+
+    Comment:
+      type: object
+      properties:
+        id:
+          type: integer
+        comment:
+          type: string
+          example: Amazing place!
+        created_at:
+          type: string
+          format: date-time
+        author:
+          type: string
+          example: wild_traveler
+
+    FullPost:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        author:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        likes:
+          type: integer
+        images:
+          type: array
+          items:
+            $ref: "#/components/schemas/Image"
+        comments:
+          type: array
+          items:
+            $ref: "#/components/schemas/Comment"
+
+paths:
+
+  /post/explore/get_feed.php:
+    get:
+      tags: [Explore]
+      summary: Get explore feed
+      description: >
+        Returns a list of recent approved public posts used in the Explore feed.
+
+      security:
+        - sessionCookie: []
+
+      responses:
+        "200":
+          description: Feed results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  feed:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/NearbyPost"
+
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "500":
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+
+  /post/explore/get_map_posts.php:
+    get:
+      tags: [Explore]
+      summary: Get map pins
+      description: >
+        Returns minimal post data required to render map pins in Cesium.
+
+      security:
+        - sessionCookie: []
+
+      responses:
+        "200":
+          description: Map posts
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  posts:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/MapPost"
+
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "500":
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+
+  /post/explore/get_nearby_posts.php:
+    get:
+      tags: [Explore]
+      summary: Get nearby posts
+      description: >
+        Returns the closest public posts to the provided coordinates.
+        Used to populate the "Nearby Posts" sidebar.
+
+      security:
+        - sessionCookie: []
+
+      parameters:
+        - name: lat
+          in: query
+          required: true
+          schema:
+            type: number
+          description: Latitude of the user's location
+
+        - name: lng
+          in: query
+          required: true
+          schema:
+            type: number
+          description: Longitude of the user's location
+
+      responses:
+        "200":
+          description: Nearby posts
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  posts:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/NearbyPost"
+
+        "400":
+          description: Invalid coordinates
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "500":
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+
+  /post/explore/get_post.php:
+    get:
+      tags: [Explore]
+      summary: Get full post details
+      description: >
+        Returns the complete details of a post including images and comments.
+        Used when a user opens a post from the map or explore feed.
+
+      security:
+        - sessionCookie: []
+
+      parameters:
+        - name: post_id
+          in: query
+          required: true
+          schema:
+            type: integer
+          description: ID of the post
+
+      responses:
+        "200":
+          description: Post details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  post:
+                    $ref: "#/components/schemas/FullPost"
+
+        "400":
+          description: Missing post id
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "404":
+          description: Post not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "500":
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
