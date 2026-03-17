@@ -23,8 +23,8 @@ import '../styles/Main.css'
 import FeedView from '../components/FeedView'
 import PostDetailPanel from '../components/PostDetailPanel'
 import MainTopbar from '../components/MainTopbar'
-import ExploreSidebar from '../components/ExploreSidebar'
-import ExploreMap from '../components/ExploreMap'
+import ExploreSidebar from '../components/explore/ExploreSideBar.jsx'
+import ExploreMap from '../components/explore/ExploreMap.jsx'
 
 const MOBILE_BREAKPOINT = 768
 

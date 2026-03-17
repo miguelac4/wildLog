@@ -8,7 +8,7 @@ import {
     Heart,
     MessageCircle,
 } from 'lucide-react'
-import useLenisContainer from '../hooks/useLenisContainer'
+import useLenisContainer from '../../hooks/useLenisContainer.js'
 
 function ExploreSidebar({
                             sidebarOpen,
