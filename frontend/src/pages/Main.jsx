@@ -21,8 +21,23 @@ import FeedView from '../components/FeedView'
 import PostDetailPanel from '../components/PostDetailPanel'
 import MainTopbar from '../components/MainTopbar'
 import ExploreView from '../components/explore/ExploreView'
+import { postExploreService } from '../api/postExploreService'
 
 const MOBILE_BREAKPOINT = 768
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL
+const BASE_URL = API_BASE.replace('/api', '')
+
+function normalizeImageUrl(path) {
+  if (!path) return ''
+
+  // DEV → remover /backend
+  if (BASE_URL.includes('localhost')) {
+    path = path.replace('/backend', '')
+  }
+
+  return `${BASE_URL}${path}`
+}
 
 function Main() {
   const navigate = useNavigate()
@@ -34,6 +49,11 @@ function Main() {
   const [selectedPost, setSelectedPost] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [activeView, setActiveView] = useState('explore')
+
+  const [feedPosts, setFeedPosts] = useState([])
+  const [feedCursor, setFeedCursor] = useState(null)
+  const [loadingFeed, setLoadingFeed] = useState(false)
+  const [hasMoreFeed, setHasMoreFeed] = useState(true)
 
   /**
    * flyToTarget — coordenadas para onde o mapa deve voar.
@@ -76,6 +96,46 @@ function Main() {
     navigate('/')
   }
 
+  const loadFeed = useCallback(async () => {
+    if (loadingFeed || !hasMoreFeed) return
+
+    setLoadingFeed(true)
+
+    try {
+      const data = await postExploreService.getFeed(feedCursor)
+
+      const normalized = data.feed.map(p => ({
+        id: p.id,
+        title: p.title,
+        description: p.description,
+        createdAt: p.created_at,
+        author: p.author,
+        image: normalizeImageUrl(p.image_url),
+        tags: p.tags || [],
+        likes: p.likes,
+        comments: p.comments,
+      }))
+
+      setFeedPosts(prev => [...prev, ...normalized])
+      setFeedCursor(data.next_cursor)
+
+      if (!data.next_cursor) {
+        setHasMoreFeed(false)
+      }
+
+    } catch (err) {
+      console.error("Erro feed:", err)
+    }
+
+    setLoadingFeed(false)
+  }, [feedCursor, loadingFeed, hasMoreFeed])
+
+  useEffect(() => {
+    if (activeView === 'feed' && feedPosts.length === 0) {
+      loadFeed()
+    }
+  }, [activeView])
+
   return (
     <div className="main-page">
 
@@ -104,7 +164,12 @@ function Main() {
                 setSelectedPost={setSelectedPost}
             />
         ) : (
-            <FeedView posts={[]} onViewPost={setSelectedPost} />
+            <FeedView
+                posts={feedPosts}
+                onViewPost={setSelectedPost}
+                onLoadMore={loadFeed}
+                hasMore={hasMoreFeed}
+            />
         )}
       </div>
 

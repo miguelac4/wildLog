@@ -25,8 +25,6 @@ function ExploreView({
     const API_BASE = import.meta.env.VITE_API_BASE_URL
     const BASE_URL = API_BASE.replace('/api', '')
 
-    const isDev = BASE_URL.includes('localhost')
-
     function normalizeImageUrl(path) {
         if (!path) return ''
 
