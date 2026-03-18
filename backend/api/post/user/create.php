@@ -238,13 +238,12 @@ try {
     $errInfo = $e->errorInfo ?? null;
     $mysqlErr = is_array($errInfo) ? ($errInfo[1] ?? null) : null;
 
-    // NIF UNIQUE
     if ($sqlState === '23000' && $mysqlErr === 1062) {
         api_json_error(409, 'CONFLICT', 'MySQL error = duplicate entry.');
     }
 
     api_log_exception($e, $requestId, [
-        'endpoint' => '.../post/create.php',
+        'endpoint' => '.../post/user/create.php',
         'userId'   => $_SESSION['user']['id'] ?? null
     ]);
 
