@@ -19,7 +19,7 @@ function ExploreSidebar({
                             regions,
                         }) {
 
-    const sidebarListRef = useLenisContainer({
+    const { wrapperRef: sidebarListRef } = useLenisContainer({
         lerp: 0.09,
         duration: 1.2,
         wheelMultiplier: 0.7,

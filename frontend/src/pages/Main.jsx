@@ -17,10 +17,12 @@ import { useState, useCallback, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import '../styles/Main.css'
+import '../styles/Create.css'
 import FeedView from '../components/FeedView'
 import PostDetailPanel from '../components/PostDetailPanel'
 import MainTopbar from '../components/MainTopbar'
 import ExploreView from '../components/explore/ExploreView'
+import CreateView from '../components/create/CreateView'
 import { postExploreService } from '../api/postExploreService'
 
 const MOBILE_BREAKPOINT = 768
@@ -163,6 +165,8 @@ function Main() {
                 selectedPost={selectedPost}
                 setSelectedPost={setSelectedPost}
             />
+        ) : activeView === 'create' ? (
+            <CreateView onCreated={() => handleChangeView('explore')} />
         ) : (
             <FeedView
                 posts={feedPosts}

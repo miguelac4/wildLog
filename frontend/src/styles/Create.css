@@ -1,0 +1,663 @@
+/**
+ * Create.css — Styles for the Create Post view
+ *
+ * Structure:
+ *   .create-view
+ *     ├── .create-view__header
+ *     ├── .create-view__alert
+ *     └── .create-view__form
+ *           ├── .create-field (title, description)
+ *           ├── .create-images (ImageUploader)
+ *           ├── .create-map (MapPicker)
+ *           ├── .create-tags (TagInput)
+ *           ├── .create-visibility
+ *           └── .create-view__submit
+ *
+ * Palette — consistent with Main.css:
+ *   Background:   #060d09
+ *   Card bg:      rgba(8, 14, 11, 0.92)
+ *   Accent gold:  #9B805D / #C8A97E
+ *   Borders:      rgba(255, 255, 255, 0.06–0.12)
+ */
+
+/* ══════════════════════════════════════════
+   VIEW WRAPPER
+   ══════════════════════════════════════════ */
+.create-view {
+  flex: 1;
+  overflow-y: auto;
+  padding: 32px 24px 64px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(155, 128, 93, 0.3) transparent;
+}
+
+.create-view::-webkit-scrollbar {
+  width: 6px;
+}
+
+.create-view::-webkit-scrollbar-thumb {
+  background: rgba(155, 128, 93, 0.3);
+  border-radius: 3px;
+}
+
+.create-view__container {
+  max-width: 680px;
+  margin: 0 auto;
+}
+
+/* ══════════════════════════════════════════
+   HEADER
+   ══════════════════════════════════════════ */
+.create-view__header {
+  margin-bottom: 28px;
+}
+
+.create-view__title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.3px;
+  margin: 0 0 6px;
+}
+
+.create-view__subtitle {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin: 0;
+}
+
+/* ══════════════════════════════════════════
+   ALERTS
+   ══════════════════════════════════════════ */
+.create-view__alert {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 0.88rem;
+  margin-bottom: 20px;
+  animation: createAlertIn 0.3s ease;
+}
+
+@keyframes createAlertIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.create-view__alert--error {
+  background: rgba(255, 80, 80, 0.1);
+  border: 1px solid rgba(255, 80, 80, 0.25);
+  color: #ff6b6b;
+}
+
+.create-view__alert--success {
+  background: rgba(76, 175, 80, 0.1);
+  border: 1px solid rgba(76, 175, 80, 0.25);
+  color: #66bb6a;
+}
+
+/* ══════════════════════════════════════════
+   FORM
+   ══════════════════════════════════════════ */
+.create-view__form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ══════════════════════════════════════════
+   GENERIC FIELD
+   ══════════════════════════════════════════ */
+.create-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+}
+
+.create-field__label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.create-field__input,
+.create-field__textarea {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 12px 16px;
+  color: #fff;
+  font-family: inherit;
+  font-size: 0.92rem;
+  transition: all 0.25s ease;
+  outline: none;
+  resize: none;
+  box-sizing: border-box;
+}
+
+.create-field__input:focus,
+.create-field__textarea:focus {
+  border-color: rgba(155, 128, 93, 0.45);
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: 0 0 0 3px rgba(155, 128, 93, 0.08);
+}
+
+.create-field__input::placeholder,
+.create-field__textarea::placeholder {
+  color: rgba(255, 255, 255, 0.25);
+}
+
+.create-field__counter {
+  position: absolute;
+  right: 12px;
+  top: 0;
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.create-field__hint {
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.35);
+  margin: 0;
+  padding-left: 2px;
+}
+
+/* ══════════════════════════════════════════
+   IMAGE UPLOADER — SLIDER
+   ══════════════════════════════════════════ */
+.create-images {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.create-images__counter,
+.create-tags__counter {
+  margin-left: auto;
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.create-images__counter--limit,
+.create-tags__counter--limit {
+  color: #ff6b6b;
+}
+
+/* ── Slider container ── */
+.create-images__slider {
+  position: relative;
+  width: 100%;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.create-images__slider--shake {
+  animation: createShake 0.4s ease;
+}
+
+@keyframes createShake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+
+/* ── Track (transform-based slide) ── */
+.create-images__track {
+  display: flex;
+  will-change: transform;
+}
+
+/* ── Each slide — full width ── */
+.create-images__slide {
+  position: relative;
+  flex: 0 0 100%;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.create-images__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ── Add Photo slide ── */
+.create-images__slide--add {
+  flex-direction: column;
+  gap: 8px;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.3);
+  font-family: inherit;
+  font-size: 0.85rem;
+  background: rgba(255, 255, 255, 0.02);
+  transition: all 0.25s ease;
+}
+
+.create-images__slide--add:hover,
+.create-images__slide--drag {
+  background: rgba(155, 128, 93, 0.06);
+  color: rgba(255, 255, 255, 0.55);
+}
+
+/* ── Remove button (on image slides) ── */
+.create-images__remove {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.8);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  z-index: 2;
+}
+
+.create-images__remove:hover {
+  background: rgba(255, 60, 60, 0.65);
+  color: #fff;
+}
+
+/* ── Cover badge ── */
+.create-images__cover-badge {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  padding: 3px 10px;
+  border-radius: 6px;
+  background: rgba(155, 128, 93, 0.8);
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  z-index: 2;
+}
+
+/* ── Dots indicator ── */
+.create-images__dots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 0;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.4), transparent);
+  pointer-events: none;
+}
+
+.create-images__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.3);
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.25s ease;
+  pointer-events: auto;
+}
+
+.create-images__dot--active {
+  background: #C8A97E;
+  transform: scale(1.25);
+}
+
+/* ── Navigation arrows ── */
+.create-images__arrows {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  transform: translateY(-50%);
+  display: flex;
+  justify-content: space-between;
+  padding: 0 8px;
+  pointer-events: none;
+}
+
+.create-images__arrow {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px);
+  color: rgba(255, 255, 255, 0.8);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.25s ease;
+  pointer-events: auto;
+}
+
+.create-images__arrow:hover:not(:disabled) {
+  background: rgba(0, 0, 0, 0.6);
+  border-color: rgba(255, 255, 255, 0.25);
+  color: #fff;
+}
+
+.create-images__arrow--disabled,
+.create-images__arrow:disabled {
+  opacity: 0.3;
+  cursor: default;
+  pointer-events: none;
+}
+
+.create-images__limit-msg,
+.create-tags__limit-msg {
+  font-size: 0.75rem;
+  color: rgba(255, 100, 100, 0.7);
+  margin: 0;
+}
+
+/* ══════════════════════════════════════════
+   MAP PICKER
+   ══════════════════════════════════════════ */
+.create-map {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.create-map__container {
+  position: relative;
+  width: 100%;
+  height: 300px;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.create-map__viewer {
+  width: 100%;
+  height: 100%;
+}
+
+/* Hide Cesium default credit/toolbar */
+.create-map__viewer .cesium-viewer-toolbar,
+.create-map__viewer .cesium-viewer-bottom {
+  display: none !important;
+}
+
+.create-map__loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: rgba(6, 13, 9, 0.85);
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.85rem;
+}
+
+.create-map__spinner {
+  animation: createSpin 1s linear infinite;
+}
+
+@keyframes createSpin {
+  to { transform: rotate(360deg); }
+}
+
+.create-map__hint {
+  position: absolute;
+  bottom: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 20px;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.8rem;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.create-map__footer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.create-map__gps-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.6);
+  font-family: inherit;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.create-map__gps-btn:hover:not(:disabled) {
+  background: rgba(155, 128, 93, 0.12);
+  border-color: rgba(155, 128, 93, 0.3);
+  color: #C8A97E;
+}
+
+.create-map__gps-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.create-map__coords {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.45);
+  font-variant-numeric: tabular-nums;
+}
+
+.create-map__coords-sep {
+  opacity: 0.4;
+}
+
+/* ══════════════════════════════════════════
+   TAG INPUT
+   ══════════════════════════════════════════ */
+.create-tags {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.create-tags__box {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  min-height: 44px;
+  align-items: center;
+  transition: border-color 0.25s ease;
+}
+
+.create-tags__box:focus-within {
+  border-color: rgba(155, 128, 93, 0.45);
+  box-shadow: 0 0 0 3px rgba(155, 128, 93, 0.08);
+}
+
+.create-tags__box--shake {
+  animation: createShake 0.4s ease;
+}
+
+.create-tags__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 8px;
+  background: rgba(155, 128, 93, 0.15);
+  border: 1px solid rgba(155, 128, 93, 0.25);
+  color: #C8A97E;
+  font-size: 0.8rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.create-tags__chip-remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: rgba(200, 169, 126, 0.6);
+  cursor: pointer;
+  padding: 0;
+  margin-left: 2px;
+  transition: color 0.2s ease;
+}
+
+.create-tags__chip-remove:hover {
+  color: #ff6b6b;
+}
+
+.create-tags__input {
+  flex: 1;
+  min-width: 100px;
+  background: none;
+  border: none;
+  outline: none;
+  color: #fff;
+  font-family: inherit;
+  font-size: 0.85rem;
+}
+
+.create-tags__input::placeholder {
+  color: rgba(255, 255, 255, 0.25);
+}
+
+/* ══════════════════════════════════════════
+   VISIBILITY TOGGLE
+   ══════════════════════════════════════════ */
+.create-visibility {
+  display: flex;
+  gap: 8px;
+}
+
+.create-visibility__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 18px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.5);
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.create-visibility__btn:hover {
+  border-color: rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.create-visibility__btn--active {
+  background: rgba(155, 128, 93, 0.14);
+  border-color: rgba(155, 128, 93, 0.35);
+  color: #C8A97E;
+}
+
+/* ══════════════════════════════════════════
+   SUBMIT BUTTON
+   ══════════════════════════════════════════ */
+.create-view__submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 14px 24px;
+  border-radius: 12px;
+  border: 1px solid rgba(155, 128, 93, 0.35);
+  background: linear-gradient(135deg, rgba(155, 128, 93, 0.2) 0%, rgba(155, 128, 93, 0.1) 100%);
+  color: #C8A97E;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 8px;
+}
+
+.create-view__submit:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(155, 128, 93, 0.3) 0%, rgba(155, 128, 93, 0.18) 100%);
+  border-color: rgba(155, 128, 93, 0.5);
+  box-shadow: 0 4px 20px rgba(155, 128, 93, 0.15);
+  transform: translateY(-1px);
+}
+
+.create-view__submit:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* ══════════════════════════════════════════
+   RESPONSIVE
+   ══════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .create-view {
+    padding: 20px 16px 48px;
+  }
+
+  .create-view__title {
+    font-size: 1.25rem;
+  }
+
+  .create-map__container {
+    height: 240px;
+  }
+
+  .create-images__slide {
+    aspect-ratio: 16 / 10;
+  }
+
+  .create-visibility__btn {
+    flex: 1;
+    justify-content: center;
+  }
+}
+
