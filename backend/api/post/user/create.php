@@ -20,7 +20,6 @@ if (empty($_SESSION["is_login"]) || empty($_SESSION['user']['id'])) {
 
 // Data sent via multipart/form-data
 $data = $_POST;
-$files = $_FILES['images'] ?? null;
 
 if (!is_array($data)) {
     api_json_error(400, 'BAD_REQUEST', 'Body inválido. Envie JSON.');
@@ -41,7 +40,7 @@ $lat       = $trim_str($data['lat'] ?? '');
 $lng    = $trim_str($data['lng'] ?? '');
 $visibility     = $trim_str($data['visibility'] ?? '');
 $tagsIn  = $data['tags'] ?? []; // array de tags
-$post_images  = $data['post_images'] ?? []; // array de images
+$images = $_FILES['images'] ?? null;
 
 // public posts require environmental/ethical review
 if ($visibility === 'public') {
@@ -80,8 +79,17 @@ if (count($tagsIn) > 5) {
     $errors[] = 'Maximum 5 tags allowed.';
 }
 
-$images = $_FILES['images'] ?? null;
-if (!$images || !is_array($images['name'])) {
+if ($images && !is_array($images['name'])) {
+    $images = [
+        'name' => [$images['name']],
+        'type' => [$images['type']],
+        'tmp_name' => [$images['tmp_name']],
+        'error' => [$images['error']],
+        'size' => [$images['size']],
+    ];
+}
+
+if (!$images || empty($images['name'])) {
     $errors[] = 'Images are required.';
 }
 
@@ -95,6 +103,10 @@ if ($imageCount > 5) {
  * Prevents malicious file uploads disguised as images
  */
 $finfo = new finfo(FILEINFO_MIME_TYPE);
+
+if (!isset($images['tmp_name'])) {
+    $errors[] = 'Invalid images structure.';
+}
 
 foreach ($images['tmp_name'] as $i => $tmpPath) {
 
@@ -124,6 +136,7 @@ if ($errors) {
 }
 
 $imagePaths = [];
+$createdFiles = [];
 
 try {
     $pdo = db_connect();
@@ -166,22 +179,23 @@ try {
             // On failure rollback transaction and cleanup files
             $pdo->rollBack();
 
-            $files = glob("$postDir/*");
-            if ($files) {
-                foreach ($files as $f) {
-                    unlink($f);
-                }
+            foreach ($createdFiles as $f) {
+                if (file_exists($f)) unlink($f);
             }
-            rmdir($postDir);
+
+            if (is_dir($postDir) && count(glob("$postDir/*")) === 0) {
+                rmdir($postDir);
+            }
 
             api_json_error(500, 'UPLOAD_ERROR', "Failed converting image {$i}");
         }
 
         $relativePath = "/backend/upload/user/post/{$idPost}/{$filename}";
 
-        $imagePaths[] = $relativePath;
-
         $insImg->execute([$idPost, $relativePath, $i]);
+
+        $imagePaths[] = $relativePath;
+        $createdFiles[] = $dest;
     }
 
     // Insert post tags
@@ -194,7 +208,7 @@ try {
 
         foreach ($tagsIn as $name) {
 
-            $name = $trim_str($name);
+            $name = strtolower($name);
 
             $tagStmt->execute([$name]);
             $tag = $tagStmt->fetch(PDO::FETCH_ASSOC);
