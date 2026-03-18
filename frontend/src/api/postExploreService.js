@@ -6,10 +6,16 @@ export const postExploreService = {
      * Get explore feed
      * Used for the explore feed list
      */
-    getFeed: async () => {
-        return apiFetch("/post/explore/get_feed.php", {
+    getFeed: async (cursor = null) => {
+        const params = new URLSearchParams()
+
+        if (cursor) {
+            params.append("cursor", cursor)
+        }
+
+        return apiFetch(`/post/explore/get_feed.php?${params}`, {
             method: "GET"
-        });
+        })
     },
 
     /**
