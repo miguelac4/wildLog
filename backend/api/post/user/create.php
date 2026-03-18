@@ -207,6 +207,7 @@ try {
             }
 
             $relTag->execute([$idPost, $tagId]);
+            $createdTags[] = $name;
         }
     }
 

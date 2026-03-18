@@ -24,6 +24,7 @@ services:
     volumes:
       - ./backend:/var/www
       - ../private_wildlog:/var/www/private_wildlog:ro
+      - ./docker/backend/php.ini:/usr/local/etc/php/conf.d/custom.ini
     environment:
       APP_ENV: local
     env_file:
