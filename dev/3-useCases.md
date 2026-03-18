@@ -12,7 +12,7 @@ Cada caso de uso representa uma interação específica entre um utilizador e o 
 | Visitante  | Visualizar feed público |                |
 | Visitante  | Registar uma conta      | *              |
 | Visitante  | Confirmar o email       | *              |
-| Utilizador | Fazer login             |                |
+| Utilizador | Fazer login             | *              |
 | Utilizador | Fazer logout            |                |
 | Utilizador | Recuperar password      | *              |
 
@@ -96,7 +96,7 @@ Referências:
 
 ____
 
-### 2.2.3. Confirmar o email
+### 2.2.2. Confirmar o email
 
 #### Cabeçalho
 Nome: Confirmar o email
@@ -143,6 +143,66 @@ RF03 – Enviar email de verificação
 | 6     | Sistema redireciona para a página de login     |
 
 ____
+
+### 2.2.3. Fazer login
+
+#### Cabeçalho
+
+Nome: Fazer login
+
+Actor principal:
+Utilizador
+
+Resumo:
+Permite que um utilizador autenticado aceda à plataforma através da introdução das suas credenciais (email/username e palavra-passe). O sistema valida as credenciais e inicia uma sessão autenticada.
+
+Referências:
+- RF02 – Autenticação de utilizador
+- RF05 – Gestão de sessão
+
+#### Cenário Principal (fluxo típico)
+
+| Ação do Actor                                      | Resposta do Sistema                                 |
+| -------------------------------------------------- | --------------------------------------------------- |
+| 1 Utilizador acede à página de login               |                                                     |
+|                                                    | 2 Sistema apresenta formulário de autenticação       |
+| 3 Utilizador introduz email/username e password    |                                                     |
+| 4 Utilizador submete o formulário                  |                                                     |
+|                                                    | 5 Sistema valida os dados recebidos                 |
+|                                                    | 6 Sistema verifica existência do utilizador         |
+|                                                    | 7 Sistema verifica a palavra-passe (hash)           |
+|                                                    | 8 Sistema verifica se a conta está verificada       |
+|                                                    | 9 Sistema cria sessão autenticada                   |
+|                                                    | 10 Sistema retorna dados do utilizador              |
+|                                                    | 11 Sistema redireciona para o feed principal        |
+
+#### Cenários Alternativos
+
+##### A1 – Credenciais inválidas
+
+| Passo | Alternativa                                      |
+| ----- | ------------------------------------------------ |
+| 6/7   | Sistema não encontra utilizador ou password errada |
+| 8     | Sistema apresenta mensagem genérica de erro       |
+| 9     | Caso de utilização termina                       |
+
+##### A2 – Conta não verificada
+
+| Passo | Alternativa                                      |
+| ----- | ------------------------------------------------ |
+| 8     | Sistema detecta conta não verificada             |
+| 9     | Sistema informa necessidade de confirmar email   |
+| 10    | Sistema permite reenvio do email de verificação  |
+
+##### A3 – Campos inválidos
+
+| Passo | Alternativa                                      |
+| ----- | ------------------------------------------------ |
+| 5     | Sistema detecta campos vazios ou inválidos       |
+| 6     | Sistema apresenta mensagens de validação         |
+
+____
+
 
 ### 2.2.4. Recuperar password
 
