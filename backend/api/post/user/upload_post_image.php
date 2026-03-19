@@ -25,59 +25,17 @@ if (!is_array($data)) {
     api_json_error(400, 'BAD_REQUEST', 'Body inválido. Envie JSON.');
 }
 
-// Helpers to normalize string inputs
-$trim_str = function ($v) {
-    return is_string($v) ? trim($v) : '';
-};
-
 $user_id = (int) $_SESSION['user']['id'];
-$status = 'draft';
 
 // data from form
-$title = $trim_str($data['title'] ?? '');
-$description         = $trim_str($data['description'] ?? null);
-$lat       = $trim_str($data['lat'] ?? '');
-$lng    = $trim_str($data['lng'] ?? '');
-$visibility     = $trim_str($data['visibility'] ?? '');
-$tagsIn  = $data['tags'] ?? []; // array de tags
-$images = $_FILES['images'] ?? null;
-
-// public posts require environmental/ethical review
-if ($visibility === 'public') {
-    $status = 'pending_review';
-}
+$post_id = $data['post_id'];
 
 // Basic validation
 $errors = [];
 
 $maxFileSize = 5 * 1024 * 1024; // 5MB
 
-// Clean tags: remove duplicates, trim and lowercase
-$tagsIn = array_unique(array_map(function($t){
-    return strtolower(trim($t));
-}, $tagsIn));
-
-
-if ($title === '' || mb_strlen($title) > 100) $errors[] = 'title is mandatory (max 100).';
-if (!is_numeric($lat) || !is_numeric($lng)) {
-    $errors[] = 'Latitude and Longitude must be numeric.';
-}
-
-if ($lat < -90 || $lat > 90) {
-    $errors[] = 'Latitude out of range.';
-}
-
-if ($lng < -180 || $lng > 180) {
-    $errors[] = 'Longitude out of range.';
-}
-
-if (!in_array($visibility, ['private', 'public'], true)) {
-    $errors[] = 'visibility must be private or public.';
-}
-
-if (count($tagsIn) > 5) {
-    $errors[] = 'Maximum 5 tags allowed.';
-}
+$images = $_FILES['images'] ?? null;
 
 if ($images && !is_array($images['name'])) {
     $images = [
@@ -105,7 +63,7 @@ if ($imageCount > 5) {
 $finfo = new finfo(FILEINFO_MIME_TYPE);
 
 if (!isset($images['tmp_name'])) {
-    $errors[] = 'Invalid images structure.';
+    api_json_error(400, 'BAD_REQUEST', 'Invalid images structure.');
 }
 
 foreach ($images['tmp_name'] as $i => $tmpPath) {
@@ -131,6 +89,10 @@ foreach ($images['tmp_name'] as $i => $tmpPath) {
     }
 }
 
+if (!$post_id || !is_numeric($post_id)) {
+    $errors[] = 'Invalid post_id.';
+}
+
 if ($errors) {
     api_json_error(400, 'BAD_REQUEST', implode(' ', $errors));
 }
@@ -144,34 +106,51 @@ try {
 
     $pdo->beginTransaction();
 
-    // Insert post
-    $insPost = $pdo->prepare("
-        INSERT INTO posts (user_id, title, description, lat, lng, visibility, status)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-    ");
-    $insPost->execute([$user_id, $title, $description, $lat, $lng, $visibility, $status]);
+    # Verificar se o user é dono do post
+    $stmt = $pdo->prepare("SELECT user_id FROM posts WHERE id = ?");
+    $stmt->execute([$post_id]);
+    $post = $stmt->fetch();
 
-    $idPost = (int)$pdo->lastInsertId();
+    if (!$post) {
+        $pdo->rollBack();
+        api_json_error(404, 'NOT_FOUND', 'Post not found.');
+    }
+
+    if ((int)$post['user_id'] !== $user_id) {
+        $pdo->rollBack();
+        api_json_error(403, 'FORBIDDEN', 'No permission to modify this post.');
+    }
 
     // Create post directory for images
-    $postDir = __DIR__ . "/../../../upload/user/post/{$idPost}";
+    $postDir = __DIR__ . "/../../../upload/user/post/{$post_id}";
 
     if (!is_dir($postDir) && !mkdir($postDir, 0755, true)) {
         $pdo->rollBack();
         api_json_error(500, 'UPLOAD_ERROR', 'Could not create post directory.');
     }
 
+    # Verificar se o número total de imagens do post não excede 5
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM post_images WHERE post_id = ? FOR UPDATE");
+    $stmt->execute([$post_id]);
+    $currentCount = (int)$stmt->fetchColumn();
+
+    if ($currentCount + $imageCount > 5) {
+        $pdo->rollBack();
+        api_json_error(400, 'BAD_REQUEST', 'Maximum 5 images per post.');
+    }
     $insImg = $pdo->prepare("
     INSERT INTO post_images (post_id, image_url, position)
     VALUES (?, ?, ?)
 ");
+
+    $position = $currentCount;
 
     // Convert uploaded images to WEBP and store them
     foreach ($images['tmp_name'] as $i => $tmpPath) {
 
         $mime = $finfo->file($tmpPath);
 
-        $filename = "{$idPost}_" . uniqid('', true) . ".webp";
+        $filename = "{$post_id}_" . uniqid('', true) . ".webp";
         $dest = $postDir . "/" . $filename;
 
         if (!image_convert_to_webp($tmpPath, $dest, $mime)) {
@@ -183,62 +162,23 @@ try {
                 if (file_exists($f)) unlink($f);
             }
 
-            if (is_dir($postDir) && count(glob("$postDir/*")) === 0) {
-                rmdir($postDir);
-            }
-
             api_json_error(500, 'UPLOAD_ERROR', "Failed converting image {$i}");
         }
 
-        $relativePath = "/backend/upload/user/post/{$idPost}/{$filename}";
-
-        $insImg->execute([$idPost, $relativePath, $i]);
+        $relativePath = "/backend/upload/user/post/{$post_id}/{$filename}";
 
         $imagePaths[] = $relativePath;
         $createdFiles[] = $dest;
+
+        $insImg->execute([$post_id, $relativePath, $position++]);
     }
-
-    // Insert post tags
-    $createdTags = [];
-
-    if (count($tagsIn) > 0) {
-        $tagStmt = $pdo->prepare("SELECT id FROM post_tags WHERE name = ?");
-        $insertTag = $pdo->prepare("INSERT INTO post_tags (name) VALUES (?)");
-        $relTag = $pdo->prepare("INSERT INTO post_tag_rel (post_id, tag_id) VALUES (?, ?)");
-
-        foreach ($tagsIn as $name) {
-
-            $name = strtolower($name);
-
-            $tagStmt->execute([$name]);
-            $tag = $tagStmt->fetch(PDO::FETCH_ASSOC);
-
-            if ($tag) {
-                $tagId = $tag['id'];
-            } else {
-                $insertTag->execute([$name]);
-                $tagId = $pdo->lastInsertId();
-            }
-
-            $relTag->execute([$idPost, $tagId]);
-            $createdTags[] = $name;
-        }
-    }
-
     // Commit transaction
     $pdo->commit();
 
     echo json_encode([
         'created' => true,
-        'post' => [
-            'id'     => $idPost,
-            'title' => $title,
-            'description'           => $description,
-            'lat'        => $lat,
-            'lng'     => $lng,
-            'visibility'      => $visibility,
-        ],
-        'tags' => $createdTags,
+        'user_id' => $user_id,
+        'post_id' => $post_id,
         'images' => $imagePaths,
     ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     exit;
@@ -257,7 +197,7 @@ try {
     }
 
     api_log_exception($e, $requestId, [
-        'endpoint' => '.../post/user/create.php',
+        'endpoint' => '.../post/user/upload_post_image.php',
         'userId'   => $_SESSION['user']['id'] ?? null
     ]);
 
@@ -269,7 +209,7 @@ try {
     }
 
     api_log_exception($e, $requestId, [
-        'endpoint' => '.../post/user/create.php',
+        'endpoint' => '.../post/user/upload_post_image.php',
         'userId'   => $_SESSION['user']['id'] ?? null
     ]);
 

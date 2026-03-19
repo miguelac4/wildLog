@@ -28,15 +28,10 @@ SELECT
     p.description,
     p.visibility,
     p.created_at,
-    MAX(img.image_url) AS image_url,
-    GROUP_CONCAT(DISTINCT t.name) AS tags,
     COUNT(DISTINCT l.user_id) AS likes,
     COUNT(DISTINCT c.id) AS comments
 
 FROM posts p
-
-LEFT JOIN post_images img
-    ON img.post_id = p.id AND img.position = 0
 
 LEFT JOIN post_tag_rel rel
     ON rel.post_id = p.id
@@ -64,10 +59,50 @@ ORDER BY p.created_at DESC
 
     $user_posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+    // IMAGES
+    $stmtImages = $pdo->prepare("
+    SELECT img.id, img.post_id, img.image_url
+    FROM post_images img
+    INNER JOIN posts p ON p.id = img.post_id
+    WHERE p.user_id = ?
+    ORDER BY img.position ASC
+");
+    $stmtImages->execute([$id]);
+    $images = $stmtImages->fetchAll(PDO::FETCH_ASSOC);
+
+
+    // TAGS
+    $stmtTags = $pdo->prepare("
+    SELECT rel.post_id, t.id, t.name
+    FROM post_tag_rel rel
+    INNER JOIN post_tags t ON t.id = rel.tag_id
+    INNER JOIN posts p ON p.id = rel.post_id
+    WHERE p.user_id = ?
+");
+    $stmtTags->execute([$id]);
+    $tags = $stmtTags->fetchAll(PDO::FETCH_ASSOC);
+
+    $postTagsMap = [];
+
+    foreach ($tags as $tag) {
+        $postTagsMap[$tag['post_id']][] = [
+            'id' => (int)$tag['id'],
+            'name' => $tag['name']
+        ];
+    }
+
+    $postImagesMap = [];
+
+    foreach ($images as $img) {
+        $postImagesMap[$img['post_id']][] = [
+            'id' => (int)$img['id'],
+            'url' => $img['image_url']
+        ];
+    }
+
     foreach ($user_posts as &$post) {
-        $post['tags'] = $post['tags']
-            ? explode(',', $post['tags'])
-            : [];
+        $post['tags'] = $postTagsMap[$post['id']] ?? [];
+        $post['images'] = $postImagesMap[$post['id']] ?? [];
     }
 
 
