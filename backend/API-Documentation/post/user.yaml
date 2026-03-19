@@ -1,0 +1,320 @@
+openapi: 3.0.3
+info:
+  title: WildLog API - User Posts
+  version: 1.0.0
+  description: >
+    Endpoints for managing user posts.
+    Includes creation, editing, deletion, images and tags.
+
+servers:
+  - url: https://wild-log.com/backend/api
+    description: Production
+  - url: http://localhost:8000/api
+    description: Local
+
+tags:
+  - name: UserPosts
+    description: User post management endpoints
+
+components:
+
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: PHPSESSID
+
+  schemas:
+
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          type: string
+          example: INTERNAL_ERROR
+        message:
+          type: string
+          example: Ocorreu um erro inesperado.
+        request_id:
+          type: string
+          example: 377b27080c24aad4
+      required: [code, message]
+
+    Tag:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 3
+        name:
+          type: string
+          example: nature
+
+    Image:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 41
+        url:
+          type: string
+          example: /backend/upload/user/post/19/image.webp
+
+    UserPost:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        visibility:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        likes:
+          type: integer
+        comments:
+          type: integer
+        tags:
+          type: array
+          items:
+            $ref: "#/components/schemas/Tag"
+        images:
+          type: array
+          items:
+            $ref: "#/components/schemas/Image"
+
+paths:
+
+  /post/user/create.php:
+    post:
+      tags: [UserPosts]
+      summary: Create post
+      description: Creates a new post with images and tags
+
+      security:
+        - sessionCookie: []
+
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [title, lat, lng, visibility, images]
+              properties:
+                title:
+                  type: string
+                description:
+                  type: string
+                lat:
+                  type: number
+                lng:
+                  type: number
+                visibility:
+                  type: string
+                  enum: [private, public]
+                tags:
+                  type: array
+                  items:
+                    type: string
+                images:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+
+      responses:
+        "200":
+          description: Post created
+        "400":
+          description: Invalid data
+        "401":
+          description: Not authenticated
+
+  /post/user/delete.php:
+    delete:
+      tags: [UserPosts]
+      summary: Delete post
+
+      security:
+        - sessionCookie: []
+
+      parameters:
+        - name: post_id
+          in: query
+          required: true
+          schema:
+            type: integer
+
+      responses:
+        "200":
+          description: Post deleted
+        "404":
+          description: Post not found
+
+  /post/user/get_user_post.php:
+    get:
+      tags: [UserPosts]
+      summary: Get user posts
+
+      security:
+        - sessionCookie: []
+
+      responses:
+        "200":
+          description: User posts
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  posts:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/UserPost"
+
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /post/user/edit_post_basic.php:
+    patch:
+      tags: [UserPosts]
+      summary: Edit post basic info
+
+      security:
+        - sessionCookie: []
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [post_id]
+              properties:
+                post_id:
+                  type: integer
+                title:
+                  type: string
+                description:
+                  type: string
+                visibility:
+                  type: string
+                  enum: [private, public]
+
+      responses:
+        "200":
+          description: Post updated
+
+  /post/user/add_post_tag.php:
+    post:
+      tags: [UserPosts]
+      summary: Add tag to post
+
+      security:
+        - sessionCookie: []
+
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required: [post_id, new_tag]
+              properties:
+                post_id:
+                  type: integer
+                new_tag:
+                  type: string
+
+      responses:
+        "200":
+          description: Tag added
+        "409":
+          description: Tag already exists
+
+  /post/user/delete_post_tag.php:
+    post:
+      tags: [UserPosts]
+      summary: Remove tag from post
+
+      security:
+        - sessionCookie: []
+
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required: [post_id, tag_id]
+              properties:
+                post_id:
+                  type: integer
+                tag_id:
+                  type: integer
+
+      responses:
+        "200":
+          description: Tag removed
+
+  /post/user/upload_post_image.php:
+    post:
+      tags: [UserPosts]
+      summary: Upload images to post
+
+      security:
+        - sessionCookie: []
+
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [post_id, images]
+              properties:
+                post_id:
+                  type: integer
+                images:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+
+      responses:
+        "200":
+          description: Images uploaded
+
+  /post/user/delete_post_image.php:
+    post:
+      tags: [UserPosts]
+      summary: Delete image from post
+
+      security:
+        - sessionCookie: []
+
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required: [post_id, image_id]
+              properties:
+                post_id:
+                  type: integer
+                image_id:
+                  type: integer
+
+      responses:
+        "200":
+          description: Image deleted
