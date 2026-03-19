@@ -40,5 +40,5 @@ export default function useLenisContainer(options = {}) {
         }
     }, [options])
 
-    return wrapperRef
+    return { wrapperRef, lenisRef }
 }
