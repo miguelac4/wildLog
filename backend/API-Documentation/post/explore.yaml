@@ -69,6 +69,9 @@ components:
         created_at:
           type: string
           format: date-time
+        image_url:
+          type: string
+          example: /backend/upload/user/post/12/image.webp
         tags:
           type: array
           items:
@@ -144,10 +147,18 @@ paths:
       tags: [Explore]
       summary: Get explore feed
       description: >
-        Returns a list of recent approved public posts used in the Explore feed.
+        Returns a paginated list of approved public posts for the Explore feed.
 
       security:
         - sessionCookie: []
+
+      parameters:
+        - name: cursor
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Cursor for pagination (created_at of last post)
 
       responses:
         "200":
@@ -161,6 +172,10 @@ paths:
                     type: array
                     items:
                       $ref: "#/components/schemas/NearbyPost"
+                  next_cursor:
+                    type: string
+                    nullable: true
+                    example: "2026-03-10 12:00:00"
 
         "401":
           description: Not authenticated
@@ -221,7 +236,6 @@ paths:
       summary: Get nearby posts
       description: >
         Returns the closest public posts to the provided coordinates.
-        Used to populate the "Nearby Posts" sidebar.
 
       security:
         - sessionCookie: []
@@ -232,14 +246,12 @@ paths:
           required: true
           schema:
             type: number
-          description: Latitude of the user's location
 
         - name: lng
           in: query
           required: true
           schema:
             type: number
-          description: Longitude of the user's location
 
       responses:
         "200":
@@ -282,7 +294,6 @@ paths:
       summary: Get full post details
       description: >
         Returns the complete details of a post including images and comments.
-        Used when a user opens a post from the map or explore feed.
 
       security:
         - sessionCookie: []
@@ -293,7 +304,6 @@ paths:
           required: true
           schema:
             type: integer
-          description: ID of the post
 
       responses:
         "200":
