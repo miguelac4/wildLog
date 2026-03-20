@@ -62,9 +62,8 @@ function PostDetailPanel({ post, onClose }) {
                                     {images.map((_, index) => (
                                         <span
                                             key={index}
-                                            className={`main-post-panel__dot ${
-                                                index === imageIndex ? 'main-post-panel__dot--active' : ''
-                                            }`}
+                                            className={`main-post-panel__dot ${index === imageIndex ? 'main-post-panel__dot--active' : ''
+                                                }`}
                                             onClick={() => setImageIndex(index)}
                                         />
                                     ))}

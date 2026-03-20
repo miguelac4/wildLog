@@ -18,6 +18,7 @@
  */
 import { useState, useCallback, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Map, Grid } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import '../styles/Main.css'
 import FeedView from '../components/FeedView'
@@ -153,6 +154,7 @@ function Main() {
   const [selectedPost, setSelectedPost] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [activeView, setActiveView] = useState('explore')
+  const [accountTab, setAccountTab] = useState('posts')
 
   /**
    * flyToTarget — coordenadas para onde o mapa deve voar.
@@ -275,23 +277,36 @@ function Main() {
 
         {/* ── VISTA: ACCOUNT (Perfil com as tuas 3 classes) ── */}
         {activeView === 'account' && (
-            <div className="account-page-wrapper">
+            <div className="account-page-wrapper" data-lenis-prevent>
+              <div className="account-page-inner">
+                {/* 1. Classe das Estatísticas e Bio no topo */}
+                <div className="account-stats-container">
+                  <AccountStats user={user} />
+                </div>
 
-              {/* 1. Classe das Estatísticas e Bio no topo */}
-              <div className="account-stats-container">
-                <AccountStats user={user} />
+              {/* 2. Toggle de Posts e Mapa */}
+              <div className="account-tabs-container">
+                <div className="account-tabs">
+                  <button 
+                    className={`account-tab-btn ${accountTab === 'posts' ? 'active' : ''}`}
+                    onClick={() => setAccountTab('posts')}
+                  >
+                    <Grid size={18} /> Publicações
+                  </button>
+                  <button 
+                    className={`account-tab-btn ${accountTab === 'map' ? 'active' : ''}`}
+                    onClick={() => setAccountTab('map')}
+                  >
+                    <Map size={18} /> Mapa
+                  </button>
+                </div>
               </div>
 
-              {/* 2. Classes de Posts e Mapa lado a lado */}
-              <div className="account-split-view">
-                <div className="account-content-box">
-                  <AccountPosts />
-                </div>
-                <div className="account-content-box" style={{ padding: 0 }}>
-                  <AccountMap />
-                </div>
+              <div className={`account-content-box is-${accountTab}`} style={accountTab === 'map' ? { padding: 0 } : {}}>
+                {accountTab === 'posts' ? <AccountPosts onPostClick={handlePostClick} /> : <AccountMap />}
               </div>
 
+              </div>
             </div>
         )}
       </div>

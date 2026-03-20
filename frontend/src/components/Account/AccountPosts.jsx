@@ -1,12 +1,7 @@
-import { useState } from 'react'
 import { Grid3X3, Camera } from 'lucide-react'
-import PostDetailPanel from '../PostDetailPanel' // Ajusta o caminho se necessário!
 import '../../styles/Account.css'
 
-function AccountPosts({ posts = [] }) {
-    // Estado para saber que post está aberto no painel detalhado
-    const [selectedPost, setSelectedPost] = useState(null)
-
+function AccountPosts({ posts = [], onPostClick }) {
     // Se a pessoa não tiver posts, mostramos uns de placeholder para veres o layout
     const displayPosts = posts.length > 0 ? posts : [
         { id: 101, title: 'Serra da Estrela', image: '/wildlog/media/post/ferreira_1.jpeg', likes: 45, comments: 5, author: 'tu', tags: ['montanha'], createdAt: '2026-03-10' },
@@ -26,7 +21,7 @@ function AccountPosts({ posts = [] }) {
                     <div
                         key={post.id}
                         className="account-post-item"
-                        onClick={() => setSelectedPost(post)}
+                        onClick={() => onPostClick && onPostClick(post)}
                     >
                         {/* Se tiver imagem, mostra a primeira, senão mostra um placeholder */}
                         {post.image || (post.images && post.images.length > 0) ? (
@@ -43,13 +38,6 @@ function AccountPosts({ posts = [] }) {
                 ))}
             </div>
 
-            {/* O Painel Mágico que já tinham criado! */}
-            {selectedPost && (
-                <PostDetailPanel
-                    post={selectedPost}
-                    onClose={() => setSelectedPost(null)}
-                />
-            )}
         </>
     )
 }
