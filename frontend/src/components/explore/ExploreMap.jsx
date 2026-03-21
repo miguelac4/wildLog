@@ -108,6 +108,10 @@ function ExploreMap({ posts, regions, onPostClick, flyToTarget, onFlyComplete, o
                 // porque os tiles não se atualizam entre frames parciais
             })
 
+            // Block Maximum Zoom Distance
+            const controller = viewer.scene.screenSpaceCameraController
+            controller.maximumZoomDistance = 9000000
+
             viewer.scene.backgroundColor = Cesium.Color.fromCssColorString('#060d09')
             viewer.scene.globe.baseColor = Cesium.Color.fromCssColorString('#0a1f14')
             viewer.scene.globe.maximumScreenSpaceError = 2
