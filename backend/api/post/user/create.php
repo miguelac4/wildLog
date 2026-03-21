@@ -43,8 +43,10 @@ $tagsIn  = $data['tags'] ?? []; // array de tags
 $images = $_FILES['images'] ?? null;
 
 // public posts require environmental/ethical review
+// TODO: To make it working put the status = 'pending_review'
 if ($visibility === 'public') {
-    $status = 'pending_review';
+    $status = 'approved';
+    //$status = 'pending_review';
 }
 
 // Basic validation
@@ -190,7 +192,7 @@ try {
             api_json_error(500, 'UPLOAD_ERROR', "Failed converting image {$i}");
         }
 
-        $relativePath = "/backend/upload/user/post/{$idPost}/{$filename}";
+        $relativePath = "/upload/user/post/{$idPost}/{$filename}";
 
         $insImg->execute([$idPost, $relativePath, $i]);
 
