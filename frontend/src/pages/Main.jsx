@@ -30,17 +30,6 @@ const MOBILE_BREAKPOINT = 768
 const API_BASE = import.meta.env.VITE_API_BASE_URL
 const BASE_URL = API_BASE.replace('/api', '')
 
-function normalizeImageUrl(path) {
-  if (!path) return ''
-
-  // DEV → remover /backend
-  if (BASE_URL.includes('localhost')) {
-    path = path.replace('/backend', '')
-  }
-
-  return `${BASE_URL}${path}`
-}
-
 function Main() {
   const navigate = useNavigate()
   const { user, logout } = useAuth()
@@ -112,7 +101,7 @@ function Main() {
         description: p.description,
         createdAt: p.created_at,
         author: p.author,
-        image: normalizeImageUrl(p.image_url),
+        image: `${BASE_URL}${p.image_url}`,
         tags: p.tags || [],
         likes: p.likes,
         comments: p.comments,
