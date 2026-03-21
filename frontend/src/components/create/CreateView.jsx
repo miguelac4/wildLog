@@ -39,7 +39,7 @@ function CreateView({ onCreated }) {
         wheelMultiplier: 0.9,
         touchMultiplier: 1.5,
     }), [])
-    const { wrapperRef: scrollRef } = useLenisContainer(lenisOpts)
+    const { wrapperRef: scrollRef, lenisRef } = useLenisContainer(lenisOpts)
 
     const [errorTrigger, setErrorTrigger] = useState(0)
 
@@ -51,8 +51,11 @@ function CreateView({ onCreated }) {
 
 
     useEffect(() => {
-        if (error && scrollRef?.current) {
-            scrollRef.current.scrollTop = 0
+        if (error && lenisRef?.current) {
+            lenisRef.current.scrollTo(0, {
+                duration: 1.2,
+                easing: (t) => 1 - Math.pow(1 - t, 3),
+            })
         }
     }, [errorTrigger])
 
