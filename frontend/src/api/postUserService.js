@@ -74,7 +74,7 @@ export const postUserService = {
     //uploadPostImg:
 
     /**
-     * TODO AFONSO: Here you instance the Endpoints from the module to consume them in frontend (AFTER IMPLEMENTATION DELETE THIS COMMENT LINE)
+     * TODO AFONSO: Here you instance the Endpoints  from the module to consume them in frontend (AFTER IMPLEMENTATION DELETE THIS COMMENT LINE)
      * Delete an Image from a User Post
      */
     //deletePostImg:
