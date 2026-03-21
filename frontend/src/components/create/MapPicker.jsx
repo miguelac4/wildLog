@@ -52,6 +52,10 @@ function MapPicker({ lat, lng, onLocationChange, onMapHover }) {
             },
         })
 
+        // Block Maximum Zoom Distance
+        const controller = viewer.scene.screenSpaceCameraController
+        controller.maximumZoomDistance = 7000000
+
         viewer.scene.backgroundColor = Cesium.Color.fromCssColorString('#060d09')
         viewer.scene.globe.baseColor = Cesium.Color.fromCssColorString('#0a1f14')
         viewer.scene.globe.maximumScreenSpaceError = 2

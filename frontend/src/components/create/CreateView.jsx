@@ -1,11 +1,10 @@
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback, useMemo, useEffect } from 'react'
 import { Send, Eye, EyeOff, AlertCircle, CheckCircle } from 'lucide-react'
 import ImageUploader from './ImageUploader'
 import MapPicker from './MapPicker'
 import TagInput from './TagInput'
 import useLenisContainer from '../../hooks/useLenisContainer'
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
+import { postUserService } from '../../api/postUserService'
 
 /**
  * CreateView — Full create-post form.
@@ -40,7 +39,9 @@ function CreateView({ onCreated }) {
         wheelMultiplier: 0.9,
         touchMultiplier: 1.5,
     }), [])
-    const { wrapperRef: scrollRef } = useLenisContainer(lenisOpts)
+    const { wrapperRef: scrollRef, lenisRef } = useLenisContainer(lenisOpts)
+
+    const [errorTrigger, setErrorTrigger] = useState(0)
 
     /* ── Location handler ── */
     const handleLocationChange = useCallback(({ lat: newLat, lng: newLng }) => {
@@ -48,16 +49,37 @@ function CreateView({ onCreated }) {
         setLng(newLng)
     }, [])
 
+
+    useEffect(() => {
+        if (error && lenisRef?.current) {
+            lenisRef.current.scrollTo(0, {
+                duration: 1.2,
+                easing: (t) => 1 - Math.pow(1 - t, 3),
+            })
+        }
+    }, [errorTrigger])
+
     /* ── Submit ── */
     const handleSubmit = async (e) => {
         e.preventDefault()
         setError('')
         setSuccess('')
 
+        console.log("IMAGES:", images)
+
         /* Client-side validation */
-        if (!title.trim()) { setError('Title is required.'); return }
-        if (images.length === 0) { setError('At least one photo is required.'); return }
-        if (lat == null || lng == null) { setError('Please select a location on the map.'); return }
+        if (!title.trim()) {
+            setError('Title is required.');
+            setErrorTrigger(prev => prev + 1);
+            return }
+        if (images.length === 0) {
+            setError('At least one photo is required.');
+            setErrorTrigger(prev => prev + 1);
+            return }
+        if (lat == null || lng == null) {
+            setError('Please select a location on the map.');
+            setErrorTrigger(prev => prev + 1);
+            return }
 
         setSubmitting(true)
 
@@ -70,19 +92,19 @@ function CreateView({ onCreated }) {
             formData.append('visibility', visibility)
 
             tags.forEach((tag, i) => formData.append(`tags[${i}]`, tag))
-            images.forEach((img) => formData.append('images[]', img.file))
-
-            const res = await fetch(`${API_BASE_URL}/post/user/create.php`, {
-                method: 'POST',
-                credentials: 'include',
-                body: formData,
+            images.forEach((img) => {
+                formData.append("images[]", img.file)
             })
 
-            const data = await res.json()
-
-            if (!res.ok) {
-                throw new Error(data?.message || 'Failed to create post.')
-            }
+            const data = await postUserService.createPost({
+                title: title.trim(),
+                description: description.trim(),
+                lat,
+                lng,
+                visibility,
+                tags,
+                images: images.map(img => img.file),
+            })
 
             setSuccess('Post created successfully!')
 
@@ -98,6 +120,7 @@ function CreateView({ onCreated }) {
             onCreated?.(data)
         } catch (err) {
             setError(err.message || 'Something went wrong.')
+            setErrorTrigger(prev => prev + 1)
         } finally {
             setSubmitting(false)
         }
