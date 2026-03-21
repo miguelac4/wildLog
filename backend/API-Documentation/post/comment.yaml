@@ -1,0 +1,186 @@
+openapi: 3.0.3
+info:
+  title: WildLog API - Post Comments
+  version: 1.0.0
+  description: >
+    Endpoints for managing comments on posts.
+    Requires authenticated session (PHPSESSID cookie).
+
+servers:
+  - url: https://wild-log.com/backend/api
+    description: Production
+  - url: http://localhost:8000/api
+    description: Local
+
+tags:
+  - name: Comments
+    description: Post comments management
+
+components:
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: PHPSESSID
+
+  schemas:
+    Comment:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 12
+        comment:
+          type: string
+          example: Amazing place!
+        created_at:
+          type: string
+          format: date-time
+        username:
+          type: string
+          example: miguel
+
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          type: string
+          example: BAD_REQUEST
+        message:
+          type: string
+          example: Invalid request
+        request_id:
+          type: string
+          example: abc123
+
+paths:
+
+  /post/comment/create_comment.php:
+    post:
+      tags: [Comments]
+      summary: Create a comment on a post
+      security:
+        - sessionCookie: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [post_id, comment]
+              properties:
+                post_id:
+                  type: integer
+                  example: 5
+                comment:
+                  type: string
+                  maxLength: 300
+                  example: Beautiful place!
+      responses:
+        '200':
+          description: Comment created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  created:
+                    type: boolean
+                    example: true
+                  post_id:
+                    type: integer
+                    example: 5
+                  comment:
+                    type: string
+                    example: Beautiful place!
+                  comment_id:
+                    type: integer
+                    example: 42
+        '400':
+          description: Validation error
+        '401':
+          description: Unauthorized
+        '404':
+          description: Post not found or not public
+        '500':
+          description: Internal server error
+
+  /post/comment/delete_comment.php:
+    delete:
+      tags: [Comments]
+      summary: Delete a comment
+      security:
+        - sessionCookie: []
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required: [comment_id]
+              properties:
+                comment_id:
+                  type: integer
+                  example: 42
+      responses:
+        '200':
+          description: Comment deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  deleted:
+                    type: boolean
+                    example: true
+                  comment_id:
+                    type: integer
+                    example: 42
+                  post_id:
+                    type: integer
+                    example: 5
+        '400':
+          description: Invalid input
+        '401':
+          description: Unauthorized
+        '403':
+          description: No permission
+        '404':
+          description: Comment not found
+        '500':
+          description: Internal server error
+
+  /post/comment/get_comments.php:
+    get:
+      tags: [Comments]
+      summary: Get comments for a post
+      security:
+        - sessionCookie: []
+      parameters:
+        - in: query
+          name: post_id
+          required: true
+          schema:
+            type: integer
+          example: 5
+      responses:
+        '200':
+          description: List of comments
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  post_id:
+                    type: integer
+                    example: 5
+                  comments:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Comment'
+        '400':
+          description: Invalid post_id
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal server error
