@@ -12,10 +12,10 @@ if ($_SERVER["REQUEST_METHOD"] !== "GET") {
 }
 
 if (
-    empty($_SESSION["is_login"]) ||
-    $_SESSION["is_login"] !== true ||
-    empty($_SESSION["user"]) ||
-    !is_array($_SESSION["user"])
+empty($_SESSION["is_login"]) ||
+$_SESSION["is_login"] !== true ||
+empty($_SESSION["user"]) ||
+!is_array($_SESSION["user"])
 ) {
     api_json_error(401, 'UNAUTHORIZED', 'Utilizador não autenticado.');
 }
@@ -25,15 +25,16 @@ try {
 
     echo json_encode([
         'user' => [
-            'id'    => (int)($user['id'] ?? 0),
-            'username'  => $user['username'] ?? '',
+            'id' => (int)($user['id'] ?? 0),
+            'username' => $user['username'] ?? '',
             'email' => $user['email'] ?? '',
-            'role'  => $user['role'] ?? ''
+            'role' => $user['role'] ?? ''
         ]
     ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     exit;
 
-} catch (Throwable $e) {
+}
+catch (Throwable $e) {
     api_log_exception($e, $requestId, [
         'endpoint' => '.../auth/me.php',
     ]);

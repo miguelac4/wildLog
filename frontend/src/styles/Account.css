@@ -185,6 +185,59 @@
 }
 
 /* --- COMPONENTE: AccountPosts --- */
+.account-posts-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem 0;
+}
+
+.account-posts-header .account-section-title {
+    padding: 0;
+}
+
+.account-posts-filter {
+    display: flex;
+    gap: 0.5rem;
+    background: rgba(10, 31, 20, 0.4);
+    border: 1px solid rgba(160, 132, 95, 0.2);
+    border-radius: 999px;
+    padding: 0.25rem;
+}
+
+.account-filter-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: transparent;
+    border: none;
+    color: #c9c7c2;
+    padding: 0.5rem 1rem;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.account-filter-btn:hover {
+    color: #f1f0ee;
+    background: rgba(160, 132, 95, 0.1);
+}
+
+.account-filter-btn.active {
+    background: rgba(160, 132, 95, 0.3);
+    color: #a0845f;
+}
+
+.account-posts-empty {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 3rem;
+    color: rgba(160, 132, 95, 0.6);
+    font-style: italic;
+}
+
 .account-posts-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
