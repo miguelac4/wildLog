@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { Search } from 'lucide-react'
 import SwipeDeck from './feed/SwipeDeck'
 
@@ -13,17 +13,20 @@ import SwipeDeck from './feed/SwipeDeck'
  *   posts       — filtered array of post objects
  *   onViewPost  — callback when user opens/views a post
  */
-function FeedView({ posts, onViewPost }) {
+function FeedView({ posts, onViewPost, onLoadMore, hasMore }) {
     const feedRef = useRef(null)
 
     const handleFavorite = (post) => {
-        // TODO: integrate with API — POST /api/posts/:id/favorite
         console.log('Favorited:', post.title)
     }
 
-    const handleSkip = (post) => {
-        // TODO: optional analytics or dismiss logic
+    const handleSkip = (post, remaining) => {
         console.log('Skipped:', post.title)
+
+        // 🔥 quando estiver quase a acabar → carregar mais
+        if (hasMore && remaining <= 3) {
+            onLoadMore()
+        }
     }
 
     return (

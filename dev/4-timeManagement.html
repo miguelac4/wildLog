@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8"/>
+<title>WildLog — Time Management</title>
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+        font-family: Inter, system-ui, sans-serif;
+        background: #f9fafb;
+        color: #111827;
+        padding: 32px 24px;
+        font-size: 13px;
+    }
+
+    .wrapper { max-width: 1320px; margin: 0 auto; }
+
+    /* ── HEADER ── */
+    .page-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #111827;
+        margin-bottom: 2px;
+    }
+    .page-sub {
+        font-size: 12px;
+        color: #9ca3af;
+        margin-bottom: 20px;
+    }
+
+    /* ── LEGENDS ROW ── */
+    .legends {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 24px;
+        margin-bottom: 20px;
+        align-items: flex-start;
+    }
+
+    .legend-group { display: flex; flex-direction: column; gap: 6px; }
+    .legend-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: #9ca3af; margin-bottom: 2px; }
+    .legend-items { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    .pill {
+        display: flex; align-items: center; gap: 5px;
+        padding: 3px 8px;
+        border-radius: 99px;
+        font-size: 11px;
+        font-weight: 500;
+        background: #f3f4f6;
+        color: #374151;
+        border: 1px solid #e5e7eb;
+    }
+    .pill .dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+    .dot-ui { background: #ef4444; }
+    .dot-u  { background: #f97316; }
+    .dot-i  { background: #3b82f6; }
+    .dot-r  { background: #8b5cf6; }
+
+    .swatch { display: flex; align-items: center; gap: 5px; font-size: 11px; color: #374151; }
+    .swatch-box { width: 14px; height: 14px; border-radius: 3px; border: 1px solid rgba(0,0,0,0.08); flex-shrink: 0; }
+
+    /* ── TABLE ── */
+    .table-wrap {
+        overflow-x: auto;
+        border-radius: 8px;
+        border: 1px solid #e5e7eb;
+        background: #fff;
+    }
+
+    table { width: 100%; border-collapse: collapse; font-size: 11px; min-width: 1000px; }
+
+    thead th {
+        padding: 8px 5px;
+        font-weight: 600;
+        color: #6b7280;
+        background: #f9fafb;
+        border-bottom: 1px solid #e5e7eb;
+        white-space: nowrap;
+        text-align: center;
+    }
+    thead th:first-child { text-align: left; padding-left: 14px; min-width: 220px; }
+
+    tbody tr { border-bottom: 1px solid #f3f4f6; }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: #f9fafb; }
+
+    tbody th {
+        text-align: left;
+        padding: 7px 14px;
+        font-weight: 500;
+        color: #374151;
+        white-space: nowrap;
+        background: transparent;
+    }
+
+    td { padding: 5px 3px; text-align: center; position: relative; }
+
+    /* ── CELLS ── */
+    .cell-low  { background: #eff6ff; }
+    .cell-mid  { background: #bfdbfe; }
+    .cell-high { background: #93c5fd; }
+    .cell-peak { background: #fde68a; }
+
+    .cell-inner {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        font-weight: 500;
+        color: #1e3a5f;
+    }
+    .cell-peak .cell-inner { color: #78350f; }
+
+    .pdot { position: absolute; top: 1px; right: 1px; width: 5px; height: 5px; border-radius: 50%; }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+    <p class="page-title">WildLog — Time Management</p>
+    <p class="page-sub">Cronograma 17 semanas · Março – Julho 2026 · Matriz de Eisenhower</p>
+
+    <div class="legends">
+        <div class="legend-group">
+            <div class="legend-label">Prioridade</div>
+            <div class="legend-items">
+                <span class="pill"><span class="dot dot-ui"></span>Urgente & Importante</span>
+                <span class="pill"><span class="dot dot-u"></span>Urgente</span>
+                <span class="pill"><span class="dot dot-i"></span>Importante</span>
+                <span class="pill"><span class="dot dot-r"></span>Relevante</span>
+            </div>
+        </div>
+        <div class="legend-group">
+            <div class="legend-label">Carga de trabalho</div>
+            <div class="legend-items">
+                <span class="swatch"><span class="swatch-box" style="background:#fff;border:1px solid #e5e7eb;"></span>—</span>
+                <span class="swatch"><span class="swatch-box" style="background:#eff6ff;"></span>Baixa ~8h</span>
+                <span class="swatch"><span class="swatch-box" style="background:#bfdbfe;"></span>Média ~12h</span>
+                <span class="swatch"><span class="swatch-box" style="background:#93c5fd;"></span>Alta ~16h</span>
+                <span class="swatch"><span class="swatch-box" style="background:#fde68a;"></span>Máxima ~20h</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="table-wrap">
+    <table>
+        <thead>
+        <tr>
+            <th>Módulo</th>
+            <th>W1</th><th>W2</th><th>W3</th><th>W4</th><th>W5</th>
+            <th>W6</th><th>W7</th><th>W8</th><th>W9</th><th>W10</th>
+            <th>W11</th><th>W12</th><th>W13</th><th>W14</th><th>W15</th>
+            <th>W16</th><th>W17</th>
+        </tr>
+        </thead>
+        <tbody>
+
+        <!-- 1. Setup & Config -->
+        <tr>
+            <th>Setup &amp; Config</th>
+            <td class="cell-peak"><span class="cell-inner">20h<span class="pdot dot-ui"></span></span></td>
+            <td></td><td></td><td></td><td></td>
+            <td></td><td></td><td></td><td></td><td></td>
+            <td></td><td></td><td></td><td></td><td></td>
+            <td></td><td></td>
+        </tr>
+
+        <!-- 2. Frontend UI/UX Design -->
+        <tr>
+            <th>Frontend | UI/UX Design</th>
+            <td class="cell-low"><span class="cell-inner">8h<span class="pdot dot-i"></span></span></td>
+            <td class="cell-mid"><span class="cell-inner">12h<span class="pdot dot-i"></span></span></td>
+            <td></td><td></td><td></td>
+            <td></td><td></td><td></td><td></td><td></td>
+            <td></td><td></td><td></td><td></td><td></td>
+            <td></td><td></td>
+        </tr>
+
+        <!-- 3. Backend DB Schema -->
+        <tr>
+            <th>Backend DB | Schema Design</th>
+            <td class="cell-mid"><span class="cell-inner">12h<span class="pdot dot-ui"></span></span></td>
+            <td class="cell-low"><span class="cell-inner">8h<span class="pdot dot-ui"></span></span></td>
+            <td></td><td></td><td></td>
+            <td></td><td></td><td></td><td></td><td></td>
+            <td></td><td></td><td></td><td></td><td></td>
+            <td></td><td></td>
+        </tr>
+
+        <!-- 4. Backend Auth API -->
+        <tr>
+            <th>Backend | Auth API</th>
+            <td></td>
+            <td class="cell-high"><span class="cell-inner">16h<span class="pdot dot-ui"></span></span></td>
+            <td class="cell-peak"><span class="cell-inner">20h<span class="pdot dot-ui"></span></span></td>
+            <td></td><td></td>
+            <td></td><td></td><td></td><td></td><td></td>
+            <td></td><td></td><td></td><td></td><td></td>
+            <td></td><td></td>
+        </tr>
+
+        <!-- 5. Frontend Auth Module -->
+        <tr>
+            <th>Frontend | Auth Module</th>
+            <td></td><td></td>
+            <td class="cell-low"><span class="cell-inner">8h<span class="pdot dot-u"></span></span></td>
+            <td class="cell-high"><span class="cell-inner">16h<span class="pdot dot-ui"></span></span></td>
+            <td></td>
+            <td></td><td></td><td></td><td></td><td></td>
+            <td></td><td></td><td></td><td></td><td></td>
+            <td></td><td></td>
+        </tr>
+
+        <!-- 6. Backend Account API -->
+        <tr>
+            <th>Backend | Account API</th>
+            <td></td><td></td><td></td>
+            <td class="cell-mid"><span class="cell-inner">12h<span class="pdot dot-i"></span></span></td>
+            <td class="cell-low"><span class="cell-inner">8h<span class="pdot dot-i"></span></span></td>
+            <td></td><td></td><td></td><td></td><td></td>
+            <td></td><td></td><td></td><td></td><td></td>
+            <td></td><td></td>
+        </tr>
+
+        <!-- 7. Frontend Account Module -->
+        <tr>
+            <th>Frontend | Account Module</th>
+            <td></td><td></td><td></td><td></td>
+            <td class="cell-mid"><span class="cell-inner">12h<span class="pdot dot-i"></span></span></td>
+            <td class="cell-low"><span class="cell-inner">8h<span class="pdot dot-i"></span></span></td>
+            <td></td><td></td><td></td><td></td>
+            <td></td><td></td><td></td><td></td><td></td>
+            <td></td><td></td>
+        </tr>
+
+        <!-- 8. Backend Post API -->
+        <tr>
+            <th>Backend | Post API</th>
+            <td></td><td></td><td></td><td></td><td></td>
+            <td class="cell-high"><span class="cell-inner">16h<span class="pdot dot-ui"></span></span></td>
+            <td class="cell-mid"><span class="cell-inner">12h<span class="pdot dot-ui"></span></span></td>
+            <td></td><td></td><td></td>
+            <td></td><td></td><td></td><td></td><td></td>
+            <td></td><td></td>
+        </tr>
+
+        <!-- 9. Frontend Post Module -->
+        <tr>
+            <th>Frontend | Post Module</th>
+            <td></td><td></td><td></td><td></td><td></td><td></td>
+            <td class="cell-mid"><span class="cell-inner">12h<span class="pdot dot-i"></span></span></td>
+            <td class="cell-high"><span class="cell-inner">16h<span class="pdot dot-i"></span></span></td>
+            <td></td><td></td>
+            <td></td><td></td><td></td><td></td><td></td>
+            <td></td><td></td>
+        </tr>
+
+        <!-- 10. Backend EV System Dev (Computer Vision) -->
+        <tr>
+            <th>Backend | EV System Dev</th>
+            <td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+            <td class="cell-low"><span class="cell-inner">8h<span class="pdot dot-r"></span></span></td>
+            <td class="cell-peak"><span class="cell-inner">20h<span class="pdot dot-ui"></span></span></td>
+            <td class="cell-peak"><span class="cell-inner">20h<span class="pdot dot-ui"></span></span></td>
+            <td class="cell-mid"><span class="cell-inner">12h<span class="pdot dot-i"></span></span></td>
+            <td></td><td></td><td></td><td></td>
+            <td></td><td></td>
+        </tr>
+
+        <!-- 11. Backend Test EV System -->
+        <tr>
+            <th>Backend | Test EV System</th>
+            <td></td><td></td><td></td><td></td><td></td>
+            <td></td><td></td><td></td><td></td><td></td>
+            <td class="cell-low"><span class="cell-inner">8h<span class="pdot dot-u"></span></span></td>
+            <td class="cell-mid"><span class="cell-inner">12h<span class="pdot dot-u"></span></span></td>
+            <td></td><td></td><td></td>
+            <td></td><td></td>
+        </tr>
+
+        <!-- 12. Backend EV System API -->
+        <tr>
+            <th>Backend | EV System API</th>
+            <td></td><td></td><td></td><td></td><td></td>
+            <td></td><td></td><td></td><td></td><td></td><td></td>
+            <td class="cell-high"><span class="cell-inner">16h<span class="pdot dot-ui"></span></span></td>
+            <td class="cell-low"><span class="cell-inner">8h<span class="pdot dot-ui"></span></span></td>
+            <td></td><td></td>
+            <td></td><td></td>
+        </tr>
+
+        <!-- 13. Frontend EV Integration -->
+        <tr>
+            <th>Frontend | EV Integration</th>
+            <td></td><td></td><td></td><td></td><td></td>
+            <td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+            <td class="cell-mid"><span class="cell-inner">12h<span class="pdot dot-i"></span></span></td>
+            <td class="cell-high"><span class="cell-inner">16h<span class="pdot dot-i"></span></span></td>
+            <td></td>
+            <td></td><td></td>
+        </tr>
+
+        <!-- 14. Backend EV Testing & Optimization -->
+        <tr>
+            <th>Backend | EV Testing &amp; Opt.</th>
+            <td></td><td></td><td></td><td></td><td></td>
+            <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+            <td class="cell-mid"><span class="cell-inner">12h<span class="pdot dot-u"></span></span></td>
+            <td class="cell-low"><span class="cell-inner">8h<span class="pdot dot-u"></span></span></td>
+            <td></td><td></td>
+        </tr>
+
+        <!-- 15. Frontend Final UI/UX -->
+        <tr>
+            <th>Frontend | Final UI/UX</th>
+            <td></td><td></td><td></td><td></td><td></td>
+            <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+            <td class="cell-mid"><span class="cell-inner">12h<span class="pdot dot-i"></span></span></td>
+            <td class="cell-high"><span class="cell-inner">16h<span class="pdot dot-i"></span></span></td>
+            <td class="cell-low"><span class="cell-inner">8h<span class="pdot dot-r"></span></span></td>
+        </tr>
+
+        </tbody>
+    </table>
+    </div>
+
+</div>
+</body>
+</html>
+

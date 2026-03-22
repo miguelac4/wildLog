@@ -57,20 +57,33 @@ function SwipeDeck({ posts, onViewPost, onFavorite, onSkip }) {
             setDragIntent(null)
             setCurrentIndex((prev) => Math.min(prev + 1, posts.length))
 
-            if (direction === 'right' && activePost) onFavorite?.(activePost)
-            else if (direction === 'left' && activePost)  onSkip?.(activePost)
+            const remaining = posts.length - currentIndex - 1
+
+            if (direction === 'right' && activePost) {
+                onFavorite?.(activePost)
+            } else if (direction === 'left' && activePost) {
+                onSkip?.(activePost, remaining)
+            }
+
         }, FLY_OUT_DURATION)
     }, [activePost, onFavorite, onSkip, posts.length])
 
     /* ── Scroll navigation (no action, just browse) ── */
     const goToNext = useCallback(() => {
         if (currentIndex >= posts.length - 1 || flyAway || scrollDir) return
+
+        const remaining = posts.length - currentIndex - 1
+
+        if (remaining <= 3) {
+            onSkip?.(posts[currentIndex], remaining)
+        }
+
         setScrollDir('up')
         setTimeout(() => {
             setCurrentIndex((prev) => prev + 1)
             setScrollDir(null)
         }, 280)
-    }, [currentIndex, posts.length, flyAway, scrollDir])
+    }, [currentIndex, posts, flyAway, scrollDir, onSkip])
 
     const goToPrev = useCallback(() => {
         if (currentIndex <= 0 || flyAway || scrollDir) return
@@ -238,7 +251,7 @@ function SwipeDeck({ posts, onViewPost, onFavorite, onSkip }) {
                     <div className="swipe-indicator__glow" />
                     <div className="swipe-indicator__label">
                         <Star size={30} />
-                        <span>Favorite</span>
+                        <span>Want To Visit</span>
                     </div>
                 </div>
             </div>

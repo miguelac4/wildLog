@@ -37,7 +37,7 @@ function SwipeControls({ onSkip, onFavorite, onComment, disabled }) {
                 className="swipe-controls__btn swipe-controls__btn--favorite"
                 onClick={onFavorite}
                 disabled={disabled}
-                title="Favorite"
+                title="Want To Visit"
             >
                 <Star size={22} />
             </button>

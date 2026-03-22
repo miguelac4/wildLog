@@ -1,14 +1,16 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export async function apiFetch(endpoint, options = {}) {
+    const isFormData = options.body instanceof FormData;
+
     const config = {
         method: options.method || "GET",
+        credentials: "include",
+        ...options,
         headers: {
-            "Content-Type": "application/json",
+            ...(isFormData ? {} : { "Content-Type": "application/json" }),
             ...(options.headers || {})
-        },
-        credentials: "include", // necessário para sessão PHP
-        ...options
+        }
     };
 
     const response = await fetch(`${API_BASE_URL}${endpoint}`, config);

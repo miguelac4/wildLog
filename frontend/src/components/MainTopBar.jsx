@@ -1,4 +1,4 @@
-import { Search, LogOut, Compass, User } from 'lucide-react'
+import { Search, LogOut, Compass, Newspaper, Plus, User } from 'lucide-react'
 import { MEDIA_URLS } from '../config/mediaConfig'
 
 function MainTopbar({
@@ -36,8 +36,17 @@ function MainTopbar({
                     onClick={() => onChangeView('feed')}
                     type="button"
                 >
-                    <Compass size={14} />
+                    <Newspaper size={14} />
                     Feed
+                </button>
+
+                <button
+                    className={`main-topbar__nav-btn ${activeView === 'create' ? 'main-topbar__nav-btn--active' : ''}`}
+                    onClick={() => onChangeView('create')}
+                    type="button"
+                >
+                    <Plus size={14} />
+                    Create
                 </button>
             </div>
 

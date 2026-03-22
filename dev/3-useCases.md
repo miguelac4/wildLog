@@ -12,7 +12,7 @@ Cada caso de uso representa uma interação específica entre um utilizador e o 
 | Visitante  | Visualizar feed público |                |
 | Visitante  | Registar uma conta      | *              |
 | Visitante  | Confirmar o email       | *              |
-| Utilizador | Fazer login             |                |
+| Utilizador | Fazer login             | *              |
 | Utilizador | Fazer logout            |                |
 | Utilizador | Recuperar password      | *              |
 
@@ -94,9 +94,9 @@ Referências:
 | 5  | Sistema detecta campos inválidos         |
 | 6  | Sistema apresenta mensagens de validação |
 
-__
+____
 
-### 2.2.3. Confirmar o email
+### 2.2.2. Confirmar o email
 
 #### Cabeçalho
 Nome: Confirmar o email
@@ -119,7 +119,7 @@ RF03 – Enviar email de verificação
 | 2 Visitante abre o email e seleciona o link de verificação |                                                           |
 |                                                            | 3 Sistema recebe o token de verificação                   |
 |                                                            | 4 Sistema valida o token                                  |
-|                                                            | 5 Sistema altera o estado da conta para *verificada*    |
+|                                                            | 5 Sistema altera o estado da conta para **verificada**    |
 |                                                            | 6 Sistema invalida o token de verificação                 |
 |                                                            | 7 Sistema apresenta mensagem de confirmação               |
 |                                                            | 8 Sistema redireciona o utilizador para a página de login |
@@ -142,7 +142,67 @@ RF03 – Enviar email de verificação
 | 5     | Sistema informa que o email já está confirmado |
 | 6     | Sistema redireciona para a página de login     |
 
-__
+____
+
+### 2.2.3. Fazer login
+
+#### Cabeçalho
+
+Nome: Fazer login
+
+Actor principal:
+Utilizador
+
+Resumo:
+Permite que um utilizador autenticado aceda à plataforma através da introdução das suas credenciais (email/username e palavra-passe). O sistema valida as credenciais e inicia uma sessão autenticada.
+
+Referências:
+- RF02 – Autenticação de utilizador
+- RF05 – Gestão de sessão
+
+#### Cenário Principal (fluxo típico)
+
+| Ação do Actor                                      | Resposta do Sistema                                 |
+| -------------------------------------------------- | --------------------------------------------------- |
+| 1 Utilizador acede à página de login               |                                                     |
+|                                                    | 2 Sistema apresenta formulário de autenticação       |
+| 3 Utilizador introduz email/username e password    |                                                     |
+| 4 Utilizador submete o formulário                  |                                                     |
+|                                                    | 5 Sistema valida os dados recebidos                 |
+|                                                    | 6 Sistema verifica existência do utilizador         |
+|                                                    | 7 Sistema verifica a palavra-passe (hash)           |
+|                                                    | 8 Sistema verifica se a conta está verificada       |
+|                                                    | 9 Sistema cria sessão autenticada                   |
+|                                                    | 10 Sistema retorna dados do utilizador              |
+|                                                    | 11 Sistema redireciona para o feed principal        |
+
+#### Cenários Alternativos
+
+##### A1 – Credenciais inválidas
+
+| Passo | Alternativa                                      |
+| ----- | ------------------------------------------------ |
+| 6/7   | Sistema não encontra utilizador ou password errada |
+| 8     | Sistema apresenta mensagem genérica de erro       |
+| 9     | Caso de utilização termina                       |
+
+##### A2 – Conta não verificada
+
+| Passo | Alternativa                                      |
+| ----- | ------------------------------------------------ |
+| 8     | Sistema detecta conta não verificada             |
+| 9     | Sistema informa necessidade de confirmar email   |
+| 10    | Sistema permite reenvio do email de verificação  |
+
+##### A3 – Campos inválidos
+
+| Passo | Alternativa                                      |
+| ----- | ------------------------------------------------ |
+| 5     | Sistema detecta campos vazios ou inválidos       |
+| 6     | Sistema apresenta mensagens de validação         |
+
+____
+
 
 ### 2.2.4. Recuperar password
 
@@ -207,7 +267,7 @@ RF04 – Recuperação de password
 | 15    | Sistema apresenta mensagem de erro             |
 | 16    | Utilizador pode corrigir os campos             |
 
-__
+____
 
 ### 2.2.5. Criar post
 
@@ -236,13 +296,13 @@ RF09 - Visibilidade da publicação
 | 6 Utilizador submete o formulário                      |                                                            |
 |                                                        | 7 Sistema valida os dados obrigatórios                     |
 |                                                        | 8 Sistema valida o tamanho das imagens (máx. 5MB cada)     |
-|                                                        | 9 Sistema processa e comprime imagens para formato *WebP* |
+|                                                        | 9 Sistema processa e comprime imagens para formato **WebP** |
 |                                                        | 10 Sistema faz upload das imagens para o servidor          |
 |                                                        | 11 Sistema cria o registo do post na base de dados         |
 |                                                        | 12 Sistema associa imagens ao post                         |
 |                                                        | 13 Sistema define estado do post:                          |
-|                                                        | → *"pending_review"* se público                          |
-|                                                        | → *"private"* se privado                                 |
+|                                                        | → **"pending_review"** se público                          |
+|                                                        | → **"private"** se privado                                 |
 |                                                        | 14 Sistema guarda data de criação                          |
 |                                                        | 15 Sistema apresenta confirmação ao utilizador             |
 |                                                        | 16 Sistema redireciona para visualização do post ou feed   |
@@ -281,18 +341,18 @@ RF09 - Visibilidade da publicação
 ##### A5 - Publicação privada
 | Passo | Alternativa                                  |
 | ----- | -------------------------------------------- |
-| 13    | Sistema define visibilidade como *privada* |
+| 13    | Sistema define visibilidade como **privada** |
 | 14    | Post fica visível apenas para o utilizador   |
 | 15    | Não é enviado para validação ambiental       |
 
 ##### A6 - Publicação pública (validação ambiental)
 | Passo | Alternativa                                   |
 | ----- | --------------------------------------------- |
-| 13    | Sistema define estado como *pending_review* |
+| 13    | Sistema define estado como **pending_review** |
 | 14    | Post fica pendente de validação ambiental     |
 | 15    | Post não é visível publicamente até aprovação |
 
-__
+____
 
 ### 2.2.6. Visualizar posts (near-by)
 
@@ -317,10 +377,10 @@ RF11 – Visualização de publicações
 |                                                          | 3 Sistema obtém localização atual (quando permitido)        |
 |                                                          | 4 Sistema calcula área geográfica visível                   |
 |                                                          | 5 Sistema solicita ao backend os posts dentro da área       |
-|                                                          | 6 Sistema filtra apenas posts visíveis (ex: *approved*)   |
+|                                                          | 6 Sistema filtra apenas posts visíveis (ex: **approved**)   |
 |                                                          | 7 Sistema apresenta os posts no mapa como marcadores (pins) |
 | 8 Utilizador navega no mapa (zoom, pan ou rotação)       |                                                             |
-|                                                          | 9 Sistema deteta evento de movimento (ex: onMoveEnd)      |
+|                                                          | 9 Sistema deteta evento de movimento (ex: `onMoveEnd`)      |
 |                                                          | 10 Sistema recalcula a nova área visível                    |
 |                                                          | 11 Sistema solicita novos posts ao backend                  |
 |                                                          | 12 Sistema atualiza os marcadores no mapa                   |
@@ -347,8 +407,8 @@ RF11 – Visualização de publicações
 ##### A3 - Posts não aprovados ou privados
 | Passo | Alternativa                                              |
 | ----- | -------------------------------------------------------- |
-| 6     | Sistema exclui posts com estado *pending_review*       |
-|       | Sistema exclui posts *privados* de outros utilizadores |
+| 6     | Sistema exclui posts com estado **pending_review**       |
+|       | Sistema exclui posts **privados** de outros utilizadores |
 |       | Apenas posts válidos são apresentados                    |
 
 ##### A4 – Carregamento incremental (lazy loading)
@@ -358,7 +418,7 @@ RF11 – Visualização de publicações
 | 12    | Sistema adiciona novos posts sem remover os existentes |
 | 13    | Interface mantém fluidez e performance                 |
 
-__
+______
 
 ### 2.2.7. Interagir com post
 
@@ -434,7 +494,7 @@ RFXX – Interações por swipe (guardar/ignorar)
 | 2     | Sistema impede interação      |
 | 3     | Sistema atualiza feed         |
 
-____
+________
 
 ### 2.2.8. Validar ética ambiental da publicação
 
@@ -469,8 +529,8 @@ RF17 – Classificação de impacto ambiental
 |                                                            | 9 Sistema avalia os resultados das análises                      |
 |                                                            | 10 Sistema determina conformidade ambiental                      |
 |                                                            | 11 Sistema atualiza o estado da publicação:                      |
-|                                                            | → *approved* se estiver conforme                               |
-|                                                            | → *rejected* se violar princípios ambientais                   |
+|                                                            | → **approved** se estiver conforme                               |
+|                                                            | → **rejected** se violar princípios ambientais                   |
 |                                                            | 12 Sistema guarda o resultado da validação                       |
 
 ---
@@ -522,5 +582,5 @@ RF17 – Classificação de impacto ambiental
 | Passo | Alternativa                                                |
 | ----- | ---------------------------------------------------------- |
 | 9     | Sistema não consegue determinar resultado com confiança    |
-| 10    | Publicação é marcada como *pending_review*               |
+| 10    | Publicação é marcada como **pending_review**               |
 | 11    | Requer validação manual                                    |

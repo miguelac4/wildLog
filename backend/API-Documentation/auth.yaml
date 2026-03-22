@@ -2,21 +2,18 @@ openapi: 3.0.3
 info:
   title: WildLog API - Auth
   version: 1.1.0
-  description: >
-    Authentication endpoints for WildLog.
-    Session-based auth using PHP sessions (cookie PHPSESSID).
-    Includes email verification and password recovery flows.
+  description: Authentication endpoints for WildLog
+
 servers:
   - url: https://wild-log.com/backend/api
-    description: Production
   - url: http://localhost:8000/api
-    description: Local
 
 tags:
   - name: Auth
-    description: Authentication, email verification, and password recovery
+    description: Authentication and account access
 
 components:
+
   securitySchemes:
     sessionCookie:
       type: apiKey
@@ -24,18 +21,16 @@ components:
       name: PHPSESSID
 
   schemas:
+
     ErrorResponse:
       type: object
       properties:
         code:
           type: string
-          example: INTERNAL_ERROR
         message:
           type: string
-          example: Ocorreu um erro inesperado.
         request_id:
           type: string
-          example: 377b27080c24aad4
       required: [code, message]
 
     User:
@@ -43,61 +38,50 @@ components:
       properties:
         id:
           type: integer
-          example: 12
-        name:
+        username:
           type: string
-          example: Miguel
+          example: miguel123
         email:
           type: string
           format: email
-          example: miguel@example.com
         role:
           type: string
           enum: [base, vip]
-          example: base
-      required: [id, name, email, role]
+      required: [id, username, email, role]
 
     RegisterRequest:
       type: object
       properties:
-        name:
+        username:
           type: string
           minLength: 2
           maxLength: 80
-          example: Miguel
+          example: miguel123
         email:
           type: string
           format: email
-          example: miguel@example.com
         password:
           type: string
           minLength: 8
-          example: "password123"
-      required: [name, email, password]
+      required: [username, email, password]
 
     RegisterResponse:
       type: object
       properties:
         success:
           type: boolean
-          example: true
         user:
           $ref: "#/components/schemas/User"
         message:
           type: string
-          example: Conta criada. Enviámos um email de verificação.
-      required: [success, user, message]
 
     LoginRequest:
       type: object
       properties:
         email:
           type: string
-          format: email
-          example: miguel@example.com
         password:
           type: string
-          example: "password123"
       required: [email, password]
 
     LoginResponse:
@@ -105,110 +89,62 @@ components:
       properties:
         user:
           $ref: "#/components/schemas/User"
-      required: [user]
 
     LogoutResponse:
       type: object
       properties:
         success:
           type: boolean
-          example: true
         message:
           type: string
-          example: Logout efetuado com sucesso.
-      required: [success, message]
 
     VerificationMailRequest:
       type: object
       properties:
         email:
           type: string
-          format: email
-          example: miguel@example.com
       required: [email]
 
-    VerificationMailResponse:
+    GenericSuccessResponse:
       type: object
       properties:
         success:
           type: boolean
-          example: true
         message:
           type: string
-          example: If the email exists, we sent a verification link.
-      required: [success, message]
 
     VerifyAccountResponse:
       type: object
       properties:
         success:
           type: boolean
-          example: true
         status:
           type: string
           enum: [verified, already_verified]
-          example: verified
         message:
           type: string
-          example: Conta verificada com sucesso. Já pode fazer login.
-      required: [success, status, message]
-
-    PassRecoverRequest:
-      type: object
-      properties:
-        email:
-          type: string
-          format: email
-          example: miguel@example.com
-      required: [email]
-
-    PassRecoverRequestResponse:
-      type: object
-      properties:
-        success:
-          type: boolean
-          example: true
-        message:
-          type: string
-          example: If the email exists, we sent a password reset link.
-      required: [success, message]
 
     PassRecoverResetRequest:
       type: object
       properties:
         token:
           type: string
-          example: 7tnbbYM97YMQu4EBD3kKUqFA0UVPpd6k1HYrQAq8eJs
         new_password:
           type: string
           minLength: 8
-          example: "newPassword123"
         confirm_password:
           type: string
           minLength: 8
-          example: "newPassword123"
       required: [token, new_password, confirm_password]
 
-    PassRecoverResetResponse:
-      type: object
-      properties:
-        success:
-          type: boolean
-          example: true
-        message:
-          type: string
-          example: Password updated successfully.
-      required: [success, message]
-
 paths:
+
   /auth/me.php:
     get:
-      tags: [ Auth ]
-      summary: Get current authenticated user
-      description: >
-        Returns the currently authenticated user based on the active PHP session.
+      tags: [Auth]
+      summary: Get current user
       security:
-        - sessionCookie: [ ]
+        - sessionCookie: []
       responses:
         "200":
           description: Authenticated user
@@ -219,21 +155,8 @@ paths:
                 properties:
                   user:
                     $ref: "#/components/schemas/User"
-                required: [ user ]
         "401":
           description: Not authenticated
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "405":
-          description: Method not allowed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "500":
-          description: Unexpected error
           content:
             application/json:
               schema:
@@ -242,10 +165,7 @@ paths:
   /auth/register.php:
     post:
       tags: [Auth]
-      summary: Register a new user
-      description: >
-        Creates a new user and sends a verification email.
-        Returns success even if email sending fails (with a different message).
+      summary: Register
       requestBody:
         required: true
         content:
@@ -254,25 +174,19 @@ paths:
               $ref: "#/components/schemas/RegisterRequest"
       responses:
         "200":
-          description: User created (email sent or not)
+          description: Registered
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/RegisterResponse"
         "400":
-          description: Invalid input
+          description: Validation error
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
         "409":
-          description: Email already registered
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "500":
-          description: Unexpected error
+          description: Email or username already exists
           content:
             application/json:
               schema:
@@ -281,10 +195,7 @@ paths:
   /auth/login.php:
     post:
       tags: [Auth]
-      summary: Login (creates session)
-      description: >
-        Validates credentials and creates a PHP session.
-        Requires email to be verified.
+      summary: Login
       requestBody:
         required: true
         content:
@@ -296,7 +207,6 @@ paths:
           description: Logged in
           headers:
             Set-Cookie:
-              description: PHP session cookie (PHPSESSID)
               schema:
                 type: string
           content:
@@ -304,28 +214,14 @@ paths:
               schema:
                 $ref: "#/components/schemas/LoginResponse"
         "401":
-          description: Missing credentials or invalid credentials
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
+          description: Invalid credentials
         "403":
           description: Email not verified
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "500":
-          description: Unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
 
   /auth/logout.php:
     post:
       tags: [Auth]
-      summary: Logout (destroys session)
+      summary: Logout
       security:
         - sessionCookie: []
       responses:
@@ -335,21 +231,11 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/LogoutResponse"
-        "500":
-          description: Unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
 
   /auth/verification_mail.php:
     post:
       tags: [Auth]
-      summary: Send (or resend) verification email
-      description: >
-        Sends verification email if the user exists and is not verified.
-        Always returns a neutral success message when the email doesn't exist or user is already verified.
-        Rate limited to 1 request per 60 seconds per user.
+      summary: Send verification email
       requestBody:
         required: true
         content:
@@ -362,143 +248,68 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/VerificationMailResponse"
-        "400":
-          description: Invalid email
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: "#/components/schemas/GenericSuccessResponse"
         "429":
-          description: Too many requests
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "500":
-          description: Unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
+          description: Rate limit exceeded
 
   /auth/verify_account.php:
     get:
       tags: [Auth]
-      summary: Verify account (email link)
-      description: >
-        Verifies the account using the token sent by email.
-        Token is hashed server-side and checked against user_tokens.
+      summary: Verify account
       parameters:
         - name: token
           in: query
           required: true
           schema:
             type: string
-          description: Verification token from email link
       responses:
         "200":
-          description: Verified or already verified
+          description: Verified
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/VerifyAccountResponse"
         "400":
           description: Invalid or expired token
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "405":
-          description: Method not allowed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "500":
-          description: Unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
 
   /auth/pass_recover_request.php:
     post:
       tags: [Auth]
-      summary: Request password reset email
-      description: >
-        Sends a password reset email if the user exists.
-        Always returns a neutral success response to avoid email enumeration.
-        Recommended rate limit: 1 request per hour per user.
+      summary: Request password reset
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/PassRecoverRequest"
+              $ref: "#/components/schemas/VerificationMailRequest"
       responses:
         "200":
           description: Neutral response
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/PassRecoverRequestResponse"
-        "400":
-          description: Invalid email
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: "#/components/schemas/GenericSuccessResponse"
         "429":
           description: Too many requests
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "500":
-          description: Unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
 
   /auth/pass_recover_confirm.php:
     get:
       tags: [Auth]
-      summary: Validate password reset token (email link)
-      description: >
-        Validates the password reset token and redirects the user to the frontend reset password page.
-        Intended to be opened in a browser from the email link.
+      summary: Validate reset token (redirect)
       parameters:
         - name: token
           in: query
           required: true
           schema:
             type: string
-          description: Password reset token from email link
       responses:
         "302":
-          description: Redirect to frontend reset page (or error page)
-        "405":
-          description: Method not allowed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "500":
-          description: Unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
+          description: Redirect to frontend
 
   /auth/pass_recover_reset.php:
     post:
       tags: [Auth]
-      summary: Reset password using token
-      description: >
-        Resets the user's password using a valid reset token.
-        Token is single-use and is marked as consumed after a successful reset.
+      summary: Reset password
       requestBody:
         required: true
         content:
@@ -511,22 +322,6 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/PassRecoverResetResponse"
-        "400":
-          description: Invalid input (missing fields / password policy / mismatch)
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: "#/components/schemas/GenericSuccessResponse"
         "401":
-          description: Invalid or expired token
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "500":
-          description: Unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
+          description: Invalid token
