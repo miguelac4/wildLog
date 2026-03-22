@@ -28,6 +28,8 @@ import MainTopbar from '../components/MainTopbar'
 import ExploreView from '../components/explore/ExploreView'
 import CreateView from '../components/create/CreateView'
 import { postExploreService } from '../api/postExploreService'
+import AccountStats from '../components/Account/AccountStats'
+import AccountPosts from '../components/Account/AccountPosts'
 
 const MOBILE_BREAKPOINT = 768
 
@@ -50,15 +52,6 @@ function Main() {
   const [loadingFeed, setLoadingFeed] = useState(false)
   const [hasMoreFeed, setHasMoreFeed] = useState(true)
 
-  /**
-   * flyToTarget — coordenadas para onde o mapa deve voar.
-   * Estrutura: { lat, lng, isMobile } | null
-   * Sempre que muda, o ExploreMap faz flyTo para esse ponto.
-   * Usa um id único para garantir reatividade mesmo ao clicar
-   * duas vezes no mesmo post.
-   */
-  const [flyToTarget, setFlyToTarget] = useState(null)
-
   /* ── Deteção responsiva de mobile ───────── */
   useEffect(() => {
     const onResize = () => {
@@ -69,30 +62,15 @@ function Main() {
     return () => window.removeEventListener('resize', onResize)
   }, [])
 
-  /* ── Filtro de pesquisa ──────────────────── */
-  const filteredPosts = MOCK_POSTS.filter((post) => {
-    if (!searchQuery.trim()) return true
-    const q = searchQuery.toLowerCase()
-    return (
-      post.title.toLowerCase().includes(q) ||
-      post.author.toLowerCase().includes(q) ||
-      post.tags.some((tag) => tag.includes(q))
-    )
-  })
-
   /* ── Handlers ────────────────────────────── */
   const handleChangeView = (view) => {
     setSelectedPost(null)
     setActiveView(view)
   }
 
-  /**
-   * handlePostClick — handler unificado para clique em pin ou post da sidebar.
-   *
-   * 1. Define o post selecionado
-   * 2. Dispara flyTo no mapa (com nível de zoom adequado a desktop/mobile)
-   * 3. No mobile, fecha a sidebar para revelar o mapa
-   */
+  const handlePostClick = useCallback((post) => {
+    setSelectedPost(post)
+  }, [])
 
   const handleClosePost = useCallback(() => {
     setSelectedPost(null)
@@ -150,76 +128,64 @@ function Main() {
           TOPBAR
           ══════════════════════════════════════ */}
       <MainTopbar
-          activeView={activeView}
-          onChangeView={handleChangeView}
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-          user={user}
-          onLogout={handleLogout}
+        activeView={activeView}
+        onChangeView={handleChangeView}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        user={user}
+        onLogout={handleLogout}
       />
 
       {/* ══════════════════════════════════════
           CORPO PRINCIPAL - Explore ou Feed
           ══════════════════════════════════════ */}
       <div className="main-body">
-        {activeView === 'explore' ? (
-            <ExploreView
-                isMobile={isMobile}
-                sidebarOpen={sidebarOpen}
-                setSidebarOpen={setSidebarOpen}
-                selectedPost={selectedPost}
-                setSelectedPost={setSelectedPost}
-            />
-        ) : activeView === 'create' ? (
-            <CreateView onCreated={() => handleChangeView('explore')} />
-        ) : (
-            <FeedView
-                posts={feedPosts}
-                onViewPost={setSelectedPost}
-                onLoadMore={loadFeed}
-                hasMore={hasMoreFeed}
-            />
+        {activeView === 'explore' && (
+          <ExploreView
+            isMobile={isMobile}
+            sidebarOpen={sidebarOpen}
+            setSidebarOpen={setSidebarOpen}
+            selectedPost={selectedPost}
+            setSelectedPost={setSelectedPost}
+          />
+        )}
+        
+        {activeView === 'create' && (
+          <CreateView onCreated={() => handleChangeView('explore')} />
+        )}
+        
+        {activeView === 'feed' && (
+          <FeedView
+            posts={feedPosts}
+            onViewPost={setSelectedPost}
+            onLoadMore={loadFeed}
+            hasMore={hasMoreFeed}
+          />
         )}
 
         {/* ── VISTA: ACCOUNT (Perfil com as tuas 3 classes) ── */}
+
+
         {activeView === 'account' && (
-            <div className="account-page-wrapper" data-lenis-prevent>
-              <div className="account-page-inner">
-                {/* 1. Classe das Estatísticas e Bio no topo */}
-                <div className="account-stats-container">
-                  <AccountStats user={user} />
-                </div>
-
-              {/* 2. Toggle de Posts e Mapa */}
-              <div className="account-tabs-container">
-                <div className="account-tabs">
-                  <button
-                    className={`account-tab-btn ${accountTab === 'posts' ? 'active' : ''}`}
-                    onClick={() => setAccountTab('posts')}
-                  >
-                    <Grid size={18} /> Publicações
-                  </button>
-                  <button
-                    className={`account-tab-btn ${accountTab === 'map' ? 'active' : ''}`}
-                    onClick={() => setAccountTab('map')}
-                  >
-                    <Map size={18} /> Mapa
-                  </button>
-                </div>
+          <div className="account-page-wrapper" data-lenis-prevent>
+            <div className="account-page-inner">
+              {/* 1. Classe das Estatísticas e Bio no topo */}
+              <div className="account-stats-container">
+                <AccountStats user={user} />
               </div>
 
-              <div className={`account-content-box is-${accountTab}`} style={accountTab === 'map' ? { padding: 0 } : {}}>
-                {accountTab === 'posts' ? <AccountPosts onPostClick={handlePostClick} /> : <AccountMap />}
+              <div className="account-content-box is-posts">
+                <AccountPosts onPostClick={handlePostClick} />
               </div>
 
-              </div>
             </div>
+          </div>
         )}
       </div>
 
       {/* Painel de detalhe que abre ao clicar num post (funciona em todas as vistas) */}
       {selectedPost && (
-          <PostDetailPanel post={selectedPost} onClose={handleClosePost} />
+        <PostDetailPanel post={selectedPost} onClose={handleClosePost} />
       )}
     </div>
   )
