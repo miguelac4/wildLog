@@ -44,10 +44,13 @@ export const postUserService = {
     //deletePost:
 
     /**
-     * TODO AFONSO: Here you instance the Endpoints from the module to consume them in frontend (AFTER IMPLEMENTATION DELETE THIS COMMENT LINE)
      * Get All User Posts
      */
-    //getUserPosts:
+    getUserPosts: async () => {
+        return apiFetch("/post/user/get_user_post.php", {
+            method: "GET"
+        });
+    },
 
     /**
      * TODO AFONSO: Here you instance the Endpoints from the module to consume them in frontend (AFTER IMPLEMENTATION DELETE THIS COMMENT LINE)

@@ -28,6 +28,7 @@ import MainTopbar from '../components/MainTopbar'
 import ExploreView from '../components/explore/ExploreView'
 import CreateView from '../components/create/CreateView'
 import { postExploreService } from '../api/postExploreService'
+import { postUserService } from '../api/postUserService'
 import AccountStats from '../components/Account/AccountStats'
 import AccountPosts from '../components/Account/AccountPosts'
 
@@ -51,6 +52,9 @@ function Main() {
   const [feedCursor, setFeedCursor] = useState(null)
   const [loadingFeed, setLoadingFeed] = useState(false)
   const [hasMoreFeed, setHasMoreFeed] = useState(true)
+  
+  const [accountPosts, setAccountPosts] = useState([])
+  const [loadingAccountPosts, setLoadingAccountPosts] = useState(false)
 
   /* ── Deteção responsiva de mobile ───────── */
   useEffect(() => {
@@ -119,7 +123,21 @@ function Main() {
     if (activeView === 'feed' && feedPosts.length === 0) {
       loadFeed()
     }
+    
+    if (activeView === 'account' && accountPosts.length === 0 && !loadingAccountPosts) {
+      setLoadingAccountPosts(true)
+      postUserService.getUserPosts()
+        .then(res => {
+          if (res && res.posts) {
+            setAccountPosts(res.posts)
+          }
+        })
+        .catch(err => console.error("Erro account posts:", err))
+        .finally(() => setLoadingAccountPosts(false))
+    }
   }, [activeView])
+
+  const publicPostCount = accountPosts.filter(p => p.visibility === 'public').length;
 
   return (
     <div className="main-page">
@@ -171,11 +189,11 @@ function Main() {
             <div className="account-page-inner">
               {/* 1. Classe das Estatísticas e Bio no topo */}
               <div className="account-stats-container">
-                <AccountStats user={user} />
+                <AccountStats user={user} publicPostCount={publicPostCount} />
               </div>
 
               <div className="account-content-box is-posts">
-                <AccountPosts onPostClick={handlePostClick} />
+                <AccountPosts posts={accountPosts} onPostClick={handlePostClick} />
               </div>
 
             </div>

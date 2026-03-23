@@ -1,15 +1,56 @@
-import { User, Image, Users } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { User, Image, Users, Edit2, Save, X } from 'lucide-react'
 import '../../styles/Account.css'
+import { authService } from '../../api/authService'
+import { useAuth } from '../../hooks/useAuth'
 
-function AccountStats({ user }) {
+function AccountStats({ user, publicPostCount = 0 }) {
+    const { refreshUser } = useAuth()
+    const [isEditingBio, setIsEditingBio] = useState(false)
+    const [bioInput, setBioInput] = useState(user?.description || user?.bio || "")
+    const [fetchedBio, setFetchedBio] = useState("")
+    const [isSaving, setIsSaving] = useState(false)
+
+    // Sync from database directly on mount
+    useEffect(() => {
+        const loadBio = async () => {
+            if (!user?.id) return;
+            try {
+                const res = await authService.getProfile();
+                if (res.account) {
+                    setFetchedBio(res.account.description || "");
+                    setBioInput(res.account.description || "");
+                }
+            } catch (error) {
+                console.error("Erro ao carregar biografia", error);
+            }
+        };
+        loadBio();
+    }, [user?.id])
+
+    const handleSaveBio = async () => {
+        try {
+            setIsSaving(true)
+            const res = await authService.updateProfile(user?.username || user?.name || "User", bioInput)
+            if (res.account) {
+                setFetchedBio(res.account.description || "");
+            }
+            setIsEditingBio(false)
+        } catch (error) {
+            console.error("Erro ao atualizar biografia", error)
+            alert("Erro ao atualizar biografia")
+        } finally {
+            setIsSaving(false)
+        }
+    }
+
     const stats = [
-        { label: 'Publicações', value: '12', icon: Image },
+        { label: 'Publicações', value: publicPostCount.toString(), icon: Image },
         { label: 'Seguidores', value: '348', icon: Users },
         { label: 'A Seguir', value: '156', icon: Users },
     ]
 
-    // Biografia de exemplo (caso o user não tenha ainda)
-    const bio = user?.bio || "Amante da natureza, campismo selvagem e fotografia. A explorar os cantos mais remotos de Portugal. 🌲⛺"
+    const displayBio = fetchedBio || user?.description || user?.bio || ""
 
     return (
         <div className="account-stats-inner">
@@ -38,10 +79,49 @@ function AccountStats({ user }) {
 
             {/* Info Principal */}
             <div className="account-stats-info">
-                <div className="account-stats-title-row">
+                <div className="account-stats-title-row" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <h2 className="account-stats-name">{user?.username || 'Explorador'}</h2>
+                    {!isEditingBio && (
+                        <button
+                            onClick={() => setIsEditingBio(true)}
+                            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#a0845f', padding: '0', display: 'flex' }}
+                            title="Editar Biografia"
+                        >
+                            <Edit2 size={16} />
+                        </button>
+                    )}
                 </div>
-                <p className="account-stats-bio">{bio}</p>
+
+                {isEditingBio ? (
+                    <div style={{ marginTop: '10px' }}>
+                        <textarea
+                            value={bioInput}
+                            onChange={(e) => setBioInput(e.target.value)}
+                            rows={3}
+                            maxLength={255}
+                            style={{ width: '100%', padding: '8px', boxSizing: 'border-box', borderRadius: '4px', border: '1px solid #444', backgroundColor: '#222', color: '#fff', fontSize: '14px', resize: 'vertical' }}
+                            placeholder="Escreve um pouco sobre ti..."
+                        />
+                        <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+                            <button
+                                onClick={() => { setIsEditingBio(false); setBioInput(user?.description || user?.bio || ""); }}
+                                disabled={isSaving}
+                                style={{ padding: '6px 12px', borderRadius: '4px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', backgroundColor: '#333', color: '#fff', fontSize: '12px' }}
+                            >
+                                <X size={14} /> Cancelar
+                            </button>
+                            <button
+                                onClick={handleSaveBio}
+                                disabled={isSaving}
+                                style={{ padding: '6px 12px', borderRadius: '4px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', backgroundColor: '#a0845f', color: '#fff', fontSize: '12px', fontWeight: 'bold' }}
+                            >
+                                <Save size={14} /> {isSaving ? 'A guardar...' : 'Guardar'}
+                            </button>
+                        </div>
+                    </div>
+                ) : (
+                    <p className="account-stats-bio">{displayBio}</p>
+                )}
             </div>
         </div>
     )
