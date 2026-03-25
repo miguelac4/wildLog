@@ -23,12 +23,9 @@ import PostDetailPanel from '../components/PostDetailPanel'
 import MainTopbar from '../components/MainTopbar'
 import ExploreView from '../components/explore/ExploreView'
 import CreateView from '../components/create/CreateView'
-import { postExploreService } from '../api/postExploreService'
 
 const MOBILE_BREAKPOINT = 768
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL
-const BASE_URL = API_BASE.replace('/api', '')
 
 function Main() {
   const navigate = useNavigate()
@@ -41,18 +38,6 @@ function Main() {
   const [searchQuery, setSearchQuery] = useState('')
   const [activeView, setActiveView] = useState('explore')
 
-  const [feedPosts, setFeedPosts] = useState([])
-  const [feedCursor, setFeedCursor] = useState(null)
-  const [loadingFeed, setLoadingFeed] = useState(false)
-  const [hasMoreFeed, setHasMoreFeed] = useState(true)
-
-  /**
-   * flyToTarget — coordenadas para onde o mapa deve voar.
-   * Estrutura: { lat, lng, isMobile } | null
-   * Sempre que muda, o ExploreMap faz flyTo para esse ponto.
-   * Usa um id único para garantir reatividade mesmo ao clicar
-   * duas vezes no mesmo post.
-   */
 
   /* ── Deteção responsiva de mobile ───────── */
   useEffect(() => {
@@ -70,14 +55,6 @@ function Main() {
     setActiveView(view)
   }
 
-  /**
-   * handlePostClick — handler unificado para clique em pin ou post da sidebar.
-   *
-   * 1. Define o post selecionado
-   * 2. Dispara flyTo no mapa (com nível de zoom adequado a desktop/mobile)
-   * 3. No mobile, fecha a sidebar para revelar o mapa
-   */
-
   const handleClosePost = useCallback(() => {
     setSelectedPost(null)
   }, [])
@@ -87,45 +64,6 @@ function Main() {
     navigate('/')
   }
 
-  const loadFeed = useCallback(async () => {
-    if (loadingFeed || !hasMoreFeed) return
-
-    setLoadingFeed(true)
-
-    try {
-      const data = await postExploreService.getFeed(feedCursor)
-
-      const normalized = data.feed.map(p => ({
-        id: p.id,
-        title: p.title,
-        description: p.description,
-        createdAt: p.created_at,
-        author: p.author,
-        image: `${BASE_URL}${p.image_url}`,
-        tags: p.tags || [],
-        likes: p.likes,
-        comments: p.comments,
-      }))
-
-      setFeedPosts(prev => [...prev, ...normalized])
-      setFeedCursor(data.next_cursor)
-
-      if (!data.next_cursor) {
-        setHasMoreFeed(false)
-      }
-
-    } catch (err) {
-      console.error("Erro feed:", err)
-    }
-
-    setLoadingFeed(false)
-  }, [feedCursor, loadingFeed, hasMoreFeed])
-
-  useEffect(() => {
-    if (activeView === 'feed' && feedPosts.length === 0) {
-      loadFeed()
-    }
-  }, [activeView])
 
   return (
     <div className="main-page">
@@ -158,10 +96,7 @@ function Main() {
             <CreateView onCreated={() => handleChangeView('explore')} />
         ) : (
             <FeedView
-                posts={feedPosts}
                 onViewPost={setSelectedPost}
-                onLoadMore={loadFeed}
-                hasMore={hasMoreFeed}
             />
         )}
       </div>
