@@ -1,15 +1,6 @@
 import { X, Camera, Heart, MessageCircle, MapPin, ChevronLeft, ChevronRight, Send } from 'lucide-react'
 import { useState, useEffect, useRef } from 'react'
 
-/**
- * Mock comments — replace with API data later
- */
-const MOCK_COMMENTS = [
-    { id: 1, author: 'trailrunner88', text: 'Incredible spot! Adding this to my list.', time: '2h ago' },
-    { id: 2, author: 'mountain_soul', text: 'Was there last summer, truly magical place.', time: '5h ago' },
-    { id: 3, author: 'nature_lens', text: 'The light in that photo is stunning 📸', time: '1d ago' },
-]
-
 function PostDetailPanel({ post, onClose }) {
     if (!post) return null
 
@@ -116,7 +107,7 @@ function PostDetailPanel({ post, onClose }) {
                             <Heart size={16} /> {post.likes} likes
                         </span>
                         <span className="main-post-panel__stat">
-                            <MessageCircle size={16} /> {post.comments} comments
+                            <MessageCircle size={16} /> {post.comments?.length || 0} comments
                         </span>
                     </div>
 
@@ -134,13 +125,13 @@ function PostDetailPanel({ post, onClose }) {
                     </h3>
 
                     <div className="main-post-panel__comments-list">
-                        {MOCK_COMMENTS.map((c) => (
+                        {post.comments?.map((c) => (
                             <div key={c.id} className="main-post-panel__comment">
                                 <div className="main-post-panel__comment-header">
                                     <span className="main-post-panel__comment-author">@{c.author}</span>
-                                    <span className="main-post-panel__comment-time">{c.time}</span>
+                                    <span className="main-post-panel__comment-time">{c.created_at}</span>
                                 </div>
-                                <p className="main-post-panel__comment-text">{c.text}</p>
+                                <p className="main-post-panel__comment-text">{c.comment}</p>
                             </div>
                         ))}
                     </div>
