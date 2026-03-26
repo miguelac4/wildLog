@@ -1,5 +1,7 @@
-import { X, Camera, Heart, MessageCircle, MapPin, ChevronLeft, ChevronRight, Send } from 'lucide-react'
+import { X, Camera, Heart, MessageCircle, MapPin, ChevronLeft, ChevronRight, Send, Trash2 } from 'lucide-react'
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { postCommentService } from '../api/postCommentService'
+import { useAuth } from '../hooks/useAuth'
 
 function PostDetailPanel({ post, onClose }) {
     if (!post) return null
@@ -8,6 +10,7 @@ function PostDetailPanel({ post, onClose }) {
     const [slideDirection, setSlideDirection] = useState(null) // 'left' | 'right'
     const [isAnimating, setIsAnimating] = useState(false)
     const [commentText, setCommentText] = useState('')
+    const [deleteConfirmModal, setDeleteConfirmModal] = useState(null)
     const cardRef = useRef(null)
 
     const touchStartX = useRef(0)
@@ -18,13 +21,31 @@ function PostDetailPanel({ post, onClose }) {
 
     const images = post.images || (post.image ? [post.image] : [])
 
+    const [comments, setComments] = useState([])
+    const { user } = useAuth()
+
     useEffect(() => {
+        if (!post) return
+
         setImageIndex(0)
         setSlideDirection(null)
         setIsAnimating(false)
+
         if (cardRef.current) {
             cardRef.current.scrollTo({ top: 0, behavior: 'smooth' })
         }
+
+        // Fetch comments
+        const fetchComments = async () => {
+            try {
+                const res = await postCommentService.getComments({ postId: post.id })
+                setComments(res.comments || [])
+            } catch (err) {
+                console.error('Error fetching comments', err)
+            }
+        }
+
+        fetchComments()
     }, [post])
 
     const animateToIndex = useCallback((newIndex, direction) => {
@@ -54,11 +75,44 @@ function PostDetailPanel({ post, onClose }) {
         animateToIndex(newIdx, 'left')
     }
 
-    const handleCommentSubmit = (e) => {
+    const handleCommentSubmit = async (e) => {
         e.preventDefault()
         if (!commentText.trim()) return
-        console.log('Comment:', commentText)
-        setCommentText('')
+
+        try {
+            const res = await postCommentService.createComment({
+                postId: post.id,
+                comment: commentText
+            })
+
+            // Atualizar UI imediatamente (optimistic update)
+            const newComment = {
+                id: res.comment_id,
+                comment: res.comment,
+                created_at: new Date().toISOString(),
+                username: user?.username // idealmente vir do user context
+            }
+
+            setComments((prev) => [...prev, newComment])
+            setCommentText('')
+        } catch (err) {
+            console.error('Error creating comment', err)
+        }
+    }
+
+    const handleDeleteComment = (commentId) => {
+        setDeleteConfirmModal(commentId)
+    }
+
+    const confirmDeleteComment = async (commentId) => {
+        try {
+            await postCommentService.deleteComment({ commentId })
+            setComments((prev) => prev.filter(c => c.id !== commentId))
+            setDeleteConfirmModal(null)
+        } catch (err) {
+            console.error('Error deleting comment', err)
+            setDeleteConfirmModal(null)
+        }
     }
 
     const handleTouchStart = (e) => {
@@ -213,11 +267,26 @@ function PostDetailPanel({ post, onClose }) {
                     </h3>
 
                     <div className="main-post-panel__comments-list">
-                        {post.comments?.map((c) => (
+                        {comments.map((c) => (
                             <div key={c.id} className="main-post-panel__comment">
                                 <div className="main-post-panel__comment-header">
-                                    <span className="main-post-panel__comment-author">@{c.author}</span>
-                                    <span className="main-post-panel__comment-time">{c.created_at}</span>
+                                    <span className="main-post-panel__comment-author">
+                                        @{c.username}
+                                    </span>
+                                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                        <span className="main-post-panel__comment-time">
+                                            {c.created_at}
+                                        </span>
+                                        {user && c.username === user.username && (
+                                            <button
+                                                className="main-post-panel__comment-delete"
+                                                onClick={() => handleDeleteComment(c.id)}
+                                                title="Delete comment"
+                                            >
+                                                <Trash2 size={14} />
+                                            </button>
+                                        )}
+                                    </div>
                                 </div>
                                 <p className="main-post-panel__comment-text">{c.comment}</p>
                             </div>
@@ -242,6 +311,35 @@ function PostDetailPanel({ post, onClose }) {
                     </form>
                 </div>
             </div>
+
+            {/* ── Delete Confirmation Modal ── */}
+            {deleteConfirmModal && (
+                <div className="delete-modal-overlay" onClick={() => setDeleteConfirmModal(null)}>
+                    <div className="delete-modal" onClick={(e) => e.stopPropagation()}>
+                        <div className="delete-modal__header">
+                            <Trash2 size={20} color="#a0845f" />
+                            <h3 className="delete-modal__title">Delete Comment</h3>
+                        </div>
+                        <p className="delete-modal__message">
+                            Are you sure you want to delete this comment? This action cannot be undone.
+                        </p>
+                        <div className="delete-modal__actions">
+                            <button
+                                className="delete-modal__button delete-modal__button--cancel"
+                                onClick={() => setDeleteConfirmModal(null)}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                className="delete-modal__button delete-modal__button--confirm"
+                                onClick={() => confirmDeleteComment(deleteConfirmModal)}
+                            >
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }
