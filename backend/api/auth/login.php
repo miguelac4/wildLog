@@ -41,24 +41,23 @@ try {
     // Guardar sessão (sem role, sem redirect)
     $_SESSION["is_login"] = true;
     $_SESSION["user"] = [
-        "id" => (int)$user["id"],
-        "username" => $user["username"],
-        "email" => $user["email"],
-        "role" => $user["role"],
+        "id"           => (int)$user["id"],
+        "username"         => $user["username"],
+        "email"        => $user["email"],
+        "role"         => $user["role"],
     ];
 
     echo json_encode([
         'user' => [
-            'id' => (int)$user['id'],
-            'username' => $user['username'],
-            'email' => $user['email'],
-            'role' => $user['role']
+            'id'           => (int)$user['id'],
+            'username'         => $user['username'],
+            'email'        => $user['email'],
+            'role'         => $user['role']
         ]
     ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     exit;
 
-}
-catch (Throwable $e) {
+} catch (Throwable $e) {
     api_log_exception($e, $requestId, [
         'endpoint' => '.../auth/login.php',
     ]);
