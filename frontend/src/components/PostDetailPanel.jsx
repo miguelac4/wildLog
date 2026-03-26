@@ -8,6 +8,9 @@ function PostDetailPanel({ post, onClose }) {
     const [commentText, setCommentText] = useState('')
     const cardRef = useRef(null)
 
+    const touchStartX = useRef(0)
+    const touchEndX = useRef(0)
+
     const images = post.images || (post.image ? [post.image] : [])
 
     useEffect(() => {
@@ -34,6 +37,26 @@ function PostDetailPanel({ post, onClose }) {
         setCommentText('')
     }
 
+    const handleTouchStart = (e) => {
+        touchStartX.current = e.touches[0].clientX
+    }
+
+    const handleTouchMove = (e) => {
+        touchEndX.current = e.touches[0].clientX
+    }
+
+    const handleTouchEnd = () => {
+        const diff = touchStartX.current - touchEndX.current
+
+        if (Math.abs(diff) < 50) return // evita micro swipes
+
+        if (diff > 0) {
+            nextImage() // swipe left
+        } else {
+            prevImage() // swipe right
+        }
+    }
+
     return (
         <div className="main-post-panel">
             <div className="main-post-panel__backdrop" onClick={onClose} />
@@ -43,7 +66,12 @@ function PostDetailPanel({ post, onClose }) {
                 </button>
 
                 {/* ── Image section ── */}
-                <div className="main-post-panel__image">
+                <div
+                    className="main-post-panel__image"
+                    onTouchStart={handleTouchStart}
+                    onTouchMove={handleTouchMove}
+                    onTouchEnd={handleTouchEnd}
+                >
                     {images.length > 0 ? (
                         <>
                             <img src={images[imageIndex]} alt={post.title} />

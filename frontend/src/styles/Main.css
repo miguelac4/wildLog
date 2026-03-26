@@ -1795,6 +1795,8 @@
 
   .main-post-panel__image {
     aspect-ratio: 16 / 9;
+    touch-action: pan-y;
+
   }
 
   .main-post-panel__body {
@@ -1803,6 +1805,10 @@
 
   .main-post-panel__comments {
     padding: 16px 18px 20px;
+  }
+
+  .main-post-panel__nav {
+    display: none;
   }
 
   .main-feed {
