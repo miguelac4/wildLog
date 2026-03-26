@@ -1,46 +1,108 @@
 import { X, Camera, Heart, MessageCircle, MapPin, ChevronLeft, ChevronRight, Send } from 'lucide-react'
-import { useState, useEffect, useRef } from 'react'
-
-/**
- * Mock comments — replace with API data later
- */
-const MOCK_COMMENTS = [
-    { id: 1, author: 'trailrunner88', text: 'Incredible spot! Adding this to my list.', time: '2h ago' },
-    { id: 2, author: 'mountain_soul', text: 'Was there last summer, truly magical place.', time: '5h ago' },
-    { id: 3, author: 'nature_lens', text: 'The light in that photo is stunning 📸', time: '1d ago' },
-]
+import { useState, useEffect, useRef, useCallback } from 'react'
 
 function PostDetailPanel({ post, onClose }) {
     if (!post) return null
 
     const [imageIndex, setImageIndex] = useState(0)
+    const [slideDirection, setSlideDirection] = useState(null) // 'left' | 'right'
+    const [isAnimating, setIsAnimating] = useState(false)
     const [commentText, setCommentText] = useState('')
     const cardRef = useRef(null)
+
+    const touchStartX = useRef(0)
+    const touchEndX = useRef(0)
+    const dragOffsetX = useRef(0)
+    const isDragging = useRef(false)
+    const imageContainerRef = useRef(null)
 
     const images = post.images || (post.image ? [post.image] : [])
 
     useEffect(() => {
         setImageIndex(0)
-        // Scroll the panel to the top smoothly when a new post opens
+        setSlideDirection(null)
+        setIsAnimating(false)
         if (cardRef.current) {
             cardRef.current.scrollTo({ top: 0, behavior: 'smooth' })
         }
     }, [post])
 
+    const animateToIndex = useCallback((newIndex, direction) => {
+        if (isAnimating) return
+        setSlideDirection(direction)
+        setIsAnimating(true)
+
+        // Wait for the CSS transition to finish before updating index
+        requestAnimationFrame(() => {
+            setTimeout(() => {
+                setImageIndex(newIndex)
+                setSlideDirection(null)
+                setIsAnimating(false)
+            }, 380) // match CSS transition duration
+        })
+    }, [isAnimating])
+
     const prevImage = () => {
-        setImageIndex((i) => (i === 0 ? images.length - 1 : i - 1))
+        if (isAnimating || images.length <= 1) return
+        const newIdx = imageIndex === 0 ? images.length - 1 : imageIndex - 1
+        animateToIndex(newIdx, 'right')
     }
 
     const nextImage = () => {
-        setImageIndex((i) => (i === images.length - 1 ? 0 : i + 1))
+        if (isAnimating || images.length <= 1) return
+        const newIdx = imageIndex === images.length - 1 ? 0 : imageIndex + 1
+        animateToIndex(newIdx, 'left')
     }
 
     const handleCommentSubmit = (e) => {
         e.preventDefault()
         if (!commentText.trim()) return
-        // TODO: POST /api/posts/:id/comments
         console.log('Comment:', commentText)
         setCommentText('')
+    }
+
+    const handleTouchStart = (e) => {
+        if (isAnimating) return
+        touchStartX.current = e.touches[0].clientX
+        touchEndX.current = e.touches[0].clientX
+        dragOffsetX.current = 0
+        isDragging.current = true
+
+        if (imageContainerRef.current) {
+            imageContainerRef.current.style.transition = 'none'
+        }
+    }
+
+    const handleTouchMove = (e) => {
+        if (!isDragging.current) return
+        touchEndX.current = e.touches[0].clientX
+        dragOffsetX.current = touchEndX.current - touchStartX.current
+
+        if (imageContainerRef.current) {
+            imageContainerRef.current.style.transform = `translateX(${dragOffsetX.current}px)`
+            imageContainerRef.current.style.opacity = Math.max(0.5, 1 - Math.abs(dragOffsetX.current) / 600)
+        }
+    }
+
+    const handleTouchEnd = () => {
+        if (!isDragging.current) return
+        isDragging.current = false
+        const diff = touchStartX.current - touchEndX.current
+
+        // Reset the inline drag styles
+        if (imageContainerRef.current) {
+            imageContainerRef.current.style.transition = ''
+            imageContainerRef.current.style.transform = ''
+            imageContainerRef.current.style.opacity = ''
+        }
+
+        if (Math.abs(diff) < 50) return
+
+        if (diff > 0) {
+            nextImage()
+        } else {
+            prevImage()
+        }
     }
 
     return (
@@ -52,10 +114,24 @@ function PostDetailPanel({ post, onClose }) {
                 </button>
 
                 {/* ── Image section ── */}
-                <div className="main-post-panel__image">
+                <div
+                    className="main-post-panel__image"
+                    onTouchStart={handleTouchStart}
+                    onTouchMove={handleTouchMove}
+                    onTouchEnd={handleTouchEnd}
+                >
                     {images.length > 0 ? (
                         <>
-                            <img src={images[imageIndex]} alt={post.title} />
+                            <div
+                                ref={imageContainerRef}
+                                className={
+                                    'main-post-panel__image-slide' +
+                                    (slideDirection === 'left' ? ' main-post-panel__image-slide--exit-left' : '') +
+                                    (slideDirection === 'right' ? ' main-post-panel__image-slide--exit-right' : '')
+                                }
+                            >
+                                <img src={images[imageIndex]} alt={post.title} />
+                            </div>
 
                             {images.length > 1 && (
                                 <div className="main-post-panel__dots">
@@ -65,7 +141,10 @@ function PostDetailPanel({ post, onClose }) {
                                             className={`main-post-panel__dot ${
                                                 index === imageIndex ? 'main-post-panel__dot--active' : ''
                                             }`}
-                                            onClick={() => setImageIndex(index)}
+                                            onClick={() => {
+                                                if (isAnimating || index === imageIndex) return
+                                                animateToIndex(index, index > imageIndex ? 'left' : 'right')
+                                            }}
                                         />
                                     ))}
                                 </div>
@@ -116,7 +195,7 @@ function PostDetailPanel({ post, onClose }) {
                             <Heart size={16} /> {post.likes} likes
                         </span>
                         <span className="main-post-panel__stat">
-                            <MessageCircle size={16} /> {post.comments} comments
+                            <MessageCircle size={16} /> {post.comments?.length || 0} comments
                         </span>
                     </div>
 
@@ -134,13 +213,13 @@ function PostDetailPanel({ post, onClose }) {
                     </h3>
 
                     <div className="main-post-panel__comments-list">
-                        {MOCK_COMMENTS.map((c) => (
+                        {post.comments?.map((c) => (
                             <div key={c.id} className="main-post-panel__comment">
                                 <div className="main-post-panel__comment-header">
                                     <span className="main-post-panel__comment-author">@{c.author}</span>
-                                    <span className="main-post-panel__comment-time">{c.time}</span>
+                                    <span className="main-post-panel__comment-time">{c.created_at}</span>
                                 </div>
-                                <p className="main-post-panel__comment-text">{c.text}</p>
+                                <p className="main-post-panel__comment-text">{c.comment}</p>
                             </div>
                         ))}
                     </div>
