@@ -1,4 +1,4 @@
-import { X, Camera, Heart, MessageCircle, MapPin, ChevronLeft, ChevronRight, Send } from 'lucide-react'
+import { X, Camera, Heart, MessageCircle, MapPin, ChevronLeft, ChevronRight, Send, Trash2 } from 'lucide-react'
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { postCommentService } from '../api/postCommentService'
 import { useAuth } from '../hooks/useAuth'
@@ -10,6 +10,7 @@ function PostDetailPanel({ post, onClose }) {
     const [slideDirection, setSlideDirection] = useState(null) // 'left' | 'right'
     const [isAnimating, setIsAnimating] = useState(false)
     const [commentText, setCommentText] = useState('')
+    const [deleteConfirmModal, setDeleteConfirmModal] = useState(null)
     const cardRef = useRef(null)
 
     const touchStartX = useRef(0)
@@ -99,16 +100,18 @@ function PostDetailPanel({ post, onClose }) {
         }
     }
 
-    const handleDeleteComment = async (commentId) => {
-        const confirmDelete = window.confirm("Delete this comment?")
-        if (!confirmDelete) return
+    const handleDeleteComment = (commentId) => {
+        setDeleteConfirmModal(commentId)
+    }
 
+    const confirmDeleteComment = async (commentId) => {
         try {
             await postCommentService.deleteComment({ commentId })
-
             setComments((prev) => prev.filter(c => c.id !== commentId))
+            setDeleteConfirmModal(null)
         } catch (err) {
             console.error('Error deleting comment', err)
+            setDeleteConfirmModal(null)
         }
     }
 
@@ -278,8 +281,9 @@ function PostDetailPanel({ post, onClose }) {
                                             <button
                                                 className="main-post-panel__comment-delete"
                                                 onClick={() => handleDeleteComment(c.id)}
+                                                title="Delete comment"
                                             >
-                                                ✕
+                                                <Trash2 size={14} />
                                             </button>
                                         )}
                                     </div>
@@ -307,6 +311,35 @@ function PostDetailPanel({ post, onClose }) {
                     </form>
                 </div>
             </div>
+
+            {/* ── Delete Confirmation Modal ── */}
+            {deleteConfirmModal && (
+                <div className="delete-modal-overlay" onClick={() => setDeleteConfirmModal(null)}>
+                    <div className="delete-modal" onClick={(e) => e.stopPropagation()}>
+                        <div className="delete-modal__header">
+                            <Trash2 size={20} color="#a0845f" />
+                            <h3 className="delete-modal__title">Delete Comment</h3>
+                        </div>
+                        <p className="delete-modal__message">
+                            Are you sure you want to delete this comment? This action cannot be undone.
+                        </p>
+                        <div className="delete-modal__actions">
+                            <button
+                                className="delete-modal__button delete-modal__button--cancel"
+                                onClick={() => setDeleteConfirmModal(null)}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                className="delete-modal__button delete-modal__button--confirm"
+                                onClick={() => confirmDeleteComment(deleteConfirmModal)}
+                            >
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }
