@@ -1,6 +1,7 @@
 import { X, Camera, Heart, MessageCircle, MapPin, ChevronLeft, ChevronRight, Send } from 'lucide-react'
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { postCommentService } from '../api/postCommentService'
+import { useAuth } from '../hooks/useAuth'
 
 function PostDetailPanel({ post, onClose }) {
     if (!post) return null
@@ -20,6 +21,7 @@ function PostDetailPanel({ post, onClose }) {
     const images = post.images || (post.image ? [post.image] : [])
 
     const [comments, setComments] = useState([])
+    const { user } = useAuth()
 
     useEffect(() => {
         if (!post) return
@@ -87,13 +89,26 @@ function PostDetailPanel({ post, onClose }) {
                 id: res.comment_id,
                 comment: res.comment,
                 created_at: new Date().toISOString(),
-                username: 'you' // idealmente vir do user context
+                username: user?.username // idealmente vir do user context
             }
 
             setComments((prev) => [...prev, newComment])
             setCommentText('')
         } catch (err) {
             console.error('Error creating comment', err)
+        }
+    }
+
+    const handleDeleteComment = async (commentId) => {
+        const confirmDelete = window.confirm("Delete this comment?")
+        if (!confirmDelete) return
+
+        try {
+            await postCommentService.deleteComment({ commentId })
+
+            setComments((prev) => prev.filter(c => c.id !== commentId))
+        } catch (err) {
+            console.error('Error deleting comment', err)
         }
     }
 
@@ -252,8 +267,22 @@ function PostDetailPanel({ post, onClose }) {
                         {comments.map((c) => (
                             <div key={c.id} className="main-post-panel__comment">
                                 <div className="main-post-panel__comment-header">
-                                    <span className="main-post-panel__comment-author">@{c.username}</span>
-                                    <span className="main-post-panel__comment-time">{c.created_at}</span>
+                                    <span className="main-post-panel__comment-author">
+                                        @{c.username}
+                                    </span>
+                                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                        <span className="main-post-panel__comment-time">
+                                            {c.created_at}
+                                        </span>
+                                        {user && c.username === user.username && (
+                                            <button
+                                                className="main-post-panel__comment-delete"
+                                                onClick={() => handleDeleteComment(c.id)}
+                                            >
+                                                ✕
+                                            </button>
+                                        )}
+                                    </div>
                                 </div>
                                 <p className="main-post-panel__comment-text">{c.comment}</p>
                             </div>
