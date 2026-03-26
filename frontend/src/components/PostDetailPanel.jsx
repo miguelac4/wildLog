@@ -1,5 +1,6 @@
 import { X, Camera, Heart, MessageCircle, MapPin, ChevronLeft, ChevronRight, Send } from 'lucide-react'
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { postCommentService } from '../api/postCommentService'
 
 function PostDetailPanel({ post, onClose }) {
     if (!post) return null
@@ -18,13 +19,30 @@ function PostDetailPanel({ post, onClose }) {
 
     const images = post.images || (post.image ? [post.image] : [])
 
+    const [comments, setComments] = useState([])
+
     useEffect(() => {
+        if (!post) return
+
         setImageIndex(0)
         setSlideDirection(null)
         setIsAnimating(false)
+
         if (cardRef.current) {
             cardRef.current.scrollTo({ top: 0, behavior: 'smooth' })
         }
+
+        // Fetch comments
+        const fetchComments = async () => {
+            try {
+                const res = await postCommentService.getComments({ postId: post.id })
+                setComments(res.comments || [])
+            } catch (err) {
+                console.error('Error fetching comments', err)
+            }
+        }
+
+        fetchComments()
     }, [post])
 
     const animateToIndex = useCallback((newIndex, direction) => {
@@ -54,11 +72,29 @@ function PostDetailPanel({ post, onClose }) {
         animateToIndex(newIdx, 'left')
     }
 
-    const handleCommentSubmit = (e) => {
+    const handleCommentSubmit = async (e) => {
         e.preventDefault()
         if (!commentText.trim()) return
-        console.log('Comment:', commentText)
-        setCommentText('')
+
+        try {
+            const res = await postCommentService.createComment({
+                postId: post.id,
+                comment: commentText
+            })
+
+            // Atualizar UI imediatamente (optimistic update)
+            const newComment = {
+                id: res.comment_id,
+                comment: res.comment,
+                created_at: new Date().toISOString(),
+                username: 'you' // idealmente vir do user context
+            }
+
+            setComments((prev) => [...prev, newComment])
+            setCommentText('')
+        } catch (err) {
+            console.error('Error creating comment', err)
+        }
     }
 
     const handleTouchStart = (e) => {
@@ -213,10 +249,10 @@ function PostDetailPanel({ post, onClose }) {
                     </h3>
 
                     <div className="main-post-panel__comments-list">
-                        {post.comments?.map((c) => (
+                        {comments.map((c) => (
                             <div key={c.id} className="main-post-panel__comment">
                                 <div className="main-post-panel__comment-header">
-                                    <span className="main-post-panel__comment-author">@{c.author}</span>
+                                    <span className="main-post-panel__comment-author">@{c.username}</span>
                                     <span className="main-post-panel__comment-time">{c.created_at}</span>
                                 </div>
                                 <p className="main-post-panel__comment-text">{c.comment}</p>
