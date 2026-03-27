@@ -88,9 +88,8 @@ export async function loadCountryOverlays(viewer) {
 
         /* ── 2  Boundaries via GeoJsonDataSource ────────────────── */
         const ds = await Cesium.GeoJsonDataSource.load(geojson, {
-            stroke:      BORDER_COLOR,
-            fill:        FILL_COLOR,
-            strokeWidth: 1,
+            stroke: Cesium.Color.fromCssColorString('#d6d0c4').withAlpha(0.7),
+            strokeWidth: 1.8,
             clampToGround: true,
         })
 
@@ -99,11 +98,19 @@ export async function loadCountryOverlays(viewer) {
         // Fine-tune each polygon entity
         for (const entity of ds.entities.values) {
             if (entity.polygon) {
-                entity.polygon.outline      = true
-                entity.polygon.outlineColor = BORDER_COLOR
-                entity.polygon.material     = FILL_COLOR
-                // Prevent country polygons from capturing click events
-                entity.polygon.shadows = Cesium.ShadowMode.DISABLED
+                entity.polygon.outline = true
+                entity.polygon.outlineColor = Cesium.Color.fromCssColorString('#d6d0c4').withAlpha(0.7)
+                entity.polygon.material = Cesium.Color.TRANSPARENT
+
+                entity.polygon.height = 0
+                entity.polygon.perPositionHeight = false
+
+                // 🔥 Glow fake (shadow line)
+                entity.polyline = new Cesium.PolylineGraphics({
+                    positions: entity.polygon.hierarchy.getValue().positions,
+                    width: 3.5,
+                    material: Cesium.Color.fromCssColorString('#000000').withAlpha(0.25),
+                })
             }
             // Remove any auto-generated labels/billboards from the data source
             entity.label     = undefined
@@ -134,7 +141,7 @@ export async function loadCountryOverlays(viewer) {
                 position: Cesium.Cartesian3.fromDegrees(centroid.lng, centroid.lat),
                 label: {
                     text:  name.toUpperCase(),
-                    font:  '11px Figtree, Inter, system-ui, sans-serif',
+                    font: '22px Figtree, Inter, system-ui, sans-serif',
                     fillColor:    LABEL_FILL,
                     outlineColor: LABEL_OUTLINE,
                     outlineWidth: 3,
@@ -148,7 +155,7 @@ export async function loadCountryOverlays(viewer) {
 
                     // Visible only at "country-level" zoom (300 km – 9 000 km)
                     distanceDisplayCondition:
-                        new Cesium.DistanceDisplayCondition(300_000, 9_000_000),
+                        new Cesium.DistanceDisplayCondition(0, 20_000_000),
 
                     // Shrink as the camera pulls away
                     scaleByDistance:
