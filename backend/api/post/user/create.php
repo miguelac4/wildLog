@@ -52,7 +52,7 @@ if ($visibility === 'public') {
 // Basic validation
 $errors = [];
 
-$maxFileSize = 5 * 1024 * 1024; // 5MB
+$maxFileSize = 25 * 1024 * 1024; // 25MB
 
 // Clean tags: remove duplicates, trim and lowercase
 $tagsIn = array_unique(array_map(function($t){
@@ -118,7 +118,7 @@ foreach ($images['tmp_name'] as $i => $tmpPath) {
     }
 
     if ($images['size'][$i] > $maxFileSize) {
-        $errors[] = "Image {$i} exceeds 5MB.";
+        $errors[] = "Image {$i} exceeds 25MB.";
         continue;
     }
 
@@ -128,7 +128,11 @@ foreach ($images['tmp_name'] as $i => $tmpPath) {
         $errors[] = "Image {$i} is not a valid image.";
     }
 
-    if (!in_array($mime, ['image/jpeg','image/png','image/webp'], true)) {
+    if (!in_array($mime, [
+        'image/jpeg',
+        'image/png',
+        'image/webp',
+    ], true)) {
         $errors[] = "Image {$i} type not allowed.";
     }
 }

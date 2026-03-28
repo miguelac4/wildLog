@@ -173,6 +173,8 @@
 /* ══════════════════════════════════════════
    IMAGE UPLOADER — SLIDER
    ══════════════════════════════════════════ */
+
+
 .create-images {
   display: flex;
   flex-direction: column;
@@ -200,6 +202,33 @@
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(255, 255, 255, 0.02);
+}
+
+.create-images__loading {
+  position: absolute;
+  inset: 0;
+  background: rgba(10, 20, 15, 0.7);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
+  border-radius: 16px;
+}
+
+.create-images__spinner {
+  width: 42px;
+  height: 42px;
+  border: 3px solid rgba(255,255,255,0.15);
+  border-top: 3px solid #4ade80;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .create-images__slider--shake {
