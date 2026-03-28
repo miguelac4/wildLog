@@ -2,6 +2,7 @@ import { useRef, useEffect, useState, useCallback } from 'react'
 import { MapPin, Navigation, Loader } from 'lucide-react'
 import * as Cesium from 'cesium'
 import 'cesium/Build/Cesium/Widgets/widgets.css'
+import { loadCountryOverlays } from './../explore/countryOverlays'
 
 /**
  * MapPicker — Cesium globe to pick lat/lng by clicking.
@@ -90,6 +91,8 @@ function MapPicker({ lat, lng, onLocationChange, onMapHover }) {
 
         viewerRef.current = viewer
         setReady(true)
+
+        loadCountryOverlays(viewer)
 
         return () => {
             handler.destroy()
