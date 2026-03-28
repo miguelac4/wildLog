@@ -19,6 +19,41 @@ const SHOW_DURATION = 900 // ms to show the new image before sliding to "Add Pho
  *   images   — { file, preview, id }[]
  *   onChange — (images) => void
  */
+
+async function convertImage(file) {
+    const img = document.createElement("img")
+    const canvas = document.createElement("canvas")
+    const ctx = canvas.getContext("2d")
+
+    const dataUrl = await new Promise((resolve) => {
+        const reader = new FileReader()
+        reader.onload = e => resolve(e.target.result)
+        reader.readAsDataURL(file)
+    })
+
+    img.src = dataUrl
+
+    await new Promise(resolve => {
+        img.onload = resolve
+    })
+
+    const MAX_WIDTH = 2000
+    const scale = Math.min(1, MAX_WIDTH / img.width)
+
+    canvas.width = img.width * scale
+    canvas.height = img.height * scale
+
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+
+    return new Promise(resolve => {
+        canvas.toBlob(
+            blob => resolve(blob),
+            "image/jpeg",
+            0.8
+        )
+    })
+}
+
 function ImageUploader({ images, onChange }) {
     const inputRef = useRef(null)
     const [dragOver, setDragOver] = useState(false)
@@ -75,8 +110,9 @@ function ImageUploader({ images, onChange }) {
     useEffect(() => () => clearTimeout(timerRef.current), [])
 
     /* ── File handling ── */
-    const addFiles = useCallback((files) => {
+    const addFiles = useCallback(async (files) => {
         const remaining = MAX_IMAGES - images.length
+
         if (remaining <= 0) {
             setShake(true)
             setTimeout(() => setShake(false), 500)
@@ -87,13 +123,27 @@ function ImageUploader({ images, onChange }) {
             .filter(f => f.type.startsWith('image/'))
             .slice(0, remaining)
 
-        const newImages = validFiles.map(file => ({
-            file,
-            preview: URL.createObjectURL(file),
-            id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-        }))
+        const processedImages = (await Promise.all(
+            validFiles.map(async (file) => {
+                const convertedBlob = await convertImage(file)
 
-        onChange([...images, ...newImages])
+                if (!convertedBlob) return null
+
+                const newFile = new File(
+                    [convertedBlob],
+                    file.name.replace(/\.\w+$/, ".jpg"),
+                    { type: "image/jpeg" }
+                )
+
+                return {
+                    file: newFile,
+                    preview: URL.createObjectURL(newFile),
+                    id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+                }
+            })
+        )).filter(Boolean)
+
+        onChange([...images, ...processedImages])
     }, [images, onChange])
 
     const removeImage = useCallback((index) => {
