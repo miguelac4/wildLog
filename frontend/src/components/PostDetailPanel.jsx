@@ -1,23 +1,30 @@
-import { X, Camera, Heart, MessageCircle, MapPin, ChevronLeft, ChevronRight, Send } from 'lucide-react'
-import { useState, useEffect, useRef } from 'react'
+import { X, Camera, Heart, MessageCircle, MapPin, ChevronLeft, ChevronRight, Send, Edit3, Trash2 } from 'lucide-react'
+import { useState, useEffect, useRef, useContext } from 'react'
+import { AuthContext } from '../context/AuthContext'
+import { postCommentService } from '../api/postCommentService'
+import EditPostModal from './EditPostModal'
 
-/**
- * Mock comments — replace with API data later
- */
-const MOCK_COMMENTS = [
-    { id: 1, author: 'trailrunner88', text: 'Incredible spot! Adding this to my list.', time: '2h ago' },
-    { id: 2, author: 'mountain_soul', text: 'Was there last summer, truly magical place.', time: '5h ago' },
-    { id: 3, author: 'nature_lens', text: 'The light in that photo is stunning 📸', time: '1d ago' },
-]
 
-function PostDetailPanel({ post, onClose }) {
-    if (!post) return null
+
+function PostDetailPanel({ post: initialPost, onClose }) {
+    if (!initialPost) return null
+
+    const [post, setPost] = useState(initialPost)
+    const { user } = useContext(AuthContext)
+    const isAuthor = user && (user.username === post.author || user.id === post.user_id || user.name === post.author)
+    console.log("DEBUG Edit Button:", { user, postAuthor: post.author, isAuthor })
 
     const [imageIndex, setImageIndex] = useState(0)
     const [commentText, setCommentText] = useState('')
+    const [comments, setComments] = useState([])
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false)
     const cardRef = useRef(null)
 
     const images = post.images || (post.image ? [post.image] : [])
+
+    useEffect(() => {
+        setPost(initialPost)
+    }, [initialPost])
 
     useEffect(() => {
         setImageIndex(0)
@@ -25,7 +32,22 @@ function PostDetailPanel({ post, onClose }) {
         if (cardRef.current) {
             cardRef.current.scrollTo({ top: 0, behavior: 'smooth' })
         }
-    }, [post])
+        
+        postCommentService.getComments({ postId: post.id })
+            .then(res => setComments(res.comments || res || []))
+            .catch(err => console.error("Erro comentários", err))
+    }, [post.id])
+
+    const handleDeleteComment = async (commentId) => {
+        if (!window.confirm('Queres apagar este comentário?')) return
+        try {
+            await postCommentService.deleteComment({ commentId })
+            setComments(comments.filter(c => c.id !== commentId))
+        } catch (err) {
+            console.error(err)
+            alert('Erro ao apagar comentário.')
+        }
+    }
 
     const prevImage = () => {
         setImageIndex((i) => (i === 0 ? images.length - 1 : i - 1))
@@ -47,6 +69,11 @@ function PostDetailPanel({ post, onClose }) {
         <div className="main-post-panel">
             <div className="main-post-panel__backdrop" onClick={onClose} />
             <div className="main-post-panel__card" ref={cardRef} data-lenis-prevent>
+                {isAuthor && (
+                    <button className="main-post-panel__edit" onClick={() => setIsEditModalOpen(true)} style={{ position: 'absolute', top: '16px', left: '16px', background: 'white', border: 'none', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 10 }}>
+                        <Edit3 size={18} color="#333" />
+                    </button>
+                )}
                 <button className="main-post-panel__close" onClick={onClose}>
                     <X size={20} />
                 </button>
@@ -105,9 +132,13 @@ function PostDetailPanel({ post, onClose }) {
                     <p className="main-post-panel__desc">{post.description}</p>
 
                     <div className="main-post-panel__tags">
-                        {post.tags.map((tag) => (
-                            <span key={tag} className="main-post-panel__tag">#{tag}</span>
-                        ))}
+                        {post.tags && post.tags.map((tag) => {
+                            const tagId = tag.id || tag;
+                            const tagName = tag.name || tag;
+                            return (
+                                <span key={tagId} className="main-post-panel__tag">#{tagName}</span>
+                            );
+                        })}
                     </div>
 
                     <div className="main-post-panel__stats">
@@ -133,15 +164,25 @@ function PostDetailPanel({ post, onClose }) {
                     </h3>
 
                     <div className="main-post-panel__comments-list">
-                        {MOCK_COMMENTS.map((c) => (
-                            <div key={c.id} className="main-post-panel__comment">
+                        {comments.map((c) => (
+                            <div key={c.id} className="main-post-panel__comment" style={{ position: 'relative' }}>
                                 <div className="main-post-panel__comment-header">
-                                    <span className="main-post-panel__comment-author">@{c.author}</span>
-                                    <span className="main-post-panel__comment-time">{c.time}</span>
+                                    <span className="main-post-panel__comment-author">@{c.user_name || c.author || 'utilizador'}</span>
+                                    <span className="main-post-panel__comment-time">{c.created_at || c.time || 'agora'}</span>
+                                    {isAuthor && (
+                                        <button 
+                                            onClick={() => handleDeleteComment(c.id)}
+                                            style={{ background: 'transparent', border: 'none', color: '#ff4d4f', cursor: 'pointer', marginLeft: 'auto' }}
+                                            title="Apagar comentário"
+                                        >
+                                            <Trash2 size={14} />
+                                        </button>
+                                    )}
                                 </div>
-                                <p className="main-post-panel__comment-text">{c.text}</p>
+                                <p className="main-post-panel__comment-text">{c.comment_text || c.comment || c.text}</p>
                             </div>
                         ))}
+                        {comments.length === 0 && <p style={{ color: '#888', fontSize: '14px', fontStyle: 'italic', marginBottom: '16px' }}>Sem comentários.</p>}
                     </div>
 
                     <form className="main-post-panel__comment-form" onSubmit={handleCommentSubmit}>
@@ -162,6 +203,23 @@ function PostDetailPanel({ post, onClose }) {
                     </form>
                 </div>
             </div>
+            
+            {isEditModalOpen && (
+                <EditPostModal 
+                    post={post}
+                    onClose={() => setIsEditModalOpen(false)}
+                    onUpdate={(updatedPost) => {
+                        if (!updatedPost) {
+                            setIsEditModalOpen(false)
+                            onClose() // the post was deleted!
+                            window.location.reload()
+                        } else {
+                            setPost(updatedPost)
+                            setIsEditModalOpen(false)
+                        }
+                    }}
+                />
+            )}
         </div>
     )
 }
