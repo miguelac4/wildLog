@@ -1,0 +1,1125 @@
+{
+  "info": {
+    "_postman_id": "f2ec4af8-9716-49ff-aecb-6deaa0c0cf85",
+    "name": "wildlogLOCAL",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "46183767",
+    "_collection_link": "https://go.postman.co/collection/46183767-f2ec4af8-9716-49ff-aecb-6deaa0c0cf85?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "auth",
+      "item": [
+        {
+          "name": "login.php",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"email\": \"miguel.andre.cordeiro@gmail.com\",\r\n  \"password\": \"miguel\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8000/api/auth/login.php",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "auth",
+                "login.php"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "me.php",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8000/api/auth/me.php",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "auth",
+                "me.php"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "logout.php",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/api/auth/logout.php",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "auth",
+                "logout.php"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "register.php",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"username\" : \"miguelac3\",\r\n    \"email\" : \"miguel.andre@gmail.com\",\r\n    \"password\" : \"testestestes\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8000/api/auth/register.php",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "auth",
+                "register.php"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "verification_mail.php",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"email\" : \"miguel.andre.cordeiro@gmail.com\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8000/api/auth/verification_mail.php",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "auth",
+                "verification_mail.php"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "verify_account.php",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/api/auth/verify_account.php?token=z1gdtUc24D2m_a1Uy1vD4xlw15otJTzV7mvuLyKhPe8",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "auth",
+                "verify_account.php"
+              ],
+              "query": [
+                {
+                  "key": "token",
+                  "value": "z1gdtUc24D2m_a1Uy1vD4xlw15otJTzV7mvuLyKhPe8"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "pass_recover_request.php",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"email\" : \"miguel.andre.cordeiro@gmail.com\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8000/api/auth/pass_recover_request.php",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "auth",
+                "pass_recover_request.php"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "pass_recover_confirm.php",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/api/auth/pass_recover_confirm.php?token=7tnbbYM97YMQu4EBD3kKUqFA0UVPpd6k1HYrQAq8eJs",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "auth",
+                "pass_recover_confirm.php"
+              ],
+              "query": [
+                {
+                  "key": "token",
+                  "value": "7tnbbYM97YMQu4EBD3kKUqFA0UVPpd6k1HYrQAq8eJs"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "pass_recover_reset.php",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"token\" : \"7tnbbYM97YMQu4EBD3kKUqFA0UVPpd6k1HYrQAq8eJs\",\r\n    \"new_password\" : \"newdadadadadass\",\r\n    \"confirm_password\" : \"newdadadadadass\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8000/api/auth/pass_recover_reset.php",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "auth",
+                "pass_recover_reset.php"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "account",
+      "item": [
+        {
+          "name": "get_account.php",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/api/account/get_account.php",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "account",
+                "get_account.php"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "edit_account_info.php",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"name\" : \"Catarina Proença\",\r\n    \"description\" : \"Aventureira Desportiva\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8000/api/account/edit_account_info.php",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "account",
+                "edit_account_info.php"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "change_password.php",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"curr_password\" : \"miguel\",\r\n    \"new_password\" : \"testestestes\",\r\n    \"confirm_password\" : \"testestestes\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8000/api/account/change_password.php",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "account",
+                "change_password.php"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "change_password.php Copy",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"password\" : \"testestestes\",\r\n    \"confirm_text\" : \"DELETE\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8000/api/account/delete_account.php",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "account",
+                "delete_account.php"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "edit_avatar.php",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "avatar",
+                  "type": "file",
+                  "uuid": "85dc2457-1fe7-4585-9e85-c4f00fd58278",
+                  "src": "/C:/wildlog/WildLog/frontend/public/media/post/ferreira_2.jpeg"
+                }
+              ]
+            },
+            "url": {
+              "raw": "http://localhost:8000/api/account/edit_avatar.php",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "account",
+                "edit_avatar.php"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "get_bookmark.php",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/api/account/get_bookmark.php",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "account",
+                "get_bookmark.php"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "post",
+      "item": [
+        {
+          "name": "explore",
+          "item": [
+            {
+              "name": "get_feed.php",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:8000/api/post/explore/get_feed.php",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "post",
+                    "explore",
+                    "get_feed.php"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "get_post.php",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:8000/api/post/explore/get_post.php?post_id=12",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "post",
+                    "explore",
+                    "get_post.php"
+                  ],
+                  "query": [
+                    {
+                      "key": "post_id",
+                      "value": "12"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "get_map_posts.php",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:8000/api/post/explore/get_map_posts.php",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "post",
+                    "explore",
+                    "get_map_posts.php"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "get_nearby_posts.php",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:8000/api/post/explore/get_nearby_posts.php?lat=38.7223&lng=-9.1393",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "post",
+                    "explore",
+                    "get_nearby_posts.php"
+                  ],
+                  "query": [
+                    {
+                      "key": "lat",
+                      "value": "38.7223",
+                      "type": "text"
+                    },
+                    {
+                      "key": "lng",
+                      "value": "-9.1393",
+                      "type": "text"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "user",
+          "item": [
+            {
+              "name": "create.php",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "title",
+                      "value": "TEST2",
+                      "type": "text",
+                      "uuid": "af8d2ff4-d801-444f-99a2-681227dd8c46"
+                    },
+                    {
+                      "key": "description",
+                      "value": "nevada radical",
+                      "type": "text",
+                      "uuid": "e95c362a-25ca-485a-8567-22c46549253d"
+                    },
+                    {
+                      "key": "lat",
+                      "value": "46.4989",
+                      "type": "text",
+                      "uuid": "03760f83-4881-4550-a1d8-c17404d417e5"
+                    },
+                    {
+                      "key": "lng",
+                      "value": "7.7291",
+                      "type": "text",
+                      "uuid": "d62cdf19-7ca6-4fdd-931d-49b4dd998c43"
+                    },
+                    {
+                      "key": "visibility",
+                      "value": "public",
+                      "type": "text",
+                      "uuid": "3dcb6d7e-5d1f-4ac2-98a7-6ce032f9f99b"
+                    },
+                    {
+                      "key": "tags[]",
+                      "value": "natureza",
+                      "type": "text",
+                      "uuid": "0fa9e3d2-3813-4ef6-8650-0826c4cdd5e5"
+                    },
+                    {
+                      "key": "tags[]",
+                      "value": "luxo",
+                      "type": "text",
+                      "uuid": "b28c99bf-c79a-4147-8f10-432e1300fe20"
+                    },
+                    {
+                      "key": "images[]",
+                      "type": "file",
+                      "uuid": "55598b58-8184-46b8-9940-8bd58129944c",
+                      "src": "/C:/wildlog/WildLog/frontend/public/media/post/oeschinensee_lake_1.jpg"
+                    },
+                    {
+                      "key": "images[]",
+                      "type": "file",
+                      "uuid": "55598b58-8184-46b8-9940-8bd58129944c",
+                      "src": "/C:/wildlog/WildLog/frontend/public/media/post/oeschinensee_lake_2.jpg"
+                    },
+                    {
+                      "key": "images[]",
+                      "type": "file",
+                      "uuid": "55598b58-8184-46b8-9940-8bd58129944c",
+                      "src": "/C:/wildlog/WildLog/frontend/public/media/post/oeschinensee_lake_3.jpg"
+                    },
+                    {
+                      "key": "images[]",
+                      "type": "file",
+                      "uuid": "55598b58-8184-46b8-9940-8bd58129944c",
+                      "src": "/C:/wildlog/WildLog/frontend/public/media/post/oeschinensee_lake_4.jpg"
+                    },
+                    {
+                      "key": "images[]",
+                      "type": "file",
+                      "uuid": "55598b58-8184-46b8-9940-8bd58129944c",
+                      "value": null,
+                      "disabled": true
+                    },
+                    {
+                      "key": "tags[]",
+                      "type": "text",
+                      "uuid": "b0a8fbed-0370-49be-bfd5-705b5a42c133",
+                      "value": "luxo"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "http://localhost:8000/api/post/user/create.php",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "post",
+                    "user",
+                    "create.php"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "get_user_post.php",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:8000/api/post/user/get_user_post.php",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "post",
+                    "user",
+                    "get_user_post.php"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "edit_post_basic.php",
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n \"post_id\": 10,\r\n \"title\": \"Neves Editao\",\r\n \"visibility\" : \"private\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost:8000/api/post/user/edit_post_basic.php",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "post",
+                    "user",
+                    "edit_post_basic.php"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "upload_post_image.php",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "post_id",
+                      "value": "27",
+                      "type": "text",
+                      "uuid": "226a4766-4063-497d-a0f9-756dbed7c237"
+                    },
+                    {
+                      "key": "images[]",
+                      "type": "file",
+                      "uuid": "9bc4de11-a7e0-4f71-9e70-f863a82d2212",
+                      "src": "/C:/Users/Miguel Cordeiro/Downloads/test/Pizigani_1367_Chart_10MB.jpg"
+                    },
+                    {
+                      "key": "images[]",
+                      "type": "file",
+                      "uuid": "9bc4de11-a7e0-4f71-9e70-f863a82d2212",
+                      "value": null,
+                      "disabled": true
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "http://localhost:8000/api/post/user/upload_post_image.php",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "post",
+                    "user",
+                    "upload_post_image.php"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "delete_post_image.php",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "post_id",
+                      "value": "27",
+                      "type": "text",
+                      "uuid": "8be94123-bb92-4e35-b473-008a7feccf28"
+                    },
+                    {
+                      "key": "image_id",
+                      "value": "66",
+                      "type": "text",
+                      "uuid": "17306548-af37-4245-9d81-4e64a7e47342"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "http://localhost:8000/api/post/user/delete_post_image.php",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "post",
+                    "user",
+                    "delete_post_image.php"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "add_post_tag.php",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "post_id",
+                      "value": "19",
+                      "type": "text",
+                      "uuid": "75747b6f-973c-4f55-b3c2-d5353505b86e"
+                    },
+                    {
+                      "key": "new_tag",
+                      "value": "luxo",
+                      "type": "text",
+                      "uuid": "01bff98b-b33e-45d3-839e-81a712247a33"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "http://localhost:8000/api/post/user/add_post_tag.php",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "post",
+                    "user",
+                    "add_post_tag.php"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "delete_post_tag.php",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "post_id",
+                      "value": "19",
+                      "type": "text",
+                      "uuid": "75747b6f-973c-4f55-b3c2-d5353505b86e"
+                    },
+                    {
+                      "key": "tag_id",
+                      "value": "7",
+                      "type": "text",
+                      "uuid": "01bff98b-b33e-45d3-839e-81a712247a33"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "http://localhost:8000/api/post/user/delete_post_tag.php",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "post",
+                    "user",
+                    "delete_post_tag.php"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "comment",
+          "item": [
+            {
+              "name": "create_comment.php",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": [
+                    {
+                      "key": "post_id",
+                      "value": "22",
+                      "type": "text",
+                      "uuid": "fb60538f-7316-4b53-a018-655b9a556d7d"
+                    },
+                    {
+                      "key": "comment",
+                      "value": "Wow, that view is amazing",
+                      "type": "text",
+                      "uuid": "112a1ac0-636f-48f8-a1da-6f212d686c35"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "http://localhost:8000/api/post/comment/create_comment.php",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "post",
+                    "comment",
+                    "create_comment.php"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "delete_comment.php",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": [
+                    {
+                      "key": "comment_id",
+                      "value": "2",
+                      "type": "text",
+                      "uuid": "10f3f33b-dc45-413b-ad60-83ef7393c3b8"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "http://localhost:8000/api/post/comment/delete_comment.php",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "post",
+                    "comment",
+                    "delete_comment.php"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "get_comments.php",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:8000/api/post/comment/get_comments.php?post_id=22",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "post",
+                    "comment",
+                    "get_comments.php"
+                  ],
+                  "query": [
+                    {
+                      "key": "post_id",
+                      "value": "22",
+                      "type": "text"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "bookmark",
+          "item": [
+            {
+              "name": "save_post.php",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": [
+                    {
+                      "key": "post_id",
+                      "value": "16",
+                      "type": "text",
+                      "uuid": "fa04c916-0849-4691-95dc-4044b7ad190f"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "http://localhost:8000/api/post/bookmark/save_post.php",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "post",
+                    "bookmark",
+                    "save_post.php"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "unsave_post.php",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"post_id\": 14\r\n}"
+                },
+                "url": {
+                  "raw": "http://localhost:8000/api/post/bookmark/unsave_post.php",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "post",
+                    "bookmark",
+                    "unsave_post.php"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "like",
+          "item": [
+            {
+              "name": "like_post.php",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": [
+                    {
+                      "key": "post_id",
+                      "value": "13",
+                      "type": "text",
+                      "uuid": "ce59434e-1b6a-44f6-b864-dc89f4514a51"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "http://localhost:8000/api/post/like/like_post.php",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "post",
+                    "like",
+                    "like_post.php"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "unlike_post.php",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"post_id\" : \"13\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost:8000/api/post/like/unlike_post.php",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "post",
+                    "like",
+                    "unlike_post.php"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
