@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, memo } from 'react'
 import { MapPin, Compass } from 'lucide-react'
 import 'cesium/Build/Cesium/Widgets/widgets.css'
 import * as Cesium from 'cesium'
-import { loadCountryOverlays } from './countryOverlays'
+import { loadCountryOverlays } from '../map/countryOverlays.js'
 
 function ExploreMap({ posts, regions, onPostClick, flyToTarget, onFlyComplete, onMoveEnd }) {
     const [globeReady, setGlobeReady] = useState(false)

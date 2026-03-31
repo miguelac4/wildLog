@@ -2,7 +2,7 @@ import { useRef, useEffect, useState, useCallback } from 'react'
 import { MapPin, Navigation, Loader } from 'lucide-react'
 import * as Cesium from 'cesium'
 import 'cesium/Build/Cesium/Widgets/widgets.css'
-import { loadCountryOverlays } from './../explore/countryOverlays'
+import { loadCountryOverlays } from '../map/countryOverlays.js'
 
 /**
  * MapPicker — Cesium globe to pick lat/lng by clicking.
