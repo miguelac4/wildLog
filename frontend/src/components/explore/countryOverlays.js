@@ -1,179 +1,235 @@
 /**
- * countryOverlays.js
- * ──────────────────────────────────────────────────────────────────
- * Loads country boundaries and name labels onto a CesiumJS Viewer.
- *
- * Data source: Natural Earth 110m admin-0 countries GeoJSON (~530 KB).
- * Fetched once from jsdelivr CDN, cached by the browser.
- *
- * Visual style:
- *  • Thin, subtle earth-tone boundary lines
- *  • Uppercase country name labels that fade by altitude
- *  • Matches the WildLog dark-globe aesthetic
- * ──────────────────────────────────────────────────────────────────
+ * countryOverlays.js — WildLog
+ * Country borders, country labels and city labels for CesiumJS.
  */
 import * as Cesium from 'cesium'
 
-/* ── Data URL ────────────────────────────────────────────────────── */
-// Natural Earth 110m (lightest resolution — fast load, global coverage)
-const LOCAL_URL = `${import.meta.env.BASE_URL}data/ne_110m_admin_0_countries.geojson`
-const CDN_URL =
-    'https://cdn.jsdelivr.net/gh/nvkelso/natural-earth-vector@master/geojson/ne_110m_admin_0_countries.geojson'
+// ── Data sources ─────────────────────────────────────────────────
+// ne_110m_admin_0_boundary_lines_land → only shared land borders, no coastlines
+const LOCAL_BORDERS   = `${import.meta.env.BASE_URL}data/ne_110m_admin_0_boundary_lines_land.geojson`
+const LOCAL_COUNTRIES = `${import.meta.env.BASE_URL}data/ne_110m_admin_0_countries.geojson`
+const LOCAL_CITIES    = `${import.meta.env.BASE_URL}data/ne_110m_populated_places_simple.geojson`
 
-/* ── Color palette (WildLog dark theme) ──────────────────────────── */
-const BORDER_COLOR  = Cesium.Color.fromCssColorString('#8b7355').withAlpha(0.28)
-const FILL_COLOR    = Cesium.Color.fromCssColorString('#111f17').withAlpha(0.035)
-const LABEL_FILL    = Cesium.Color.fromCssColorString('#c8c0b4').withAlpha(0.50)
-const LABEL_OUTLINE = Cesium.Color.fromCssColorString('#060d09').withAlpha(0.85)
+const CDN_BORDERS = [
+    'https://cdn.jsdelivr.net/gh/nvkelso/natural-earth-vector@v5.1.2/geojson/ne_110m_admin_0_boundary_lines_land.geojson',
+    'https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_admin_0_boundary_lines_land.geojson',
+]
+const CDN_COUNTRIES = [
+    'https://cdn.jsdelivr.net/gh/nvkelso/natural-earth-vector@v5.1.2/geojson/ne_110m_admin_0_countries.geojson',
+    'https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_admin_0_countries.geojson',
+]
+const CDN_CITIES = [
+    'https://cdn.jsdelivr.net/gh/nvkelso/natural-earth-vector@v5.1.2/geojson/ne_110m_populated_places_simple.geojson',
+    'https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_populated_places_simple.geojson',
+]
 
-/* ── Centroid helpers ────────────────────────────────────────────── */
+// ── Palette (matches WildLog dark-green globe) ───────────────────
+const BORDER      = Cesium.Color.fromCssColorString('#c8b898').withAlpha(0.80)
+const LABEL_FILL  = Cesium.Color.fromCssColorString('#ede7db').withAlpha(0.92)
+const LABEL_SHADE = Cesium.Color.fromCssColorString('#060c08').withAlpha(0.88)
+const CITY_FILL   = Cesium.Color.fromCssColorString('#c8bfb2').withAlpha(0.84)
+const CITY_SHADE  = Cesium.Color.fromCssColorString('#060c08').withAlpha(0.90)
+const CITY_DOT    = Cesium.Color.fromCssColorString('#9b805d').withAlpha(0.80)
 
-/** Average of ring vertices (skip closing duplicate). */
+// ── Helpers ──────────────────────────────────────────────────────
 function ringCentroid(ring) {
-    const n = ring[ring.length - 1][0] === ring[0][0] &&
-              ring[ring.length - 1][1] === ring[0][1]
-        ? ring.length - 1
-        : ring.length
-
-    let lngSum = 0
-    let latSum = 0
-    for (let i = 0; i < n; i++) {
-        lngSum += ring[i][0]
-        latSum += ring[i][1]
-    }
-    return { lng: lngSum / n, lat: latSum / n }
+    const n = (ring.at(-1)[0] === ring[0][0] && ring.at(-1)[1] === ring[0][1])
+        ? ring.length - 1 : ring.length
+    let lng = 0, lat = 0
+    for (let i = 0; i < n; i++) { lng += ring[i][0]; lat += ring[i][1] }
+    return { lng: lng / n, lat: lat / n }
 }
 
-/** For MultiPolygon, pick the largest polygon by vertex count. */
-function largestPolygonCentroid(coordinates) {
-    let bestRing = coordinates[0][0]
-    for (const polygon of coordinates) {
-        if (polygon[0].length > bestRing.length) bestRing = polygon[0]
-    }
-    return ringCentroid(bestRing)
+function largestRingCentroid(coords) {
+    let best = coords[0][0]
+    for (const poly of coords) if (poly[0].length > best.length) best = poly[0]
+    return ringCentroid(best)
 }
 
-/* ── Main loader ─────────────────────────────────────────────────── */
+function labelTier(props) {
+    const rank = Number(props?.LABELRANK ?? props?.labelrank ?? 5)
+    if (rank <= 2) return { size: '20px', weight: '600' }
+    if (rank <= 4) return { size: '16px', weight: '500' }
+    return              { size: '13px', weight: '500' }
+}
 
+async function fetchGeoJSON(local, mirrors) {
+    try {
+        const r = await fetch(local)
+        if (r.ok) return r.json()
+    } catch { /* fall through */ }
+
+    for (const url of mirrors) {
+        try {
+            const r = await fetch(url)
+            if (r.ok) return r.json()
+        } catch { /* next mirror */ }
+    }
+    throw new Error(`[WildLog] GeoJSON unavailable: ${local}`)
+}
+
+// ── Borders ──────────────────────────────────────────────────────
+// Uses ne_110m_admin_0_boundary_lines_land (LineString / MultiLineString).
+// That dataset contains ONLY shared land borders — coastlines are absent by
+// design, giving the same behaviour as Google Maps.
+function addBorders(viewer, geojson) {
+    const instances = []
+
+    for (const { geometry: geom } of geojson.features) {
+        if (!geom) continue
+
+        // boundary_lines_land features are LineString or MultiLineString
+        const lines = geom.type === 'LineString'
+            ? [geom.coordinates]
+            : geom.type === 'MultiLineString'
+                ? geom.coordinates
+                : []
+
+        for (const line of lines) {
+            if (line.length < 2) continue
+            instances.push(new Cesium.GeometryInstance({
+                geometry: new Cesium.GroundPolylineGeometry({
+                    positions: line.map(([lng, lat]) =>
+                        Cesium.Cartesian3.fromDegrees(lng, lat)),
+                    width: 2,
+                }),
+            }))
+        }
+    }
+
+    if (!instances.length || viewer.isDestroyed()) return
+
+    viewer.scene.groundPrimitives.add(
+        new Cesium.GroundPolylinePrimitive({
+            geometryInstances: instances,
+            appearance: new Cesium.PolylineMaterialAppearance({
+                material: Cesium.Material.fromType('Color', { color: BORDER }),
+            }),
+        })
+    )
+}
+
+// ── Country labels ────────────────────────────────────────────────
+function addCountryLabels(viewer, geojson) {
+    for (const { properties: props, geometry: geom } of geojson.features) {
+        const name = props?.NAME ?? props?.name ?? props?.ADMIN
+        if (!name || !geom) continue
+
+        let c
+        if      (geom.type === 'Polygon')      c = ringCentroid(geom.coordinates[0])
+        else if (geom.type === 'MultiPolygon') c = largestRingCentroid(geom.coordinates)
+        if (!c) continue
+
+        const { size, weight } = labelTier(props)
+
+        viewer.entities.add({
+            position: Cesium.Cartesian3.fromDegrees(c.lng, c.lat),
+            label: {
+                text:         name.toUpperCase(),
+                font:         `${weight} ${size} Figtree, Inter, system-ui, sans-serif`,
+                fillColor:    LABEL_FILL,
+                outlineColor: LABEL_SHADE,
+                outlineWidth: 2.5,
+                style:        Cesium.LabelStyle.FILL_AND_OUTLINE,
+
+                verticalOrigin:   Cesium.VerticalOrigin.CENTER,
+                horizontalOrigin: Cesium.HorizontalOrigin.CENTER,
+
+                disableDepthTestDistance: Number.POSITIVE_INFINITY,
+                distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 12_000_000),
+                scaleByDistance:          new Cesium.NearFarScalar(250_000, 1.05, 8_500_000, 0.18),
+                translucencyByDistance:   new Cesium.NearFarScalar(200_000, 1.0,  7_000_000, 0.0),
+            },
+            properties: { _countryLabel: true },
+        })
+    }
+}
+
+// ── City labels (async, non-blocking) ────────────────────────────
+async function addCityLabels(viewer) {
+    let geojson
+    try { geojson = await fetchGeoJSON(LOCAL_CITIES, CDN_CITIES) }
+    catch { return }
+    if (viewer.isDestroyed()) return
+
+    const ds = new Cesium.CustomDataSource('wildlog-city-labels')
+
+    for (const { properties: p, geometry: geom } of geojson.features) {
+        if (viewer.isDestroyed()) break
+        const name = p?.NAME ?? p?.name
+        if (!name || geom?.type !== 'Point') continue
+
+        const isCapital = Number(p.ADM0CAP)  >= 1
+        const isMega    = Number(p.MEGACITY) >= 1
+        const isMajor   = Number(p.POP_MAX)  >= 3_000_000
+        if (!isCapital && !isMega && !isMajor) continue
+
+        const [lng, lat] = geom.coordinates
+
+        ds.entities.add({
+            position: Cesium.Cartesian3.fromDegrees(lng, lat),
+            point: {
+                pixelSize:    isCapital ? 4.5 : 3.0,
+                color:        CITY_DOT,
+                outlineColor: CITY_SHADE,
+                outlineWidth: 1.2,
+                disableDepthTestDistance: Number.POSITIVE_INFINITY,
+                distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 1_800_000),
+                scaleByDistance:          new Cesium.NearFarScalar(50_000, 1.4, 1_600_000, 0.4),
+                translucencyByDistance:   new Cesium.NearFarScalar(80_000, 1.0, 1_700_000, 0.0),
+            },
+            label: {
+                text:         name,
+                font:         isCapital
+                    ? '500 12px Figtree, Inter, system-ui, sans-serif'
+                    : '400 11px Figtree, Inter, system-ui, sans-serif',
+                fillColor:    CITY_FILL,
+                outlineColor: CITY_SHADE,
+                outlineWidth: 2.0,
+                style:        Cesium.LabelStyle.FILL_AND_OUTLINE,
+
+                verticalOrigin:   Cesium.VerticalOrigin.BOTTOM,
+                horizontalOrigin: Cesium.HorizontalOrigin.CENTER,
+                pixelOffset:      new Cesium.Cartesian2(0, -6),
+
+                disableDepthTestDistance: Number.POSITIVE_INFINITY,
+                distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 2_000_000),
+                scaleByDistance:          new Cesium.NearFarScalar(50_000, 1.0, 1_800_000, 0.25),
+                translucencyByDistance:   new Cesium.NearFarScalar(100_000, 1.0, 1_800_000, 0.0),
+            },
+            properties: { _cityLabel: true },
+        })
+    }
+
+    if (!viewer.isDestroyed()) viewer.dataSources.add(ds)
+}
+
+// ── Public API ────────────────────────────────────────────────────
 /**
- * Load country boundaries + name labels onto the Cesium Viewer.
+ * Load country borders, country labels, and city labels onto the Viewer.
+ * Call once after Viewer initialisation. Non-blocking — failures are silent.
  *
- * Call once after Viewer initialisation.
- * Non-blocking — failures are logged but never break the map.
- *
- * @param {Cesium.Viewer} viewer
- * @returns {Promise<Cesium.GeoJsonDataSource|null>}
+ * @param  {Cesium.Viewer} viewer
+ * @returns {Promise<true|null>}
  */
 export async function loadCountryOverlays(viewer) {
     if (!viewer || viewer.isDestroyed()) return null
 
     try {
-        /* ── 1  Fetch GeoJSON (local first, CDN fallback) ───────── */
-        let geojson
-        try {
-            const localRes = await fetch(LOCAL_URL)
-            if (localRes.ok) {
-                geojson = await localRes.json()
-            }
-        } catch { /* ignore — try CDN */ }
-
-        if (!geojson) {
-            const cdnRes = await fetch(CDN_URL)
-            if (!cdnRes.ok) throw new Error(`CDN fetch failed: ${cdnRes.status}`)
-            geojson = await cdnRes.json()
-        }
-
-        // Guard: viewer may have been destroyed while we were fetching
+        // Fetch in parallel: land borders (no coastlines) + countries (for labels only)
+        const [borders, countries] = await Promise.all([
+            fetchGeoJSON(LOCAL_BORDERS,   CDN_BORDERS),
+            fetchGeoJSON(LOCAL_COUNTRIES, CDN_COUNTRIES),
+        ])
         if (viewer.isDestroyed()) return null
 
-        /* ── 2  Boundaries via GeoJsonDataSource ────────────────── */
-        const ds = await Cesium.GeoJsonDataSource.load(geojson, {
-            stroke: Cesium.Color.fromCssColorString('#d6d0c4').withAlpha(0.7),
-            strokeWidth: 1.8,
-            clampToGround: true,
-        })
+        addBorders(viewer, borders)
+        addCountryLabels(viewer, countries)
+        addCityLabels(viewer).catch(() => {})
 
-        if (viewer.isDestroyed()) return null
-
-        // Fine-tune each polygon entity
-        for (const entity of ds.entities.values) {
-            if (entity.polygon) {
-                entity.polygon.outline = true
-                entity.polygon.outlineColor = Cesium.Color.fromCssColorString('#d6d0c4').withAlpha(0.7)
-                entity.polygon.material = Cesium.Color.TRANSPARENT
-
-                entity.polygon.height = 0
-                entity.polygon.perPositionHeight = false
-
-                // 🔥 Glow fake (shadow line)
-                entity.polyline = new Cesium.PolylineGraphics({
-                    positions: entity.polygon.hierarchy.getValue().positions,
-                    width: 3.5,
-                    material: Cesium.Color.fromCssColorString('#000000').withAlpha(0.25),
-                })
-            }
-            // Remove any auto-generated labels/billboards from the data source
-            entity.label     = undefined
-            entity.billboard = undefined
-            entity.point     = undefined
-        }
-
-        viewer.dataSources.add(ds)
-
-        /* ── 3  Country name labels ─────────────────────────────── */
-        for (const feature of geojson.features) {
-            const name = feature.properties?.NAME
-                      || feature.properties?.name
-                      || feature.properties?.ADMIN
-            if (!name) continue
-
-            const geom = feature.geometry
-            let centroid
-
-            if (geom.type === 'Polygon') {
-                centroid = ringCentroid(geom.coordinates[0])
-            } else if (geom.type === 'MultiPolygon') {
-                centroid = largestPolygonCentroid(geom.coordinates)
-            }
-            if (!centroid) continue
-
-            viewer.entities.add({
-                position: Cesium.Cartesian3.fromDegrees(centroid.lng, centroid.lat),
-                label: {
-                    text:  name.toUpperCase(),
-                    font: '22px Figtree, Inter, system-ui, sans-serif',
-                    fillColor:    LABEL_FILL,
-                    outlineColor: LABEL_OUTLINE,
-                    outlineWidth: 3,
-                    style: Cesium.LabelStyle.FILL_AND_OUTLINE,
-
-                    verticalOrigin:   Cesium.VerticalOrigin.CENTER,
-                    horizontalOrigin: Cesium.HorizontalOrigin.CENTER,
-
-                    // Always render on top (never hidden behind terrain)
-                    disableDepthTestDistance: Number.POSITIVE_INFINITY,
-
-                    // Visible only at "country-level" zoom (300 km – 9 000 km)
-                    distanceDisplayCondition:
-                        new Cesium.DistanceDisplayCondition(0, 20_000_000),
-
-                    // Shrink as the camera pulls away
-                    scaleByDistance:
-                        new Cesium.NearFarScalar(300_000, 1.05, 9_000_000, 0.40),
-
-                    // Fade out at extreme distances
-                    translucencyByDistance:
-                        new Cesium.NearFarScalar(300_000, 0.85, 9_000_000, 0.15),
-
-                    pixelOffset: new Cesium.Cartesian2(0, 0),
-                },
-                properties: { _countryLabel: true },
-            })
-        }
-
-        return ds
+        return true
     } catch (err) {
-        console.warn('[WildLog] Country overlays failed to load:', err.message)
+        console.warn('[WildLog] Country overlays failed:', err.message)
         return null
     }
 }
