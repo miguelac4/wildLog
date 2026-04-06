@@ -18,17 +18,17 @@ O sistema deve permitir que os utilizadores recuperem a sua palavra-passe atrav�
 
 ### 2.1.2. Account Management Module
 #### RF05 - Edição de Perfil
-O sistema deve permitir que os utilizadores editem as suas informações de perfil.
+O sistema deve permitir que os utilizadores editem o seu perfil, como biografia, foto de perfil. // mais laguma coisa??
 #### RF06 - Password Management
 O sistema deve permitir que os utilizadores alterem a sua palavra-passe.
 
 ### 2.1.3. Publications Module
 #### RF07 - Criação de Publicação
-O sistema deve permitir que os utilizadores criem uma nova publicação, titulo, descrição e upload de imagens sempre com localização associada.
+O sistema deve permitir que os utilizadores criem uma nova publicação, titulo, descrição, tags e upload de imagens sempre com localização associada.
 #### RF08 - Edição de Publicação
-O sistema deve permitir que os utilizadores editem as suas publicações existentes.
+O sistema deve permitir que os utilizadores editem as suas publicações existentes, ou seja, acressentar ou remover fotografias da publicação, alerar titulo ou a biografia do post, adicionar ou rtemover tags, eliminar comentarios feitos por outros utilizadores.
 #### RF09 - Visibilidade da Publicação
-O sistema deve permitir que os utilizadores definam e alterem a visibilidade da publicação como pública ou privada.
+O sistema deve permitir que os utilizadores definam e alterem a visibilidade da publicação como pública ou privada, o post privado so o utilizador pode ver, e o publico todad a gente pode ver.
 #### RF10 - Eliminação de Publicações
 O sistema deve permitir que os utilizadores eliminem publicações que tenham criado.
 #### RF11 - Visualização de Publicações
@@ -39,7 +39,7 @@ TODO
 
 ### 2.1.4. Environmental Ethics Verification Module
 #### RF12 - Captura da Imagem Inicial
-O sistema deve permitir que o utilizador capture uma imagem inicial do acampamento através da aplicação.
+O sistema deve permitir que o utilizador capture uma imagem inicial do acampamento através da web app.
 #### RF13 - Validação de Contexto de Campismo
 O sistema deve analisar a imagem inicial para verificar a presença de elementos associados ao acampamento.
 #### RF14 - Captura da Imagem Final
@@ -47,7 +47,7 @@ O sistema deve solicitar ao utilizador uma segunda imagem do local após o térm
 #### RF15  - Correspondência de Cenário
 O sistema deve verificar se a segunda imagem corresponde ao mesmo local e enquadramento da imagem inicial.
 #### RF16 - Verificação de Impacto Ambiental
-O sistema deve analisar a imagem final para garantir que não existem vestígios de comportamentos ambientalmente inadequados.
+O sistema deve analisar a imagem final para garantir que não existem vestígios de comportamentos ambientalmente inadequados, como presença de lixo e/ou fogueiras mal apagadas/ componentes não naturais.
 #### RF17 - Validação de Publicação
 O sistema deve apenas permitir que a publicação seja tornada pública após a validação bem-sucedida do processo de verificação ambiental.
 
@@ -59,6 +59,8 @@ O sistema deve fornecer um mapa interativo para os utilizadores visualizarem as 
 O sistema deve permitir que os utilizadores naveguem pelo mapa através de zoom e deslocamento.
 #### RF20 - Marcadores de Publicações
 O sistema deve apresentar marcadores no mapa que representem as localizações das publicações públicas.
+#### RF21 - Marcadores de publicaçoes Detalhados
+A aplicação deve permitir a identificacção do tipo de post a partir das cores das tags no mapa interativo -> Cintento - post publico, Azul - post do user, Laranja - post com bookmark 
 _______
 
 ## Non-Functional Requirements
