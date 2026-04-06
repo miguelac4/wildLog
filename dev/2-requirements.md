@@ -28,18 +28,21 @@ O sistema deve permitir que os utilizadores criem uma nova publicação, titulo,
 #### RF08 - Edição de Publicação
 O sistema deve permitir que os utilizadores editem as suas publicações existentes.
 #### RF09 - Visibilidade da Publicação
-O sistema deve permitir que os utilizadores definam a visibilidade da publicação como pública ou privada.
+O sistema deve permitir que os utilizadores definam e alterem a visibilidade da publicação como pública ou privada.
 #### RF10 - Eliminação de Publicações
 O sistema deve permitir que os utilizadores eliminem publicações que tenham criado.
 #### RF11 - Visualização de Publicações
-O sistema deve permitir que os utilizadores visualizem publicações disponíveis na plataforma.
+O sistema deve permitir que os utilizadores visualizem publicações disponíveis publicas de outros utilizadores e as seus posts privados.
+
+### Public Post Creation
+TODO
 
 ### 2.1.4. Environmental Ethics Verification Module
-#### RF12 - Captura de Imagem 1
-O sistema deve permitir que o utilizador capture uma imagem inicial do local de acampamento através da aplicação.
+#### RF12 - Captura da Imagem Inicial
+O sistema deve permitir que o utilizador capture uma imagem inicial do acampamento através da aplicação.
 #### RF13 - Validação de Contexto de Campismo
 O sistema deve analisar a imagem inicial para verificar a presença de elementos associados ao acampamento.
-#### RF14 - Captura de Imagem 2
+#### RF14 - Captura da Imagem Final
 O sistema deve solicitar ao utilizador uma segunda imagem do local após o término do acampamento.
 #### RF15  - Correspondência de Cenário
 O sistema deve verificar se a segunda imagem corresponde ao mesmo local e enquadramento da imagem inicial.
