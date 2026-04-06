@@ -1,9 +1,11 @@
 import { useState, useRef, useEffect, memo } from 'react'
 import { MapPin, Compass } from 'lucide-react'
+import { useAuth } from '../../hooks/useAuth'
 import 'cesium/Build/Cesium/Widgets/widgets.css'
 import * as Cesium from 'cesium'
 
 function ExploreMap({ posts, regions, onPostClick, flyToTarget, onFlyComplete, onMoveEnd }) {
+    const { user } = useAuth()
     const [globeReady, setGlobeReady] = useState(false)
 
     const cesiumContainerRef = useRef(null)
@@ -193,6 +195,9 @@ function ExploreMap({ posts, regions, onPostClick, flyToTarget, onFlyComplete, o
                 const lng = Number(post.lng)
                 if (!Number.isFinite(lat) || !Number.isFinite(lng)) return
 
+                const isCurrentUserPin = user && post.user_id && String(post.user_id) === String(user.id)
+                const pinColor = isCurrentUserPin ? '#3b82f6' : '#a0845f'
+
                 viewer.entities.add({
                     position: Cesium.Cartesian3.fromDegrees(lng, lat),
                     billboard: {
@@ -200,7 +205,7 @@ function ExploreMap({ posts, regions, onPostClick, flyToTarget, onFlyComplete, o
                         width: 32,
                         height: 32,
                         verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-                        color: Cesium.Color.fromCssColorString('#a0845f'),
+                        color: Cesium.Color.fromCssColorString(pinColor),
                         scale: 1.2,
                         eyeOffset: new Cesium.Cartesian3(0, 0, -10),
                     },
@@ -209,7 +214,7 @@ function ExploreMap({ posts, regions, onPostClick, flyToTarget, onFlyComplete, o
                     },
                 })
             })
-    }, [posts])
+    }, [posts, user])
 
     /* ── Renderizar regiões ── */
     useEffect(() => {
