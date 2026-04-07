@@ -20,7 +20,7 @@ try {
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
     $stmt = $pdo->prepare("
-        SELECT id, lat, lng, user_id
+        SELECT id, lat, lng
         FROM posts
         WHERE visibility = 'public'
         AND status = 'approved'
