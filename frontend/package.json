@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "geodata": "node scripts/download-geodata.js"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -14,6 +15,7 @@
     "@mui/material": "^7.3.9",
     "cesium": "^1.139.1",
     "framer-motion": "^12.36.0",
+    "heic2any": "^0.0.4",
     "lenis": "^1.1.18",
     "lucide-react": "^0.577.0",
     "react": "^18.2.0",
