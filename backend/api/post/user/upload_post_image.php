@@ -33,7 +33,7 @@ $post_id = $data['post_id'];
 // Basic validation
 $errors = [];
 
-$maxFileSize = 25 * 1024 * 1024; // 25MB
+$maxFileSize = 5 * 1024 * 1024; // 5MB
 
 $images = $_FILES['images'] ?? null;
 
@@ -74,7 +74,7 @@ foreach ($images['tmp_name'] as $i => $tmpPath) {
     }
 
     if ($images['size'][$i] > $maxFileSize) {
-        $errors[] = "Image {$i} exceeds 25MB.";
+        $errors[] = "Image {$i} exceeds 5MB.";
         continue;
     }
 
@@ -84,11 +84,7 @@ foreach ($images['tmp_name'] as $i => $tmpPath) {
         $errors[] = "Image {$i} is not a valid image.";
     }
 
-    if (!in_array($mime, [
-        'image/jpeg',
-        'image/png',
-        'image/webp',
-    ], true)) {
+    if (!in_array($mime, ['image/jpeg','image/png','image/webp'], true)) {
         $errors[] = "Image {$i} type not allowed.";
     }
 }
@@ -169,7 +165,7 @@ try {
             api_json_error(500, 'UPLOAD_ERROR', "Failed converting image {$i}");
         }
 
-        $relativePath = "/upload/user/post/{$post_id}/{$filename}";
+        $relativePath = "/backend/upload/user/post/{$post_id}/{$filename}";
 
         $imagePaths[] = $relativePath;
         $createdFiles[] = $dest;

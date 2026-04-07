@@ -34,6 +34,8 @@ import AccountPosts from '../components/Account/AccountPosts'
 
 const MOBILE_BREAKPOINT = 768
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL
+const BASE_URL = API_BASE.replace('/api', '')
 
 function Main() {
   const navigate = useNavigate()
@@ -50,7 +52,7 @@ function Main() {
   const [feedCursor, setFeedCursor] = useState(null)
   const [loadingFeed, setLoadingFeed] = useState(false)
   const [hasMoreFeed, setHasMoreFeed] = useState(true)
-
+  
   const [accountPosts, setAccountPosts] = useState([])
   const [loadingAccountPosts, setLoadingAccountPosts] = useState(false)
 
@@ -121,7 +123,7 @@ function Main() {
     if (activeView === 'feed' && feedPosts.length === 0) {
       loadFeed()
     }
-
+    
     if (activeView === 'account' && accountPosts.length === 0 && !loadingAccountPosts) {
       setLoadingAccountPosts(true)
       postUserService.getUserPosts()
@@ -144,12 +146,12 @@ function Main() {
           TOPBAR
           ══════════════════════════════════════ */}
       <MainTopbar
-          activeView={activeView}
-          onChangeView={handleChangeView}
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-          user={user}
-          onLogout={handleLogout}
+        activeView={activeView}
+        onChangeView={handleChangeView}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        user={user}
+        onLogout={handleLogout}
       />
 
       {/* ══════════════════════════════════════
@@ -165,11 +167,11 @@ function Main() {
             setSelectedPost={setSelectedPost}
           />
         )}
-
+        
         {activeView === 'create' && (
           <CreateView onCreated={() => handleChangeView('explore')} />
         )}
-
+        
         {activeView === 'feed' && (
           <FeedView
             posts={feedPosts}
@@ -201,7 +203,7 @@ function Main() {
 
       {/* Painel de detalhe que abre ao clicar num post (funciona em todas as vistas) */}
       {selectedPost && (
-          <PostDetailPanel post={selectedPost} onClose={handleClosePost} />
+        <PostDetailPanel post={selectedPost} onClose={handleClosePost} />
       )}
     </div>
   )

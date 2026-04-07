@@ -30,11 +30,6 @@ export default defineConfig(({ mode }) => {
   return {
     base,
     plugins: [react(), cesium()],       // Plugin oficial do React (JSX transform, Fast Refresh)
-    resolve: {
-      // Force a single copy of React — prevents "Invalid hook call" / duplicate-React errors
-      // that appear when packages like resium/framer-motion bundle their own peer copy.
-      dedupe: ['react', 'react-dom', 'react-router-dom'],
-    },
     publicDir: 'public',      // Pasta com ficheiros estáticos copiados tal como estão para dist/
     server: {
       port: 3000,             // Porta do servidor de desenvolvimento

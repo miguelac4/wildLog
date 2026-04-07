@@ -281,31 +281,3 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/MessageResponse'
-
-  /account/get_bookmark.php:
-    get:
-      tags:
-        - Account
-      summary: Get user bookmarked posts
-      description: >
-        Returns a list of post IDs bookmarked by the authenticated user.
-      responses:
-        "200":
-          description: List of bookmarked posts
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  bookmarks:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        post_id:
-                          type: integer
-                          example: 14
-        "401":
-          $ref: '#/components/responses/Unauthorized'
-        "500":
-          $ref: '#/components/responses/InternalError'
