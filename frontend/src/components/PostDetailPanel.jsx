@@ -4,8 +4,6 @@ import { AuthContext } from '../context/AuthContext'
 import { postCommentService } from '../api/postCommentService'
 import EditPostModal from './EditPostModal'
 
-
-
 function PostDetailPanel({ post: initialPost, onClose }) {
     if (!initialPost) return null
 
@@ -15,10 +13,19 @@ function PostDetailPanel({ post: initialPost, onClose }) {
     console.log("DEBUG Edit Button:", { user, postAuthor: post.author, isAuthor })
 
     const [imageIndex, setImageIndex] = useState(0)
+    const [slideDirection, setSlideDirection] = useState(null) // 'left' | 'right'
+    const [isAnimating, setIsAnimating] = useState(false)
     const [commentText, setCommentText] = useState('')
     const [comments, setComments] = useState([])
     const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+    const [deleteConfirmModal, setDeleteConfirmModal] = useState(null)
     const cardRef = useRef(null)
+
+    const touchStartX = useRef(0)
+    const touchEndX = useRef(0)
+    const dragOffsetX = useRef(0)
+    const isDragging = useRef(false)
+    const imageContainerRef = useRef(null)
 
     const images = post.images || (post.image ? [post.image] : [])
 
@@ -29,8 +36,12 @@ function PostDetailPanel({ post: initialPost, onClose }) {
 
 
     useEffect(() => {
+        if (!post) return
+
         setImageIndex(0)
-        // Scroll the panel to the top smoothly when a new post opens
+        setSlideDirection(null)
+        setIsAnimating(false)
+
         if (cardRef.current) {
             cardRef.current.scrollTo({ top: 0, behavior: 'smooth' })
         }
@@ -49,26 +60,116 @@ function PostDetailPanel({ post: initialPost, onClose }) {
     }, [post])
 
 
-        postCommentService.getComments({ postId: post.id })
-            .then(res => setComments(res.comments || res || []))
-            .catch(err => console.error("Erro comentários", err))
-    }, [post.id])
 
+    const animateToIndex = useCallback((newIndex, direction) => {
+        if (isAnimating) return
+        setSlideDirection(direction)
+        setIsAnimating(true)
+
+        // Wait for the CSS transition to finish before updating index
+        requestAnimationFrame(() => {
+            setTimeout(() => {
+                setImageIndex(newIndex)
+                setSlideDirection(null)
+                setIsAnimating(false)
+            }, 380) // match CSS transition duration
+        })
+    }, [isAnimating])
 
     const prevImage = () => {
-        setImageIndex((i) => (i === 0 ? images.length - 1 : i - 1))
+        if (isAnimating || images.length <= 1) return
+        const newIdx = imageIndex === 0 ? images.length - 1 : imageIndex - 1
+        animateToIndex(newIdx, 'right')
     }
 
     const nextImage = () => {
-        setImageIndex((i) => (i === images.length - 1 ? 0 : i + 1))
+        if (isAnimating || images.length <= 1) return
+        const newIdx = imageIndex === images.length - 1 ? 0 : imageIndex + 1
+        animateToIndex(newIdx, 'left')
     }
 
-    const handleCommentSubmit = (e) => {
+    const handleCommentSubmit = async (e) => {
         e.preventDefault()
         if (!commentText.trim()) return
-        // TODO: POST /api/posts/:id/comments
-        console.log('Comment:', commentText)
-        setCommentText('')
+
+        try {
+            const res = await postCommentService.createComment({
+                postId: post.id,
+                comment: commentText
+            })
+
+            // Atualizar UI imediatamente (optimistic update)
+            const newComment = {
+                id: res.comment_id,
+                comment: res.comment,
+                created_at: new Date().toISOString(),
+                username: user?.username // idealmente vir do user context
+            }
+
+            setComments((prev) => [...prev, newComment])
+            setCommentText('')
+        } catch (err) {
+            console.error('Error creating comment', err)
+        }
+    }
+
+    const handleDeleteComment = (commentId) => {
+        setDeleteConfirmModal(commentId)
+    }
+
+    const confirmDeleteComment = async (commentId) => {
+        try {
+            await postCommentService.deleteComment({ commentId })
+            setComments((prev) => prev.filter(c => c.id !== commentId))
+            setDeleteConfirmModal(null)
+        } catch (err) {
+            console.error('Error deleting comment', err)
+            setDeleteConfirmModal(null)
+        }
+    }
+
+    const handleTouchStart = (e) => {
+        if (isAnimating) return
+        touchStartX.current = e.touches[0].clientX
+        touchEndX.current = e.touches[0].clientX
+        dragOffsetX.current = 0
+        isDragging.current = true
+
+        if (imageContainerRef.current) {
+            imageContainerRef.current.style.transition = 'none'
+        }
+    }
+
+    const handleTouchMove = (e) => {
+        if (!isDragging.current) return
+        touchEndX.current = e.touches[0].clientX
+        dragOffsetX.current = touchEndX.current - touchStartX.current
+
+        if (imageContainerRef.current) {
+            imageContainerRef.current.style.transform = `translateX(${dragOffsetX.current}px)`
+            imageContainerRef.current.style.opacity = Math.max(0.5, 1 - Math.abs(dragOffsetX.current) / 600)
+        }
+    }
+
+    const handleTouchEnd = () => {
+        if (!isDragging.current) return
+        isDragging.current = false
+        const diff = touchStartX.current - touchEndX.current
+
+        // Reset the inline drag styles
+        if (imageContainerRef.current) {
+            imageContainerRef.current.style.transition = ''
+            imageContainerRef.current.style.transform = ''
+            imageContainerRef.current.style.opacity = ''
+        }
+
+        if (Math.abs(diff) < 50) return
+
+        if (diff > 0) {
+            nextImage()
+        } else {
+            prevImage()
+        }
     }
 
     return (
@@ -85,19 +186,37 @@ function PostDetailPanel({ post: initialPost, onClose }) {
                 </button>
 
                 {/* ── Image section ── */}
-                <div className="main-post-panel__image">
+                <div
+                    className="main-post-panel__image"
+                    onTouchStart={handleTouchStart}
+                    onTouchMove={handleTouchMove}
+                    onTouchEnd={handleTouchEnd}
+                >
                     {images.length > 0 ? (
                         <>
-                            <img src={images[imageIndex]} alt={post.title} />
+                            <div
+                                ref={imageContainerRef}
+                                className={
+                                    'main-post-panel__image-slide' +
+                                    (slideDirection === 'left' ? ' main-post-panel__image-slide--exit-left' : '') +
+                                    (slideDirection === 'right' ? ' main-post-panel__image-slide--exit-right' : '')
+                                }
+                            >
+                                <img src={images[imageIndex]} alt={post.title} />
+                            </div>
 
                             {images.length > 1 && (
                                 <div className="main-post-panel__dots">
                                     {images.map((_, index) => (
                                         <span
                                             key={index}
-                                            className={`main-post-panel__dot ${index === imageIndex ? 'main-post-panel__dot--active' : ''
-                                                }`}
-                                            onClick={() => setImageIndex(index)}
+                                            className={`main-post-panel__dot ${
+                                                index === imageIndex ? 'main-post-panel__dot--active' : ''
+                                            }`}
+                                            onClick={() => {
+                                                if (isAnimating || index === imageIndex) return
+                                                animateToIndex(index, index > imageIndex ? 'left' : 'right')
+                                            }}
                                         />
                                     ))}
                                 </div>
@@ -152,7 +271,7 @@ function PostDetailPanel({ post: initialPost, onClose }) {
                             <Heart size={16} /> {post.likes} likes
                         </span>
                         <span className="main-post-panel__stat">
-                            <MessageCircle size={16} /> {post.comments} comments
+                            <MessageCircle size={16} /> {post.comments?.length || 0} comments
                         </span>
                     </div>
 
@@ -173,17 +292,23 @@ function PostDetailPanel({ post: initialPost, onClose }) {
                         {comments.map((c) => (
                             <div key={c.id} className="main-post-panel__comment" style={{ position: 'relative' }}>
                                 <div className="main-post-panel__comment-header">
-                                    <span className="main-post-panel__comment-author">@{c.user_name || c.author || 'utilizador'}</span>
-                                    <span className="main-post-panel__comment-time">{c.created_at || c.time || 'agora'}</span>
-                                    {isAuthor && (
-                                        <button
-                                            onClick={() => handleDeleteComment(c.id)}
-                                            style={{ background: 'transparent', border: 'none', color: '#ff4d4f', cursor: 'pointer', marginLeft: 'auto' }}
-                                            title="Apagar comentário"
-                                        >
-                                            <Trash2 size={14} />
-                                        </button>
-                                    )}
+                                    <span className="main-post-panel__comment-author">
+                                        @{c.username}
+                                    </span>
+                                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                        <span className="main-post-panel__comment-time">
+                                            {c.created_at}
+                                        </span>
+                                        {user && c.username === user.username && (
+                                            <button
+                                                className="main-post-panel__comment-delete"
+                                                onClick={() => handleDeleteComment(c.id)}
+                                                title="Delete comment"
+                                            >
+                                                <Trash2 size={14} />
+                                            </button>
+                                        )}
+                                    </div>
                                 </div>
                                 <p className="main-post-panel__comment-text">{c.comment_text || c.comment || c.text}</p>
                             </div>
@@ -225,6 +350,35 @@ function PostDetailPanel({ post: initialPost, onClose }) {
                         }
                     }}
                 />
+            )}
+
+            {/* ── Delete Confirmation Modal ── */}
+            {deleteConfirmModal && (
+                <div className="delete-modal-overlay" onClick={() => setDeleteConfirmModal(null)}>
+                    <div className="delete-modal" onClick={(e) => e.stopPropagation()}>
+                        <div className="delete-modal__header">
+                            <Trash2 size={20} color="#a0845f" />
+                            <h3 className="delete-modal__title">Delete Comment</h3>
+                        </div>
+                        <p className="delete-modal__message">
+                            Are you sure you want to delete this comment? This action cannot be undone.
+                        </p>
+                        <div className="delete-modal__actions">
+                            <button
+                                className="delete-modal__button delete-modal__button--cancel"
+                                onClick={() => setDeleteConfirmModal(null)}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                className="delete-modal__button delete-modal__button--confirm"
+                                onClick={() => confirmDeleteComment(deleteConfirmModal)}
+                            >
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
             )}
         </div>
     )

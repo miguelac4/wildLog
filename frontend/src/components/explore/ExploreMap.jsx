@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, memo } from 'react'
 import { MapPin, Compass } from 'lucide-react'
 import 'cesium/Build/Cesium/Widgets/widgets.css'
 import * as Cesium from 'cesium'
+import { loadCountryOverlays } from '../map/countryOverlays.js'
 
 function ExploreMap({ posts, regions, onPostClick, flyToTarget, onFlyComplete, onMoveEnd }) {
     const [globeReady, setGlobeReady] = useState(false)
@@ -165,6 +166,9 @@ function ExploreMap({ posts, regions, onPostClick, flyToTarget, onFlyComplete, o
 
             viewerRef.current = viewer
             setGlobeReady(true)
+
+            // Load country boundaries + labels in background (non-blocking)
+            loadCountryOverlays(viewer)
 
         return () => {
             if (handler) handler.destroy()

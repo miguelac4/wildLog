@@ -1,5 +1,6 @@
 import { useRef, useState, useCallback, useEffect } from 'react'
 import { ImagePlus, X, Camera, ChevronLeft, ChevronRight } from 'lucide-react'
+import heic2any from "heic2any"
 
 const MAX_IMAGES = 5
 const SHOW_DURATION = 900 // ms to show the new image before sliding to "Add Photo"
@@ -19,8 +20,83 @@ const SHOW_DURATION = 900 // ms to show the new image before sliding to "Add Pho
  *   images   — { file, preview, id }[]
  *   onChange — (images) => void
  */
+
+async function convertImage(file) {
+    const isHEIC =
+        file.type === "image/heic" ||
+        file.type === "image/heif" ||
+        file.name.toLowerCase().endsWith(".heic")
+
+    let processedFile = file
+
+    // HEIC → JPEG
+    if (isHEIC) {
+        try {
+            const convertedBlob = await heic2any({
+                blob: file,
+                toType: "image/jpeg",
+                quality: 0.8
+            })
+
+            processedFile = new File(
+                [convertedBlob],
+                file.name.replace(/\.\w+$/, ".jpg"),
+                { type: "image/jpeg" }
+            )
+
+        } catch (err) {
+            console.error("HEIC conversion failed:", err)
+            return null
+        }
+    }
+
+    // Canvas resize + compress
+    const img = document.createElement("img")
+    const canvas = document.createElement("canvas")
+    const ctx = canvas.getContext("2d")
+
+    const dataUrl = await new Promise((resolve) => {
+        const reader = new FileReader()
+        reader.onload = e => resolve(e.target.result)
+        reader.readAsDataURL(processedFile)
+    })
+
+    img.src = dataUrl
+
+    await new Promise((resolve, reject) => {
+        img.onload = resolve
+        img.onerror = reject
+    })
+
+    const MAX_WIDTH = 2000
+    const scale = Math.min(1, MAX_WIDTH / img.width)
+
+    canvas.width = img.width * scale
+    canvas.height = img.height * scale
+
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+
+    const blob = await new Promise(resolve => {
+        canvas.toBlob(resolve, "image/jpeg", 0.8)
+    })
+
+    if (!blob) {
+        console.error("Canvas conversion failed")
+        return null
+    }
+
+    return new File(
+        [blob],
+        file.name.replace(/\.\w+$/, ".jpg"),
+        { type: "image/jpeg" }
+    )
+}
+
 function ImageUploader({ images, onChange }) {
     const inputRef = useRef(null)
+
+    const [loading, setLoading] = useState(false)
+
     const [dragOver, setDragOver] = useState(false)
     const [shake, setShake] = useState(false)
     const [activeSlide, setActiveSlide] = useState(0)
@@ -75,8 +151,11 @@ function ImageUploader({ images, onChange }) {
     useEffect(() => () => clearTimeout(timerRef.current), [])
 
     /* ── File handling ── */
-    const addFiles = useCallback((files) => {
+    const addFiles = useCallback(async (files) => {
+        setLoading(true)
+
         const remaining = MAX_IMAGES - images.length
+
         if (remaining <= 0) {
             setShake(true)
             setTimeout(() => setShake(false), 500)
@@ -84,16 +163,28 @@ function ImageUploader({ images, onChange }) {
         }
 
         const validFiles = Array.from(files)
-            .filter(f => f.type.startsWith('image/'))
+            .filter(f =>
+                f.type.startsWith('image/') ||
+                f.name.toLowerCase().endsWith('.heic')
+            )
             .slice(0, remaining)
 
-        const newImages = validFiles.map(file => ({
-            file,
-            preview: URL.createObjectURL(file),
-            id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-        }))
+        const processedImages = []
 
-        onChange([...images, ...newImages])
+        for (const file of validFiles) {
+            const newFile = await convertImage(file)
+
+            if (!newFile) continue
+
+            processedImages.push({
+                file: newFile,
+                preview: URL.createObjectURL(newFile),
+                id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+            })
+        }
+
+        onChange([...images, ...processedImages])
+        setLoading(false)
     }, [images, onChange])
 
     const removeImage = useCallback((index) => {
@@ -140,6 +231,14 @@ function ImageUploader({ images, onChange }) {
 
             {/* ── Slider wrapper ── */}
             <div className={`create-images__slider ${shake ? 'create-images__slider--shake' : ''}`}>
+
+                {/* ── Loading Overlay ── */}
+                {loading && (
+                    <div className="create-images__loading">
+                        <div className="create-images__spinner"></div>
+                    </div>
+                )}
+
                 <div
                     className="create-images__track"
                     style={{
