@@ -1,14 +1,8 @@
 import { X, Camera, Heart, MessageCircle, MapPin, ChevronLeft, ChevronRight, Send, Edit3, Trash2 } from 'lucide-react'
-import { useState, useEffect, useRef, useContext } from 'react'
+import { useState, useEffect, useRef, useContext, useCallback } from 'react'
 import { AuthContext } from '../context/AuthContext'
 import { postCommentService } from '../api/postCommentService'
 import EditPostModal from './EditPostModal'
-
-
-import { X, Camera, Heart, MessageCircle, MapPin, ChevronLeft, ChevronRight, Send, Trash2 } from 'lucide-react'
-import { useState, useEffect, useRef, useCallback } from 'react'
-import { postCommentService } from '../api/postCommentService'
-import { useAuth } from '../hooks/useAuth'
 
 function PostDetailPanel({ post: initialPost, onClose }) {
     if (!initialPost) return null
@@ -39,8 +33,7 @@ function PostDetailPanel({ post: initialPost, onClose }) {
         setPost(initialPost)
     }, [initialPost])
 
-    const [comments, setComments] = useState([])
-    const { user } = useAuth()
+
 
     useEffect(() => {
         if (!post) return
@@ -66,21 +59,7 @@ function PostDetailPanel({ post: initialPost, onClose }) {
         fetchComments()
     }, [post])
 
-        postCommentService.getComments({ postId: post.id })
-            .then(res => setComments(res.comments || res || []))
-            .catch(err => console.error("Erro comentários", err))
-    }, [post.id])
 
-    const handleDeleteComment = async (commentId) => {
-        if (!window.confirm('Queres apagar este comentário?')) return
-        try {
-            await postCommentService.deleteComment({ commentId })
-            setComments(comments.filter(c => c.id !== commentId))
-        } catch (err) {
-            console.error(err)
-            alert('Erro ao apagar comentário.')
-        }
-    }
 
     const animateToIndex = useCallback((newIndex, direction) => {
         if (isAnimating) return
