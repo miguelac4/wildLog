@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback, useRef } from "react"
 import ExploreMap from "./ExploreMap"
 import ExploreSidebar from "./ExploreSidebar"
 import { postExploreService } from "../../api/postExploreService"
+import { postUserService } from "../../api/postUserService"
 
 function ExploreView({
                          isMobile,
@@ -16,6 +17,7 @@ function ExploreView({
     ─────────────────────────────── */
     const [mapPosts, setMapPosts] = useState([])
     const [nearbyPosts, setNearbyPosts] = useState([])
+    const [userPostIds, setUserPostIds] = useState(new Set())
     const [coords, setCoords] = useState(null)
 
     const [flyToTarget, setFlyToTarget] = useState(null)
@@ -42,6 +44,15 @@ function ExploreView({
     ─────────────────────────────── */
     useEffect(() => {
         loadMapPosts()
+        
+        postUserService.getUserPosts()
+            .then(data => {
+                if (data && data.posts) {
+                    const ids = new Set(data.posts.map(p => String(p.id)))
+                    setUserPostIds(ids)
+                }
+            })
+            .catch(err => console.error("Erro a carregar user posts:", err))
     }, [])
 
     async function loadMapPosts() {
@@ -212,6 +223,7 @@ function ExploreView({
 
             <ExploreMap
                 posts={mapPosts}
+                userPostIds={userPostIds}
                 regions={[]}
                 onPostClick={handlePostClick}
                 flyToTarget={flyToTarget}
