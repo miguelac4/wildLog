@@ -4,6 +4,7 @@ import { AuthContext } from '../context/AuthContext'
 import { postCommentService } from '../api/postCommentService'
 import { postBookmarkService } from '../api/postBookmarkService'
 import EditPostModal from './EditPostModal'
+import { normalizeImageUrl } from '../config/mediaConfig'
 
 function PostDetailPanel({ post: initialPost, onClose, isBookmarked = false, onToggleBookmark }) {
     if (!initialPost) return null
@@ -217,7 +218,7 @@ function PostDetailPanel({ post: initialPost, onClose, isBookmarked = false, onT
                                     (slideDirection === 'right' ? ' main-post-panel__image-slide--exit-right' : '')
                                 }
                             >
-                                <img src={images[imageIndex]} alt={post.title} />
+                                <img src={normalizeImageUrl(images[imageIndex])} alt={post.title} />
                             </div>
 
                             {images.length > 1 && (

@@ -32,6 +32,7 @@ import { postUserService } from '../api/postUserService'
 import AccountStats from '../components/Account/AccountStats'
 import AccountPosts from '../components/Account/AccountPosts'
 import { postBookmarkService } from '../api/postBookmarkService'
+import { normalizeImageUrl } from '../config/mediaConfig'
 
 const MOBILE_BREAKPOINT = 768
 
@@ -100,7 +101,7 @@ function Main() {
         description: p.description,
         createdAt: p.created_at,
         author: p.author,
-        image: `${BASE_URL}${p.image_url}`,
+        image: normalizeImageUrl(p.image_url),
         tags: p.tags || [],
         likes: p.likes,
         comments: p.comments,

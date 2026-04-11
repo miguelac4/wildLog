@@ -3,6 +3,7 @@ import ExploreMap from "./ExploreMap"
 import ExploreSidebar from "./ExploreSidebar"
 import { postExploreService } from "../../api/postExploreService"
 import { postUserService } from "../../api/postUserService"
+import { normalizeImageUrl } from "../../config/mediaConfig"
 
 function ExploreView({
                          isMobile,
@@ -24,20 +25,6 @@ function ExploreView({
     const [flyToTarget, setFlyToTarget] = useState(null)
     const lastCoordsRef = useRef(null)
     const isFlyingRef = useRef(false)
-
-    const API_BASE = import.meta.env.VITE_API_BASE_URL
-    const BASE_URL = API_BASE.replace('/api', '')
-
-    function normalizeImageUrl(path) {
-        if (!path) return ''
-
-        // DEV → remover /backend
-        if (BASE_URL.includes('localhost')) {
-            path = path.replace('/backend', '')
-        }
-
-        return `${BASE_URL}${path}`
-    }
 
 
     /* ───────────────────────────────

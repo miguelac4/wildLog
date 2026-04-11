@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Grid3X3, Camera, Globe, Lock, Bookmark } from 'lucide-react'
 import '../../styles/Account.css'
 import { postExploreService } from '../../api/postExploreService'
+import { normalizeImageUrl } from '../../config/mediaConfig'
 
 function AccountPosts({ posts = [], bookmarkedIds = new Set(), onPostClick }) {
     const [visibilityFilter, setVisibilityFilter] = useState('public') // 'public' | 'private' | 'bookmarked'
@@ -23,21 +24,8 @@ function AccountPosts({ posts = [], bookmarkedIds = new Set(), onPostClick }) {
                             ? p.tags 
                             : (p.tags ? p.tags.split(',').map(t => t.trim()) : []);
 
-                        // Normalizar imagens usando a logica da aplicacao
-                        const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
-                        const BASE_URL = API_BASE.replace('/api', '');
-                        
-                        const normalizeImg = (path) => {
-                            if (!path) return '';
-                            let p = path;
-                            if (BASE_URL.includes('localhost')) {
-                                p = p.replace('/backend', '');
-                            }
-                            return `${BASE_URL}${p}`;
-                        };
-
                         const imagesArray = Array.isArray(p.images)
-                            ? p.images.map(img => normalizeImg(img.image_url))
+                            ? p.images.map(img => normalizeImageUrl(img.image_url || img))
                             : [];
 
                         return {
@@ -114,7 +102,7 @@ function AccountPosts({ posts = [], bookmarkedIds = new Set(), onPostClick }) {
                         >
                             {/* Se tiver imagem, mostra a primeira, senão mostra um placeholder */}
                             {post.image || (post.images && post.images.length > 0) ? (
-                                <img src={post.image || post.images[0]} alt={post.title} />
+                                <img src={normalizeImageUrl(post.image || (post.images[0]?.image_url || post.images[0]))} alt={post.title} />
                             ) : (
                                 <div className="account-post-no-image"><Camera size={24} /></div>
                             )}
