@@ -10,6 +10,7 @@ function ExploreView({
                          setSidebarOpen,
                          selectedPost,
                          setSelectedPost,
+                         bookmarkedIds = new Set()
                      }) {
 
     /* ───────────────────────────────
@@ -224,6 +225,7 @@ function ExploreView({
             <ExploreMap
                 posts={mapPosts}
                 userPostIds={userPostIds}
+                bookmarkedIds={bookmarkedIds}
                 regions={[]}
                 onPostClick={handlePostClick}
                 flyToTarget={flyToTarget}

@@ -1,9 +1,60 @@
-import { useState } from 'react'
-import { Grid3X3, Camera, Globe, Lock } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Grid3X3, Camera, Globe, Lock, Bookmark } from 'lucide-react'
 import '../../styles/Account.css'
+import { postExploreService } from '../../api/postExploreService'
 
-function AccountPosts({ posts = [], onPostClick }) {
-    const [visibilityFilter, setVisibilityFilter] = useState('public') // 'public' | 'private'
+function AccountPosts({ posts = [], bookmarkedIds = new Set(), onPostClick }) {
+    const [visibilityFilter, setVisibilityFilter] = useState('public') // 'public' | 'private' | 'bookmarked'
+    const [bookmarkedPosts, setBookmarkedPosts] = useState([])
+    const [loadingBookmarks, setLoadingBookmarks] = useState(false)
+
+    useEffect(() => {
+        if (visibilityFilter === 'bookmarked' && bookmarkedPosts.length === 0 && bookmarkedIds.size > 0 && !loadingBookmarks) {
+            setLoadingBookmarks(true)
+            const ids = Array.from(bookmarkedIds)
+            Promise.all(ids.map(id => postExploreService.getPost(id)))
+                .then(responses => {
+                    const validPosts = responses.map(r => {
+                        if (!r.post) return null;
+                        const p = r.post;
+                        
+                        // Normalizar tags
+                        const tagsArray = Array.isArray(p.tags) 
+                            ? p.tags 
+                            : (p.tags ? p.tags.split(',').map(t => t.trim()) : []);
+
+                        // Normalizar imagens usando a logica da aplicacao
+                        const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
+                        const BASE_URL = API_BASE.replace('/api', '');
+                        
+                        const normalizeImg = (path) => {
+                            if (!path) return '';
+                            let p = path;
+                            if (BASE_URL.includes('localhost')) {
+                                p = p.replace('/backend', '');
+                            }
+                            return `${BASE_URL}${p}`;
+                        };
+
+                        const imagesArray = Array.isArray(p.images)
+                            ? p.images.map(img => normalizeImg(img.image_url))
+                            : [];
+
+                        return {
+                            ...p,
+                            tags: tagsArray,
+                            images: imagesArray,
+                            lat: Number(p.lat),
+                            lng: Number(p.lng)
+                        };
+                    }).filter(Boolean);
+                    
+                    setBookmarkedPosts(validPosts)
+                })
+                .catch(err => console.error("Error loading bookmarks", err))
+                .finally(() => setLoadingBookmarks(false))
+        }
+    }, [visibilityFilter, bookmarkedIds, bookmarkedPosts.length])
 
     // Se a pessoa não tiver posts, mostramos uns de placeholder para veres o layout
     const allPosts = posts.length > 0 ? posts : [
@@ -14,9 +65,11 @@ function AccountPosts({ posts = [], onPostClick }) {
 
     // Filtra os posts consoante o tab selecionado
     // Nota: Por defeito, os posts normais são assumidos como 'public' a menos que especifiquem 'private'
-    const displayPosts = allPosts.filter(post => 
-        post.visibility === visibilityFilter || (visibilityFilter === 'public' && !post.visibility)
-    )
+    const displayPosts = visibilityFilter === 'bookmarked' 
+        ? bookmarkedPosts 
+        : allPosts.filter(post => 
+            post.visibility === visibilityFilter || (visibilityFilter === 'public' && !post.visibility)
+        )
 
     return (
         <>
@@ -40,6 +93,13 @@ function AccountPosts({ posts = [], onPostClick }) {
                     >
                         <Lock size={16} />
                         Privadas
+                    </button>
+                    <button 
+                        className={`account-filter-btn ${visibilityFilter === 'bookmarked' ? 'active' : ''}`}
+                        onClick={() => setVisibilityFilter('bookmarked')}
+                    >
+                        <Bookmark size={16} />
+                        Bookmarks
                     </button>
                 </div>
             </div>
@@ -67,7 +127,10 @@ function AccountPosts({ posts = [], onPostClick }) {
                     ))
                 ) : (
                     <div className="account-posts-empty">
-                        Sem publicações {visibilityFilter === 'public' ? 'comunitárias' : 'privadas'} para mostrar.
+                        {visibilityFilter === 'bookmarked' 
+                            ? 'Ainda não guardaste nenhuma publicação nos teus favoritos.'
+                            : `Sem publicações ${visibilityFilter === 'public' ? 'comunitárias' : 'privadas'} para mostrar.`
+                        }
                     </div>
                 )}
             </div>

@@ -4,7 +4,7 @@ import 'cesium/Build/Cesium/Widgets/widgets.css'
 import * as Cesium from 'cesium'
 import { loadCountryOverlays } from '../map/countryOverlays.js'
 
-function ExploreMap({ posts, userPostIds = new Set(), regions, onPostClick, flyToTarget, onFlyComplete, onMoveEnd }) {
+function ExploreMap({ posts, userPostIds = new Set(), bookmarkedIds = new Set(), regions, onPostClick, flyToTarget, onFlyComplete, onMoveEnd }) {
     const [globeReady, setGlobeReady] = useState(false)
 
     const cesiumContainerRef = useRef(null)
@@ -19,12 +19,14 @@ function ExploreMap({ posts, userPostIds = new Set(), regions, onPostClick, flyT
     const onFlyCompleteRef = useRef(onFlyComplete)
     const postsRef = useRef(posts)
     const userPostIdsRef = useRef(userPostIds)
+    const bookmarkedIdsRef = useRef(bookmarkedIds)
 
     useEffect(() => { onPostClickRef.current = onPostClick }, [onPostClick])
     useEffect(() => { onMoveEndRef.current = onMoveEnd }, [onMoveEnd])
     useEffect(() => { onFlyCompleteRef.current = onFlyComplete }, [onFlyComplete])
     useEffect(() => { postsRef.current = posts }, [posts])
     useEffect(() => { userPostIdsRef.current = userPostIds }, [userPostIds])
+    useEffect(() => { bookmarkedIdsRef.current = bookmarkedIds }, [bookmarkedIds])
 
     /**
      * FlyTo — reage a mudanças de flyToTarget para reposicionar o mapa.
@@ -200,7 +202,8 @@ function ExploreMap({ posts, userPostIds = new Set(), regions, onPostClick, flyT
             if (!Number.isFinite(lat) || !Number.isFinite(lng)) return
 
             const isMine = userPostIds.has(String(post.id))
-            const pinColor = isMine ? '#3b82f6' : '#a0845f';
+            const isBookmarked = bookmarkedIds.has(String(post.id))
+            const pinColor = isBookmarked ? '#f97316' : (isMine ? '#3b82f6' : '#a0845f');
 
             viewer.entities.add({
                 position: Cesium.Cartesian3.fromDegrees(lng, lat),
@@ -218,7 +221,7 @@ function ExploreMap({ posts, userPostIds = new Set(), regions, onPostClick, flyT
                 },
             })
         })
-    }, [posts, userPostIds])
+    }, [posts, userPostIds, bookmarkedIds])
 
     /* ── Renderizar regiões ── */
     useEffect(() => {

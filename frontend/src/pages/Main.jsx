@@ -31,6 +31,7 @@ import { postExploreService } from '../api/postExploreService'
 import { postUserService } from '../api/postUserService'
 import AccountStats from '../components/Account/AccountStats'
 import AccountPosts from '../components/Account/AccountPosts'
+import { postBookmarkService } from '../api/postBookmarkService'
 
 const MOBILE_BREAKPOINT = 768
 
@@ -53,6 +54,8 @@ function Main() {
 
   const [accountPosts, setAccountPosts] = useState([])
   const [loadingAccountPosts, setLoadingAccountPosts] = useState(false)
+
+  const [bookmarkedIds, setBookmarkedIds] = useState(new Set())
 
   /* ── Deteção responsiva de mobile ───────── */
   useEffect(() => {
@@ -135,6 +138,28 @@ function Main() {
     }
   }, [activeView])
 
+  // Load Bookmarks globalmente uma vez
+  useEffect(() => {
+    if (user) {
+      postBookmarkService.getBookmarks()
+        .then(data => {
+            if (data && data.bookmarks) {
+                setBookmarkedIds(new Set(data.bookmarks.map(b => String(b.post_id))))
+            }
+        })
+        .catch(err => console.error("Erro fetch bookmarks", err))
+    }
+  }, [user])
+
+  const handleToggleBookmark = useCallback((postId, isSaved) => {
+      setBookmarkedIds(prev => {
+          const next = new Set(prev)
+          if (isSaved) next.add(String(postId))
+          else next.delete(String(postId))
+          return next
+      })
+  }, [])
+
   const publicPostCount = accountPosts.filter(p => p.visibility === 'public').length;
 
   return (
@@ -163,6 +188,7 @@ function Main() {
             setSidebarOpen={setSidebarOpen}
             selectedPost={selectedPost}
             setSelectedPost={setSelectedPost}
+            bookmarkedIds={bookmarkedIds}
           />
         )}
 
@@ -191,7 +217,11 @@ function Main() {
               </div>
 
               <div className="account-content-box is-posts">
-                <AccountPosts posts={accountPosts} onPostClick={handlePostClick} />
+                <AccountPosts 
+                    posts={accountPosts} 
+                    bookmarkedIds={bookmarkedIds} 
+                    onPostClick={handlePostClick} 
+                />
               </div>
 
             </div>
@@ -201,7 +231,12 @@ function Main() {
 
       {/* Painel de detalhe que abre ao clicar num post (funciona em todas as vistas) */}
       {selectedPost && (
-          <PostDetailPanel post={selectedPost} onClose={handleClosePost} />
+          <PostDetailPanel 
+              post={selectedPost} 
+              onClose={handleClosePost} 
+              isBookmarked={bookmarkedIds.has(String(selectedPost.id))}
+              onToggleBookmark={handleToggleBookmark}
+          />
       )}
     </div>
   )

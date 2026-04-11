@@ -1,10 +1,11 @@
-import { X, Camera, Heart, MessageCircle, MapPin, ChevronLeft, ChevronRight, Send, Edit3, Trash2 } from 'lucide-react'
+import { X, Camera, Heart, MessageCircle, MapPin, ChevronLeft, ChevronRight, Send, Edit3, Trash2, Bookmark } from 'lucide-react'
 import { useState, useEffect, useRef, useContext, useCallback } from 'react'
 import { AuthContext } from '../context/AuthContext'
 import { postCommentService } from '../api/postCommentService'
+import { postBookmarkService } from '../api/postBookmarkService'
 import EditPostModal from './EditPostModal'
 
-function PostDetailPanel({ post: initialPost, onClose }) {
+function PostDetailPanel({ post: initialPost, onClose, isBookmarked = false, onToggleBookmark }) {
     if (!initialPost) return null
 
     const [post, setPost] = useState(initialPost)
@@ -128,6 +129,20 @@ function PostDetailPanel({ post: initialPost, onClose }) {
         }
     }
 
+    const handleBookmarkClick = async () => {
+        try {
+            if (isBookmarked) {
+                await postBookmarkService.unsavePost(post.id)
+                if (onToggleBookmark) onToggleBookmark(post.id, false)
+            } else {
+                await postBookmarkService.savePost(post.id)
+                if (onToggleBookmark) onToggleBookmark(post.id, true)
+            }
+        } catch (err) {
+            console.error("Erro ao alterar bookmark:", err)
+        }
+    }
+
     const handleTouchStart = (e) => {
         if (isAnimating) return
         touchStartX.current = e.touches[0].clientX
@@ -248,9 +263,33 @@ function PostDetailPanel({ post: initialPost, onClose }) {
 
                 {/* ── Content body ── */}
                 <div className="main-post-panel__body">
-                    <div className="main-post-panel__meta">
-                        <span className="main-post-panel__author">@{post.author}</span>
-                        <span className="main-post-panel__date">{post.createdAt}</span>
+                    <div className="main-post-panel__meta" style={{ display: 'flex', alignItems: 'center' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', flexGrow: 1, gap: '8px' }}>
+                            <span className="main-post-panel__author">@{post.author || post.username}</span>
+                            <span className="main-post-panel__date">{post.createdAt || post.created_at}</span>
+                        </div>
+                        
+                        {/* Botão de Bookmark alinhado à direita */}
+                        {user && (post.visibility === 'public' || post.user_id !== user.id) && (
+                            <button
+                                onClick={handleBookmarkClick}
+                                style={{
+                                    background: 'transparent',
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    padding: '4px'
+                                }}
+                                title={isBookmarked ? "Remover Bookmark" : "Guardar Bookmark"}
+                            >
+                                <Bookmark 
+                                    size={20} 
+                                    fill={isBookmarked ? "#f97316" : "none"} 
+                                    color={isBookmarked ? "#f97316" : "#333"} 
+                                />
+                            </button>
+                        )}
                     </div>
 
                     <h2 className="main-post-panel__title">{post.title}</h2>
