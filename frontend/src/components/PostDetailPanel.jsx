@@ -1,15 +1,23 @@
-import { X, Camera, Heart, MessageCircle, MapPin, ChevronLeft, ChevronRight, Send, Trash2 } from 'lucide-react'
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { X, Camera, Heart, MessageCircle, MapPin, ChevronLeft, ChevronRight, Send, Edit3, Trash2 } from 'lucide-react'
+import { useState, useEffect, useRef, useContext, useCallback } from 'react'
+import { AuthContext } from '../context/AuthContext'
 import { postCommentService } from '../api/postCommentService'
-import { useAuth } from '../hooks/useAuth'
+import EditPostModal from './EditPostModal'
 
-function PostDetailPanel({ post, onClose }) {
-    if (!post) return null
+function PostDetailPanel({ post: initialPost, onClose }) {
+    if (!initialPost) return null
+
+    const [post, setPost] = useState(initialPost)
+    const { user } = useContext(AuthContext)
+    const isAuthor = user && (user.username === post.author || user.id === post.user_id || user.name === post.author)
+    console.log("DEBUG Edit Button:", { user, postAuthor: post.author, isAuthor })
 
     const [imageIndex, setImageIndex] = useState(0)
     const [slideDirection, setSlideDirection] = useState(null) // 'left' | 'right'
     const [isAnimating, setIsAnimating] = useState(false)
     const [commentText, setCommentText] = useState('')
+    const [comments, setComments] = useState([])
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false)
     const [deleteConfirmModal, setDeleteConfirmModal] = useState(null)
     const cardRef = useRef(null)
 
@@ -21,8 +29,11 @@ function PostDetailPanel({ post, onClose }) {
 
     const images = post.images || (post.image ? [post.image] : [])
 
-    const [comments, setComments] = useState([])
-    const { user } = useAuth()
+    useEffect(() => {
+        setPost(initialPost)
+    }, [initialPost])
+
+
 
     useEffect(() => {
         if (!post) return
@@ -47,6 +58,8 @@ function PostDetailPanel({ post, onClose }) {
 
         fetchComments()
     }, [post])
+
+
 
     const animateToIndex = useCallback((newIndex, direction) => {
         if (isAnimating) return
@@ -163,6 +176,11 @@ function PostDetailPanel({ post, onClose }) {
         <div className="main-post-panel">
             <div className="main-post-panel__backdrop" onClick={onClose} />
             <div className="main-post-panel__card" ref={cardRef} data-lenis-prevent>
+                {isAuthor && (
+                    <button className="main-post-panel__edit" onClick={() => setIsEditModalOpen(true)} style={{ position: 'absolute', top: '16px', left: '16px', background: 'white', border: 'none', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 10 }}>
+                        <Edit3 size={18} color="#333" />
+                    </button>
+                )}
                 <button className="main-post-panel__close" onClick={onClose}>
                     <X size={20} />
                 </button>
@@ -239,9 +257,13 @@ function PostDetailPanel({ post, onClose }) {
                     <p className="main-post-panel__desc">{post.description}</p>
 
                     <div className="main-post-panel__tags">
-                        {post.tags.map((tag) => (
-                            <span key={tag} className="main-post-panel__tag">#{tag}</span>
-                        ))}
+                        {post.tags && post.tags.map((tag) => {
+                            const tagId = tag.id || tag;
+                            const tagName = tag.name || tag;
+                            return (
+                                <span key={tagId} className="main-post-panel__tag">#{tagName}</span>
+                            );
+                        })}
                     </div>
 
                     <div className="main-post-panel__stats">
@@ -268,7 +290,7 @@ function PostDetailPanel({ post, onClose }) {
 
                     <div className="main-post-panel__comments-list">
                         {comments.map((c) => (
-                            <div key={c.id} className="main-post-panel__comment">
+                            <div key={c.id} className="main-post-panel__comment" style={{ position: 'relative' }}>
                                 <div className="main-post-panel__comment-header">
                                     <span className="main-post-panel__comment-author">
                                         @{c.username}
@@ -288,9 +310,10 @@ function PostDetailPanel({ post, onClose }) {
                                         )}
                                     </div>
                                 </div>
-                                <p className="main-post-panel__comment-text">{c.comment}</p>
+                                <p className="main-post-panel__comment-text">{c.comment_text || c.comment || c.text}</p>
                             </div>
                         ))}
+                        {comments.length === 0 && <p style={{ color: '#888', fontSize: '14px', fontStyle: 'italic', marginBottom: '16px' }}>Sem comentários.</p>}
                     </div>
 
                     <form className="main-post-panel__comment-form" onSubmit={handleCommentSubmit}>
@@ -311,6 +334,23 @@ function PostDetailPanel({ post, onClose }) {
                     </form>
                 </div>
             </div>
+
+            {isEditModalOpen && (
+                <EditPostModal
+                    post={post}
+                    onClose={() => setIsEditModalOpen(false)}
+                    onUpdate={(updatedPost) => {
+                        if (!updatedPost) {
+                            setIsEditModalOpen(false)
+                            onClose() // the post was deleted!
+                            window.location.reload()
+                        } else {
+                            setPost(updatedPost)
+                            setIsEditModalOpen(false)
+                        }
+                    }}
+                />
+            )}
 
             {/* ── Delete Confirmation Modal ── */}
             {deleteConfirmModal && (

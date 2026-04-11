@@ -9,7 +9,6 @@ Cada caso de uso representa uma interação específica entre um utilizador e o 
 
 | Actor      | Process                 | Critical State |
 |------------|-------------------------|----------------|
-| Visitante  | Visualizar feed público |                |
 | Visitante  | Registar uma conta      | *              |
 | Visitante  | Confirmar o email       | *              |
 | Utilizador | Fazer login             | *              |
@@ -28,15 +27,15 @@ Cada caso de uso representa uma interação específica entre um utilizador e o 
 
 ### 2.1.3. Publications
 
-| Actor      | Process                    | Critical State |
-|------------|----------------------------|----------------|
-| Utilizador | Criar post                 | *              |
-| Utilizador | Editar post                |                |
-| Utilizador | Eliminar post              |                |
-| Utilizador | Visualizar posts (mapa)    |                |
-| Utilizador | Visualizar posts (feed)    |                |
-| Utilizador | Visualizar posts (near-by) | *              |
-| Utilizador | Interagir com post         | *              |
+| Actor      | Process                                      | Critical State |
+|------------|----------------------------------------------|----------------|
+| Utilizador | Criar post                                   | *              |
+| Utilizador | Alterar post                                 |                |
+| Utilizador | Eliminar post                                |                |
+| Utilizador | Visualizar posts (mapa)                      |                |
+| Utilizador | Visualizar posts (feed)                      |                |
+| Utilizador | Visualizar posts (near-by)                   | *              |
+| Utilizador | Interagir com post (like, comment, bookmark) | *              |
 
 ### 2.1.4. Environmental Ethics Verification
 
@@ -66,16 +65,16 @@ Referências:
 - RF03 – Enviar email de verificação
 
 #### Cenário Principal (fluxo típico)
-| Ação do Actor                                   | Resposta do Sistema                               |
-| ----------------------------------------------- | ------------------------------------------------- |
-| 1 Visitante seleciona "Registar conta"          |                                                   |
-|                                                 | 2 Sistema apresenta formulário de registo         |
-| 3 Visitante introduz username, email e password |                                                   |
-| 4 Visitante submete o formulário                |                                                   |
-|                                                 | 5 Sistema valida os dados                         |
-|                                                 | 6 Sistema cria a conta em estado "não verificada" |
-|                                                 | 7 Sistema envia email de verificação              |
-|                                                 | 8 Sistema apresenta mensagem de confirmação       |
+| Ação do Actor                                  | Resposta do Sistema                               |
+|------------------------------------------------| ------------------------------------------------- |
+| 1 Visitante seleciona "Registar conta"         |                                                   |
+|                                                | 2 Sistema apresenta formulário de registo         |
+| 3 Visitante introduz username/email e password |                                                   |
+| 4 Visitante submete o formulário               |                                                   |
+|                                                | 5 Sistema valida os dados                         |
+|                                                | 6 Sistema cria a conta em estado "não verificada" |
+|                                                | 7 Sistema envia email de verificação              |
+|                                                | 8 Sistema apresenta mensagem de confirmação       |
 
 #### Cenários Alternativos
 
@@ -93,6 +92,8 @@ Referências:
 | -- | ---------------------------------------- |
 | 5  | Sistema detecta campos inválidos         |
 | 6  | Sistema apresenta mensagens de validação |
+
+##### A3 - Utilizador cancela Login
 
 ____
 

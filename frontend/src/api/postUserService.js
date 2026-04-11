@@ -38,45 +38,97 @@ export const postUserService = {
     },
 
     /**
-     * TODO AFONSO: Here you instance the Endpoints from the module to consume them in frontend (AFTER IMPLEMENTATION DELETE THIS COMMENT LINE)
      * Delete a User Post
      */
-    //deletePost:
+    deletePost: async ({ postId }) => {
+        return apiFetch(`/post/user/delete.php?post_id=${postId}`, {
+            method: "DELETE"
+        });
+    },
 
     /**
-     * TODO AFONSO: Here you instance the Endpoints from the module to consume them in frontend (AFTER IMPLEMENTATION DELETE THIS COMMENT LINE)
      * Get All User Posts
      */
-    //getUserPosts:
+    getUserPosts: async () => {
+        return apiFetch("/post/user/get_user_post.php", {
+            method: "GET"
+        });
+    },
 
     /**
-     * TODO AFONSO: Here you instance the Endpoints from the module to consume them in frontend (AFTER IMPLEMENTATION DELETE THIS COMMENT LINE)
      * Edit Basic Information of a User Post
      */
-    //editPostBasic:
+    editPostBasic: async ({ postId, title, description, visibility }) => {
+        const body = { post_id: postId };
+        if (title !== undefined) body.title = title;
+        if (description !== undefined) body.description = description;
+        if (visibility !== undefined) body.visibility = visibility;
+        
+        return apiFetch("/post/user/edit_post_basic.php", {
+            method: "PATCH",
+            body: JSON.stringify(body)
+        });
+    },
 
     /**
-     * TODO AFONSO: Here you instance the Endpoints from the module to consume them in frontend (AFTER IMPLEMENTATION DELETE THIS COMMENT LINE)
      * Add a Tag to a User Post
      */
-    //addPostTag:
+    addPostTag: async ({ postId, newTag }) => {
+        const formData = new FormData();
+        formData.append("post_id", postId);
+        formData.append("new_tag", newTag);
+
+        return apiFetch("/post/user/add_post_tag.php", {
+            method: "POST",
+            body: formData
+        });
+    },
 
     /**
-     * TODO AFONSO: Here you instance the Endpoints from the module to consume them in frontend (AFTER IMPLEMENTATION DELETE THIS COMMENT LINE)
      * Delete a Tag from a User Post
      */
-    //deletePostTag:
+    deletePostTag: async ({ postId, tagId }) => {
+        const formData = new FormData();
+        formData.append("post_id", postId);
+        formData.append("tag_id", tagId);
+
+        return apiFetch("/post/user/delete_post_tag.php", {
+            method: "POST",
+            body: formData
+        });
+    },
 
     /**
-     * TODO AFONSO: Here you instance the Endpoints from the module to consume them in frontend (AFTER IMPLEMENTATION DELETE THIS COMMENT LINE)
      * Upload an Image to a User Post
      */
-    //uploadPostImg:
+    uploadPostImg: async ({ postId, images }) => {
+        const formData = new FormData();
+        formData.append("post_id", postId);
+        
+        if (images && images.length) {
+            images.forEach(file => {
+                formData.append("images[]", file);
+            });
+        }
+
+        return apiFetch("/post/user/upload_post_image.php", {
+            method: "POST",
+            body: formData
+        });
+    },
 
     /**
-     * TODO AFONSO: Here you instance the Endpoints  from the module to consume them in frontend (AFTER IMPLEMENTATION DELETE THIS COMMENT LINE)
      * Delete an Image from a User Post
      */
-    //deletePostImg:
+    deletePostImg: async ({ postId, imageId }) => {
+        const formData = new FormData();
+        formData.append("post_id", postId);
+        formData.append("image_id", imageId);
+
+        return apiFetch("/post/user/delete_post_image.php", {
+            method: "POST",
+            body: formData
+        });
+    }
 
 }
