@@ -1,30 +1,64 @@
+import { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { MEDIA_URLS } from '../../config/mediaConfig'
 
 /**
  * IntroLogo — Fullscreen cinematic intro overlay for WildLog.
  *
- * Dark green nature-inspired background with golden/earthy accents.
- * The logo appears to "construct" itself from blur + glow + scale.
+ * Three-phase animation:
  *
- * Timeline (~2.8s total):
- *  0.0s  — dark green bg visible, ambient golden glow begins
- *  0.2s  — outer ring stroke traces in
- *  0.4s  — inner organic ring pulses
- *  0.6s  — logo image fades in from blur + slight zoom
- *  1.4s  — logo settles at full clarity
- *  1.6s  — "WildLog" text fades in below
- *  2.0s  — logo slides up slightly, text fades
- *  2.4s  — overlay fades out
- *  2.8s  — onComplete fires
+ *   Phase 1 — "intro" (~1.4 s)
+ *     Logo constructs itself from blur + glow + scale.
+ *     "WildLog" text fades in and out.
+ *
+ *   Phase 2 — "breathing" (indefinite)
+ *     Smooth continuous zoom in / zoom out on the logo.
+ *     Golden spinner ring rotates around the logo.
+ *     Stays here until Cesium signals readiness.
+ *
+ *   Phase 3 — "exiting"
+ *     Final zoom pulse on the logo, then the entire overlay
+ *     slides UP to reveal the fully-loaded application.
  *
  * Props:
- *   onComplete — called when the full animation finishes
- *
- * Usage:
- *   <IntroLogo onComplete={() => setShowIntro(false)} />
+ *   appReady   — boolean, true when Cesium viewer is initialised & painted
+ *   onComplete — called once the exit slide-up animation finishes
  */
-export default function IntroLogo({ onComplete }) {
+export default function IntroLogo({ appReady, onComplete }) {
+  /* ── Stable ref for the completion callback ── */
+  const onCompleteRef = useRef(onComplete)
+  useEffect(() => { onCompleteRef.current = onComplete }, [onComplete])
+
+  /* ── Phase machine: 'intro' → 'breathing' → 'exiting' ── */
+  const [phase, setPhase] = useState('intro')
+  const isExiting = phase === 'exiting'
+
+  /* Intro → breathing after the initial reveal finishes */
+  useEffect(() => {
+    const t = setTimeout(() => {
+      setPhase(p => (p === 'intro' ? 'breathing' : p))
+    }, 1400)
+    return () => clearTimeout(t)
+  }, [])
+
+  /* Start exit when Cesium is ready AND the intro reveal has finished */
+  useEffect(() => {
+    if (appReady && phase === 'breathing') {
+      setPhase('exiting')
+    }
+  }, [appReady, phase])
+
+  /* Safety timeout — never stay on the intro for more than 10 s */
+  useEffect(() => {
+    const t = setTimeout(() => {
+      setPhase(p => (p !== 'exiting' ? 'exiting' : p))
+    }, 10_000)
+    return () => clearTimeout(t)
+  }, [])
+
+  /* Show the spinner from the breathing phase onward */
+  const showSpinner = phase === 'breathing'
+
   return (
     <motion.div
       key="intro-overlay"
@@ -38,11 +72,21 @@ export default function IntroLogo({ onComplete }) {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: 'linear-gradient(135deg, #1b4332 0%, #0d2818 50%, #051f15 100%)',
+        background:
+          'linear-gradient(135deg, #1b4332 0%, #0d2818 50%, #051f15 100%)',
+        overflow: 'hidden',
       }}
-      initial={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.5, ease: 'easeInOut' }}
+      /* ── Exit: slide the entire overlay UP to reveal the app ── */
+      initial={false}
+      animate={isExiting ? { y: '-100%' } : { y: 0 }}
+      transition={
+        isExiting
+          ? { duration: 0.6, ease: [0.76, 0, 0.24, 1], delay: 0.2 }
+          : undefined
+      }
+      onAnimationComplete={() => {
+        if (isExiting) onCompleteRef.current?.()
+      }}
     >
       {/* Subtle radial gradient overlay for depth */}
       <div
@@ -92,16 +136,23 @@ export default function IntroLogo({ onComplete }) {
         transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
       />
 
-      {/* ── Centered logo container ── */}
+      {/* ── Centered logo container — breathing + exit pulse ── */}
       <motion.div
         style={{ position: 'relative', width: 240, height: 240 }}
-        animate={{ y: [0, 0, -30] }}
-        transition={{
-          duration: 2.8,
-          times: [0, 0.72, 1],
-          ease: 'easeInOut',
-        }}
-        onAnimationComplete={() => onComplete?.()}
+        animate={
+          isExiting
+            ? { scale: 1.12 }
+            : phase === 'breathing'
+              ? { scale: [1, 1.06, 1] }
+              : { scale: 1 }
+        }
+        transition={
+          isExiting
+            ? { duration: 0.2, ease: 'easeOut' }
+            : phase === 'breathing'
+              ? { duration: 2.5, repeat: Infinity, ease: 'easeInOut' }
+              : { duration: 0.4 }
+        }
       >
         {/* Golden ambient glow behind logo */}
         <motion.div
@@ -117,7 +168,7 @@ export default function IntroLogo({ onComplete }) {
           }}
           initial={{ opacity: 0, scale: 0.4 }}
           animate={{ opacity: [0, 1, 0.7], scale: [0.4, 1.3, 1.05] }}
-          transition={{ duration: 1.6, ease: 'easeOut' }}
+          transition={{ duration: 1.0, ease: 'easeOut' }}
         />
 
         {/* Logo image — fades in from blur + slight zoom */}
@@ -137,16 +188,18 @@ export default function IntroLogo({ onComplete }) {
           initial={{
             opacity: 0,
             scale: 0.65,
-            filter: 'brightness(1.4) blur(6px) drop-shadow(0 0 24px rgba(155,128,93,0.35))',
+            filter:
+              'brightness(1.4) blur(6px) drop-shadow(0 0 24px rgba(155,128,93,0.35))',
           }}
           animate={{
             opacity: 1,
             scale: 1,
-            filter: 'brightness(1) blur(0px) drop-shadow(0 0 24px rgba(155,128,93,0.35))',
+            filter:
+              'brightness(1) blur(0px) drop-shadow(0 0 24px rgba(155,128,93,0.35))',
           }}
           transition={{
-            duration: 0.9,
-            delay: 0.6,
+            duration: 0.7,
+            delay: 0.25,
             ease: [0.25, 0.46, 0.45, 0.94],
           }}
         />
@@ -165,11 +218,45 @@ export default function IntroLogo({ onComplete }) {
           }}
           initial={{ opacity: 0 }}
           animate={{ opacity: [0, 0.6, 0.35] }}
-          transition={{ duration: 1.6, delay: 1.2, ease: 'easeInOut' }}
+          transition={{ duration: 1.0, delay: 0.6, ease: 'easeInOut' }}
         />
+
+        {/* ── Spinning loading ring — visible during breathing ── */}
+        {showSpinner && (
+          <motion.svg
+            style={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              width: 230,
+              height: 230,
+              marginTop: -115,
+              marginLeft: -115,
+              pointerEvents: 'none',
+            }}
+            viewBox="0 0 230 230"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1, rotate: 360 }}
+            transition={{
+              opacity: { duration: 0.4, ease: 'easeIn' },
+              rotate: { duration: 1.4, repeat: Infinity, ease: 'linear' },
+            }}
+          >
+            <circle
+              cx="115"
+              cy="115"
+              r="110"
+              fill="none"
+              stroke="rgba(155, 128, 93, 0.35)"
+              strokeWidth="1.5"
+              strokeDasharray="100 592"
+              strokeLinecap="round"
+            />
+          </motion.svg>
+        )}
       </motion.div>
 
-      {/* "WildLog" text — fades in then out */}
+      {/* "WildLog" text — fades in then out during intro phase */}
       <motion.p
         style={{
           position: 'absolute',
@@ -184,8 +271,8 @@ export default function IntroLogo({ onComplete }) {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: [0, 0.85, 0.85, 0], y: [10, 0, 0, -8] }}
         transition={{
-          duration: 2.8,
-          times: [0, 0.35, 0.7, 1],
+          duration: 1.4,
+          times: [0, 0.3, 0.6, 1],
           ease: 'easeInOut',
         }}
       >
