@@ -7,7 +7,7 @@ import { MEDIA_URLS } from '../../config/mediaConfig'
  *
  * Three-phase animation:
  *
- *   Phase 1 — "intro" (~2.2 s)
+ *   Phase 1 — "intro" (~1.4 s)
  *     Logo constructs itself from blur + glow + scale.
  *     "WildLog" text fades in and out.
  *
@@ -37,7 +37,7 @@ export default function IntroLogo({ appReady, onComplete }) {
   useEffect(() => {
     const t = setTimeout(() => {
       setPhase(p => (p === 'intro' ? 'breathing' : p))
-    }, 2200)
+    }, 1400)
     return () => clearTimeout(t)
   }, [])
 
@@ -48,11 +48,11 @@ export default function IntroLogo({ appReady, onComplete }) {
     }
   }, [appReady, phase])
 
-  /* Safety timeout — never stay on the intro for more than 12 s */
+  /* Safety timeout — never stay on the intro for more than 10 s */
   useEffect(() => {
     const t = setTimeout(() => {
       setPhase(p => (p !== 'exiting' ? 'exiting' : p))
-    }, 12_000)
+    }, 10_000)
     return () => clearTimeout(t)
   }, [])
 
@@ -81,7 +81,7 @@ export default function IntroLogo({ appReady, onComplete }) {
       animate={isExiting ? { y: '-100%' } : { y: 0 }}
       transition={
         isExiting
-          ? { duration: 0.8, ease: [0.76, 0, 0.24, 1], delay: 0.35 }
+          ? { duration: 0.6, ease: [0.76, 0, 0.24, 1], delay: 0.2 }
           : undefined
       }
       onAnimationComplete={() => {
@@ -148,10 +148,10 @@ export default function IntroLogo({ appReady, onComplete }) {
         }
         transition={
           isExiting
-            ? { duration: 0.3, ease: 'easeOut' }
+            ? { duration: 0.2, ease: 'easeOut' }
             : phase === 'breathing'
-              ? { duration: 3, repeat: Infinity, ease: 'easeInOut' }
-              : { duration: 0.5 }
+              ? { duration: 2.5, repeat: Infinity, ease: 'easeInOut' }
+              : { duration: 0.4 }
         }
       >
         {/* Golden ambient glow behind logo */}
@@ -168,7 +168,7 @@ export default function IntroLogo({ appReady, onComplete }) {
           }}
           initial={{ opacity: 0, scale: 0.4 }}
           animate={{ opacity: [0, 1, 0.7], scale: [0.4, 1.3, 1.05] }}
-          transition={{ duration: 1.6, ease: 'easeOut' }}
+          transition={{ duration: 1.0, ease: 'easeOut' }}
         />
 
         {/* Logo image — fades in from blur + slight zoom */}
@@ -198,8 +198,8 @@ export default function IntroLogo({ appReady, onComplete }) {
               'brightness(1) blur(0px) drop-shadow(0 0 24px rgba(155,128,93,0.35))',
           }}
           transition={{
-            duration: 0.9,
-            delay: 0.5,
+            duration: 0.7,
+            delay: 0.25,
             ease: [0.25, 0.46, 0.45, 0.94],
           }}
         />
@@ -218,7 +218,7 @@ export default function IntroLogo({ appReady, onComplete }) {
           }}
           initial={{ opacity: 0 }}
           animate={{ opacity: [0, 0.6, 0.35] }}
-          transition={{ duration: 1.6, delay: 1.0, ease: 'easeInOut' }}
+          transition={{ duration: 1.0, delay: 0.6, ease: 'easeInOut' }}
         />
 
         {/* ── Spinning loading ring — visible during breathing ── */}
@@ -238,8 +238,8 @@ export default function IntroLogo({ appReady, onComplete }) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1, rotate: 360 }}
             transition={{
-              opacity: { duration: 0.6, ease: 'easeIn' },
-              rotate: { duration: 1.8, repeat: Infinity, ease: 'linear' },
+              opacity: { duration: 0.4, ease: 'easeIn' },
+              rotate: { duration: 1.4, repeat: Infinity, ease: 'linear' },
             }}
           >
             <circle
@@ -271,8 +271,8 @@ export default function IntroLogo({ appReady, onComplete }) {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: [0, 0.85, 0.85, 0], y: [10, 0, 0, -8] }}
         transition={{
-          duration: 2.2,
-          times: [0, 0.3, 0.65, 1],
+          duration: 1.4,
+          times: [0, 0.3, 0.6, 1],
           ease: 'easeInOut',
         }}
       >

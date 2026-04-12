@@ -15,6 +15,7 @@ import ReactDOM from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import App from './App'
 import { AuthProvider } from './context/AuthContext'
+import { AppReadyProvider } from './context/AppReadyContext'
 import './index.css'
 const getRouterBasename = () => {
     if (typeof window === 'undefined') return '/wildlog/'
@@ -27,7 +28,9 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     <React.StrictMode>
         <BrowserRouter basename={getRouterBasename()}>
             <AuthProvider>
-                <App />
+                <AppReadyProvider>
+                    <App />
+                </AppReadyProvider>
             </AuthProvider>
         </BrowserRouter>
     </React.StrictMode>
