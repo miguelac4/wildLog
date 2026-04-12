@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect, useMemo } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 import { Star, X, ChevronUp, ChevronDown } from 'lucide-react'
 import PostCard from './PostCard'
 import SwipeControls from './SwipeControls'
@@ -38,10 +38,6 @@ function SwipeDeck({ posts, onViewPost, onFavorite, onSkip }) {
     const dragIntentRef = useRef(null)  // mirror for sync access in handlers
     const scrollTimer   = useRef(null)
     const deckRef       = useRef(null)
-
-    // Reset index only when the actual post list changes (not just reference)
-    const postsKey = useMemo(() => posts.map(p => p.id).join(','), [posts])
-    useEffect(() => { setCurrentIndex(0) }, [postsKey])
 
     const activePost = posts[currentIndex] ?? null
     const isEmpty    = currentIndex >= posts.length
@@ -316,7 +312,7 @@ function SwipeDeck({ posts, onViewPost, onFavorite, onSkip }) {
 
                         return (
                             <div
-                                key={`${post.id}-${currentIndex}`}
+                                key={post.id}
                                 className={`swipe-deck__card-wrapper ${isTop && scrollDir ? 'swipe-deck__card-wrapper--scrolling' : ''}`}
                                 style={{
                                     transform,
