@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, useLocation } from 'react-router-dom'
 import Home from './pages/Home'
 import Login from './pages/Login'
 import Register from './pages/Register'
@@ -9,61 +9,72 @@ import ProtectedRoute from './components/ProtectedRoute.jsx'
 import VerifyEmail from './pages/VerifyEmail'
 import ForgotPass from './pages/ForgotPass'
 import ResetPassword from './pages/ResetPassword'
-import { useState } from 'react'
-import { AnimatePresence } from 'framer-motion'
+import { useState, useEffect, useCallback } from 'react'
 import IntroLogo from './components/intro/IntroLogo'
-import { useLocation } from 'react-router-dom'
-import { useEffect } from 'react'
+import { useAppReady } from './context/AppReadyContext'
 
-/**
- * Deteta o basename do Router com base no hostname.
- *   - wild-log.com     → "/" (raiz)
- *   - rh360.pt         → "/wildlog" (subpasta)
- *   - localhost         → "/wildlog" (dev simula rh360)
- */
 function App() {
-  useLenis()
-
-    const [showIntro, setShowIntro] = useState(false)
+    useLenis()
     const location = useLocation()
+    const { appReady, resetReady } = useAppReady()
 
+    /* Once the intro has fully played (exit slide-up finished),
+       never show it again until the user leaves /app (logout). */
+    const [introCompleted, setIntroCompleted] = useState(false)
+
+    /* ── Derive showIntro synchronously during render ─────────────
+       This is evaluated in the SAME render cycle that reads the new
+       location, so the overlay is guaranteed to be in the React tree
+       from the very first render after navigation — no flash, no
+       race condition, no useLayoutEffect timing issues.            */
+    const isAppRoute =
+        location.pathname === '/app' || location.pathname.startsWith('/app/')
+    const showIntro = isAppRoute && !introCompleted
+
+    /* ── Reset when leaving /app (logout / redirect) ──────────────
+       This allows the intro to play again on the next login.
+       Also resets appReady so the next visit waits for Cesium.     */
     useEffect(() => {
-        const shouldPlayIntro =
-            sessionStorage.getItem("playIntro") === "1" ||
-            location.pathname.startsWith("/app")
-
-        if (shouldPlayIntro) {
-            setShowIntro(true)
+        if (!isAppRoute) {
+            setIntroCompleted(false)
+            resetReady()
         }
-    }, [location])
+    }, [isAppRoute, resetReady])
 
-  return (
-    <>
-      {/* Cinematic intro overlay — plays once on app load */}
-      <AnimatePresence>
-        {showIntro && (
-            <IntroLogo
-                onComplete={() => {
-                    sessionStorage.removeItem("playIntro")
-                    setShowIntro(false)
-                }}
-            />
-        )}
-      </AnimatePresence>
+    /* Called by IntroLogo after its exit slide-up animation finishes */
+    const handleIntroComplete = useCallback(() => {
+        setIntroCompleted(true)
+        sessionStorage.removeItem('playIntro')
+    }, [])
 
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-          <Route path="/verify-email" element={<VerifyEmail />} />
-          <Route path="/forgot-password" element={<ForgotPass />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
-        <Route element={<ProtectedRoute />}>
-          <Route path="/app" element={<Main />} />
-        </Route>
-      </Routes>
-    </>
-  )
+    return (
+        <>
+            {/* ── Cinematic intro overlay — present from frame 0 ── */}
+            {showIntro && (
+                <IntroLogo
+                    appReady={appReady}
+                    onComplete={handleIntroComplete}
+                />
+            )}
+
+            {/*
+                Routes are always mounted so Cesium initialises in the
+                background while the intro plays. The overlay at z-9999
+                covers everything until it slides up.
+            */}
+            <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/verify-email" element={<VerifyEmail />} />
+                <Route path="/forgot-password" element={<ForgotPass />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
+                <Route element={<ProtectedRoute />}>
+                    <Route path="/app" element={<Main />} />
+                </Route>
+            </Routes>
+        </>
+    )
 }
 
 export default App
