@@ -2,6 +2,8 @@ import { useEffect, useState, useCallback, useRef } from "react"
 import ExploreMap from "./ExploreMap"
 import ExploreSidebar from "./ExploreSidebar"
 import { postExploreService } from "../../api/postExploreService"
+import { postUserService } from "../../api/postUserService"
+import { normalizeImageUrl } from "../../config/mediaConfig"
 
 function ExploreView({
                          isMobile,
@@ -9,6 +11,7 @@ function ExploreView({
                          setSidebarOpen,
                          selectedPost,
                          setSelectedPost,
+                         bookmarkedIds = new Set()
                      }) {
 
     /* ───────────────────────────────
@@ -16,25 +19,12 @@ function ExploreView({
     ─────────────────────────────── */
     const [mapPosts, setMapPosts] = useState([])
     const [nearbyPosts, setNearbyPosts] = useState([])
+    const [userPostIds, setUserPostIds] = useState(new Set())
     const [coords, setCoords] = useState(null)
 
     const [flyToTarget, setFlyToTarget] = useState(null)
     const lastCoordsRef = useRef(null)
     const isFlyingRef = useRef(false)
-
-    const API_BASE = import.meta.env.VITE_API_BASE_URL
-    const BASE_URL = API_BASE.replace('/api', '')
-
-    function normalizeImageUrl(path) {
-        if (!path) return ''
-
-        // DEV → remover /backend
-        if (BASE_URL.includes('localhost')) {
-            path = path.replace('/backend', '')
-        }
-
-        return `${BASE_URL}${path}`
-    }
 
 
     /* ───────────────────────────────
@@ -42,6 +32,15 @@ function ExploreView({
     ─────────────────────────────── */
     useEffect(() => {
         loadMapPosts()
+        
+        postUserService.getUserPosts()
+            .then(data => {
+                if (data && data.posts) {
+                    const ids = new Set(data.posts.map(p => String(p.id)))
+                    setUserPostIds(ids)
+                }
+            })
+            .catch(err => console.error("Erro a carregar user posts:", err))
     }, [])
 
     async function loadMapPosts() {
@@ -212,6 +211,8 @@ function ExploreView({
 
             <ExploreMap
                 posts={mapPosts}
+                userPostIds={userPostIds}
+                bookmarkedIds={bookmarkedIds}
                 regions={[]}
                 onPostClick={handlePostClick}
                 flyToTarget={flyToTarget}

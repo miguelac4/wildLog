@@ -48,5 +48,21 @@ export const MEDIA_URLS = {
   logo: `${BASENAME}/media/logoWM.png`,     // Logo com marca de água (usado na Home)
 }
 
-export default MEDIA_URLS
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
+const POST_API_BASE_URL = API_BASE.replace('/api', '');
 
+export const normalizeImageUrl = (pathObj) => {
+    if (!pathObj) return '';
+    let path = typeof pathObj === 'object' ? (pathObj.image_url || pathObj.url || '') : pathObj;
+    if (!path) return '';
+    
+    if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('blob:')) return path;
+    
+    let p = path;
+    if (POST_API_BASE_URL.includes('localhost') || POST_API_BASE_URL === '') {
+        p = p.replace('/backend', '');
+    }
+    return `${POST_API_BASE_URL}${p}`;
+};
+
+export default MEDIA_URLS
