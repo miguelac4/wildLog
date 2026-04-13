@@ -371,6 +371,10 @@
   min-height: 380px;
 }
 
+.account-content-box.is-settings {
+  overflow: visible;
+}
+
 /* ══════════════════════════════════════════
    VIEW TABS (Posts / Settings)
    ══════════════════════════════════════════ */

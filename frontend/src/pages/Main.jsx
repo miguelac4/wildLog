@@ -251,7 +251,7 @@ function Main() {
               )}
 
               {accountTab === 'settings' && (
-                <div className="account-content-box">
+                <div className="account-content-box is-settings">
                   <AccountSettings />
                 </div>
               )}
