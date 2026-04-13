@@ -17,12 +17,15 @@ import App from './App'
 import { AuthProvider } from './context/AuthContext'
 import { AppReadyProvider } from './context/AppReadyContext'
 import './index.css'
+import { initClarity } from './lib/clarity'
 const getRouterBasename = () => {
     if (typeof window === 'undefined') return '/wildlog/'
     const host = window.location.hostname
     if (host.includes('wild-log.com')) return '/'
     return '/wildlog/'
 }
+
+initClarity()
 
 ReactDOM.createRoot(document.getElementById('root')).render(
     <React.StrictMode>

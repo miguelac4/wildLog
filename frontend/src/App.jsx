@@ -12,10 +12,19 @@ import ResetPassword from './pages/ResetPassword'
 import { useState, useEffect, useCallback } from 'react'
 import IntroLogo from './components/intro/IntroLogo'
 import { useAppReady } from './context/AppReadyContext'
+import Clarity from '@microsoft/clarity'
 
 function App() {
     useLenis()
     const location = useLocation()
+
+    useEffect(() => {
+        if (typeof window === 'undefined') return
+        if (typeof Clarity?.setTag !== 'function') return
+
+        Clarity.setTag('route', location.pathname)
+    }, [location.pathname])
+
     const { appReady, resetReady } = useAppReady()
 
     /* Once the intro has fully played (exit slide-up finished),
