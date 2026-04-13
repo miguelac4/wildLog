@@ -62,6 +62,10 @@ export const normalizeImageUrl = (pathObj) => {
     if (POST_API_BASE_URL.includes('localhost') || POST_API_BASE_URL === '') {
         p = p.replace('/backend', '');
     }
+    // Ensure path starts with /
+    if (p && !p.startsWith('/')) {
+        p = '/' + p;
+    }
     return `${POST_API_BASE_URL}${p}`;
 };
 

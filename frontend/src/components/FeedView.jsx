@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, useCallback } from 'react'
 import { Search } from 'lucide-react'
 import SwipeDeck from './feed/SwipeDeck'
 import { postExploreService } from '../api/postExploreService'
+import WildLogSpinner from './WildLogSpinner'
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL
 const BASE_URL = API_BASE.replace('/api', '')
@@ -29,6 +30,7 @@ function FeedView({ onViewPost }) {
     /* ── Feed state ── */
     const [feedPosts, setFeedPosts]     = useState([])
     const [hasMoreFeed, setHasMoreFeed] = useState(true)
+    const [initialLoading, setInitialLoading] = useState(true)
 
     /* Ref-based loading guard — prevents StrictMode double-fetch */
     const loadingRef = useRef(false)
@@ -65,6 +67,7 @@ function FeedView({ onViewPost }) {
         }
 
         loadingRef.current = false
+        setInitialLoading(false)
     }, [hasMoreFeed])
 
     /* ── Initial load on mount ── */
@@ -121,7 +124,14 @@ function FeedView({ onViewPost }) {
                     <p>Discover the latest posts shared by the WildLog community.</p>
                 </div>
 
-                {feedPosts.length === 0 ? (
+                {initialLoading ? (
+                    <WildLogSpinner
+                        size={72}
+                        message="Loading feed"
+                        overlay={false}
+                        className="wl-spinner--feed"
+                    />
+                ) : feedPosts.length === 0 ? (
                     <div className="main-sidebar__empty">
                         <Search size={32} />
                         <p>No posts found</p>

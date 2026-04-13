@@ -2220,3 +2220,103 @@
   }
 }
 
+/* ══════════════════════════════════════════
+   WILDLOG SPINNER — branded loading indicator
+   ══════════════════════════════════════════ */
+.wl-spinner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  animation: wlSpinnerFadeIn 0.35s ease-out both;
+}
+
+.wl-spinner--overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  background: rgba(6, 13, 9, 0.82);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+@keyframes wlSpinnerFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.wl-spinner__core {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Ambient glow */
+.wl-spinner__glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(155, 128, 93, 0.10) 0%,
+    transparent 65%
+  );
+  pointer-events: none;
+}
+
+/* Spinning ring */
+.wl-spinner__ring {
+  position: absolute;
+  top: 0;
+  left: 0;
+  animation: wlRingSpin 1.3s linear infinite;
+}
+
+@keyframes wlRingSpin {
+  from { transform: rotate(0deg);   }
+  to   { transform: rotate(360deg); }
+}
+
+/* Logo in center */
+.wl-spinner__logo {
+  position: relative;
+  object-fit: contain;
+  filter: drop-shadow(0 0 12px rgba(155, 128, 93, 0.25));
+  animation: wlLogoPulse 2s ease-in-out infinite;
+}
+
+@keyframes wlLogoPulse {
+  0%, 100% { opacity: 0.85; transform: scale(1);    }
+  50%      { opacity: 1;    transform: scale(1.04); }
+}
+
+/* Message text */
+.wl-spinner__message {
+  margin: 0;
+  font-size: 0.82rem;
+  color: rgba(200, 169, 126, 0.6);
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  font-weight: 500;
+  animation: wlMessagePulse 2.5s ease-in-out infinite;
+}
+
+@keyframes wlMessagePulse {
+  0%, 100% { opacity: 0.5; }
+  50%      { opacity: 0.9; }
+}
+
+/* ── Sidebar spinner (inline, not overlay) ── */
+.wl-spinner--sidebar {
+  padding: 40px 0;
+}
+
+/* ── Feed spinner (full area) ── */
+.wl-spinner--feed {
+  flex: 1;
+  min-height: 200px;
+}

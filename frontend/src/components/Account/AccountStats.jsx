@@ -1,128 +1,291 @@
-import { useState, useEffect } from 'react'
-import { User, Image, Users, Edit2, Save, X } from 'lucide-react'
+import { useState, useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
+import { User, Camera, Edit2, Save, X, Image, Calendar, Check, AlertCircle } from 'lucide-react'
 import '../../styles/Account.css'
-import { authService } from '../../api/authService'
-import { useAuth } from '../../hooks/useAuth'
+import { accountService } from '../../api/accountService'
+import { normalizeImageUrl } from '../../config/mediaConfig'
+import WildLogSpinner from '../WildLogSpinner'
+import AvatarCropModal from './AvatarCropModal'
 
-function AccountStats({ user, publicPostCount = 0 }) {
-    const { refreshUser } = useAuth()
-    const [isEditingBio, setIsEditingBio] = useState(false)
-    const [bioInput, setBioInput] = useState(user?.description || user?.bio || "")
-    const [fetchedBio, setFetchedBio] = useState("")
+/**
+ * AccountStats — Profile header card.
+ *
+ * Fetches account data via accountService.getAccount() on mount.
+ * Supports avatar upload (with crop modal) and inline name/bio editing.
+ */
+function AccountStats({ user, publicPostCount = 0, privatePostCount = 0 }) {
+    const [account, setAccount] = useState(null)
+    const [loading, setLoading] = useState(true)
+    const [isEditing, setIsEditing] = useState(false)
+    const [nameInput, setNameInput] = useState('')
+    const [bioInput, setBioInput] = useState('')
     const [isSaving, setIsSaving] = useState(false)
+    const [uploadingAvatar, setUploadingAvatar] = useState(false)
+    const [alert, setAlert] = useState(null) // { type: 'success'|'error', message }
+    const avatarInputRef = useRef(null)
 
-    // Sync from database directly on mount
+    // Crop modal state
+    const [cropImageSrc, setCropImageSrc] = useState(null)
+
+    // Cache-busting counter — forces the browser to reload the avatar image
+    const [avatarCacheBust, setAvatarCacheBust] = useState(null)
+
+    // Fetch account data from the correct endpoint
     useEffect(() => {
-        const loadBio = async () => {
-            if (!user?.id) return;
+        const loadAccount = async () => {
             try {
-                const res = await authService.getProfile();
+                const res = await accountService.getAccount()
                 if (res.account) {
-                    setFetchedBio(res.account.description || "");
-                    setBioInput(res.account.description || "");
+                    setAccount(res.account)
+                    setNameInput(res.account.name || '')
+                    setBioInput(res.account.description || '')
                 }
-            } catch (error) {
-                console.error("Erro ao carregar biografia", error);
+            } catch (err) {
+                console.error('Error loading account:', err)
+            } finally {
+                setLoading(false)
             }
-        };
-        loadBio();
-    }, [user?.id])
+        }
+        loadAccount()
+    }, [])
 
-    const handleSaveBio = async () => {
+    // Auto-dismiss alerts
+    useEffect(() => {
+        if (!alert) return
+        const t = setTimeout(() => setAlert(null), 4000)
+        return () => clearTimeout(t)
+    }, [alert])
+
+    const handleStartEdit = () => {
+        setNameInput(account?.name || '')
+        setBioInput(account?.description || '')
+        setIsEditing(true)
+    }
+
+    const handleCancelEdit = () => {
+        setIsEditing(false)
+    }
+
+    const handleSave = async () => {
+        if (!nameInput.trim()) {
+            setAlert({ type: 'error', message: 'Name is required.' })
+            return
+        }
+        setIsSaving(true)
         try {
-            setIsSaving(true)
-            const res = await authService.updateProfile(user?.username || user?.name || "User", bioInput)
+            const res = await accountService.editAccountInfo(nameInput.trim(), bioInput.trim())
             if (res.account) {
-                setFetchedBio(res.account.description || "");
+                setAccount(prev => ({ ...prev, name: res.account.name, description: res.account.description }))
             }
-            setIsEditingBio(false)
-        } catch (error) {
-            console.error("Erro ao atualizar biografia", error)
-            alert("Erro ao atualizar biografia")
+            setIsEditing(false)
+            setAlert({ type: 'success', message: 'Profile updated successfully!' })
+        } catch (err) {
+            console.error('Error updating profile:', err)
+            setAlert({ type: 'error', message: err.message || 'Error updating profile.' })
         } finally {
             setIsSaving(false)
         }
     }
 
-    const stats = [
-        { label: 'Publicações', value: publicPostCount.toString(), icon: Image },
-        { label: 'Seguidores', value: '348', icon: Users },
-        { label: 'A Seguir', value: '156', icon: Users },
-    ]
+    const handleAvatarClick = () => {
+        avatarInputRef.current?.click()
+    }
 
-    const displayBio = fetchedBio || user?.description || user?.bio || ""
+    // When a file is selected, open the crop modal instead of uploading directly
+    const handleAvatarChange = (e) => {
+        const file = e.target.files?.[0]
+        if (!file) return
+        // Create an object URL for the cropper preview
+        const objectUrl = URL.createObjectURL(file)
+        setCropImageSrc(objectUrl)
+        // Reset input so the same file can be re-selected later
+        if (avatarInputRef.current) avatarInputRef.current.value = ''
+    }
+
+    const handleCropCancel = () => {
+        if (cropImageSrc) URL.revokeObjectURL(cropImageSrc)
+        setCropImageSrc(null)
+    }
+
+    const handleCropConfirm = async (croppedFile) => {
+        // Close modal immediately
+        if (cropImageSrc) URL.revokeObjectURL(cropImageSrc)
+        setCropImageSrc(null)
+
+        // Upload the cropped file
+        setUploadingAvatar(true)
+        try {
+            const res = await accountService.editAvatar(croppedFile)
+            if (res.account?.avatar) {
+                setAccount(prev => ({ ...prev, avatar: res.account.avatar }))
+                // Bust the browser cache so the new image loads immediately
+                setAvatarCacheBust(Date.now())
+            }
+            setAlert({ type: 'success', message: 'Avatar updated!' })
+        } catch (err) {
+            console.error('Error uploading avatar:', err)
+            setAlert({ type: 'error', message: err.message || 'Error uploading avatar.' })
+        } finally {
+            setUploadingAvatar(false)
+        }
+    }
+
+    const formatDate = (dateStr) => {
+        if (!dateStr) return ''
+        try {
+            return new Date(dateStr).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+        } catch { return dateStr }
+    }
+
+    if (loading) {
+        return (
+            <div className="account-profile" style={{ minHeight: 200 }}>
+                <WildLogSpinner size={56} message="Loading" overlay={false} />
+            </div>
+        )
+    }
+
+    const displayName = account?.name || user?.username || 'Explorer'
+    const displayBio = account?.description || ''
+    // Build avatar URL with optional cache-bust to force reload after upload
+    const rawAvatarUrl = account?.avatar ? normalizeImageUrl(account.avatar) : null
+    const avatarUrl = rawAvatarUrl
+        ? (avatarCacheBust ? `${rawAvatarUrl}?t=${avatarCacheBust}` : rawAvatarUrl)
+        : null
 
     return (
-        <div className="account-stats-inner">
-            <div className="account-stats-header">
-                {/* Avatar Grande */}
-                <div className="account-stats-avatar">
-                    <User size={50} strokeWidth={1.5} color="#a0845f" />
+        <div className="account-profile">
+            {/* Alert */}
+            {alert && (
+                <div className={`account-profile__alert account-profile__alert--${alert.type}`}>
+                    {alert.type === 'success' ? <Check size={16} /> : <AlertCircle size={16} />}
+                    {alert.message}
+                </div>
+            )}
+
+            {/* Top row: Avatar + Info */}
+            <div className="account-profile__top">
+                {/* Avatar with upload */}
+                <div className="account-profile__avatar-wrap" onClick={handleAvatarClick} title="Change avatar">
+                    <div className="account-profile__avatar">
+                        {uploadingAvatar ? (
+                            <WildLogSpinner size={40} overlay={false} />
+                        ) : avatarUrl ? (
+                            <img
+                                src={avatarUrl}
+                                alt={displayName}
+                                style={{ borderRadius: '50%' }}
+                            />
+                        ) : (
+                            <User size={42} strokeWidth={1.5} color="#a0845f" />
+                        )}
+                    </div>
+                    {!uploadingAvatar && (
+                        <div className="account-profile__avatar-overlay">
+                            <Camera size={20} />
+                        </div>
+                    )}
+                    <input
+                        ref={avatarInputRef}
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp"
+                        className="account-profile__avatar-input"
+                        onChange={handleAvatarChange}
+                    />
                 </div>
 
-                {/* Grelha de Números */}
-                <div className="account-stats-numbers">
-                    {stats.map((stat, index) => {
-                        const Icon = stat.icon
-                        return (
-                            <div key={index} className="account-number-box">
-                                <span className="account-number-val">{stat.value}</span>
-                                <span className="account-number-label">
-                                    <Icon size={12} style={{ marginRight: '4px', marginBottom: '-2px' }} />
-                                    {stat.label}
-                                </span>
-                            </div>
-                        )
-                    })}
+                {/* User info */}
+                <div className="account-profile__info">
+                    <div className="account-profile__name-row">
+                        <h2 className="account-profile__username">
+                            {account?.username || user?.username || 'Explorer'}
+                        </h2>
+                        {!isEditing && (
+                            <button className="account-profile__edit-btn" onClick={handleStartEdit}>
+                                <Edit2 size={14} /> Edit
+                            </button>
+                        )}
+                    </div>
+                    {account?.email && (
+                        <p className="account-profile__email">{account.email}</p>
+                    )}
+                    {account?.created_at && (
+                        <p className="account-profile__joined">
+                            <Calendar size={12} />
+                            Joined {formatDate(account.created_at)}
+                        </p>
+                    )}
                 </div>
             </div>
 
-            {/* Info Principal */}
-            <div className="account-stats-info">
-                <div className="account-stats-title-row" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <h2 className="account-stats-name">{user?.username || 'Explorador'}</h2>
-                    {!isEditingBio && (
-                        <button
-                            onClick={() => setIsEditingBio(true)}
-                            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#a0845f', padding: '0', display: 'flex' }}
-                            title="Editar Biografia"
-                        >
-                            <Edit2 size={16} />
-                        </button>
-                    )}
+            {/* Stats */}
+            <div className="account-profile__stats">
+                <div className="account-profile__stat">
+                    <span className="account-profile__stat-value">{publicPostCount}</span>
+                    <span className="account-profile__stat-label">
+                        <Image size={12} /> Public
+                    </span>
                 </div>
+                <div className="account-profile__stat">
+                    <span className="account-profile__stat-value">{privatePostCount}</span>
+                    <span className="account-profile__stat-label">
+                        <Image size={12} /> Private
+                    </span>
+                </div>
+            </div>
 
-                {isEditingBio ? (
-                    <div style={{ marginTop: '10px' }}>
-                        <textarea
-                            value={bioInput}
-                            onChange={(e) => setBioInput(e.target.value)}
-                            rows={3}
-                            maxLength={255}
-                            style={{ width: '100%', padding: '8px', boxSizing: 'border-box', borderRadius: '4px', border: '1px solid #444', backgroundColor: '#222', color: '#fff', fontSize: '14px', resize: 'vertical' }}
-                            placeholder="Escreve um pouco sobre ti..."
+            {/* Bio */}
+            <div className="account-profile__bio-section">
+                {isEditing ? (
+                    <div className="account-profile__bio-edit">
+                        <input
+                            className="account-profile__name-input"
+                            type="text"
+                            value={nameInput}
+                            onChange={e => setNameInput(e.target.value)}
+                            placeholder="Display name"
+                            maxLength={50}
                         />
-                        <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+                        <textarea
+                            className="account-profile__bio-textarea"
+                            value={bioInput}
+                            onChange={e => setBioInput(e.target.value)}
+                            placeholder="Write something about yourself..."
+                            maxLength={255}
+                            rows={3}
+                        />
+                        <div className="account-profile__bio-actions">
                             <button
-                                onClick={() => { setIsEditingBio(false); setBioInput(user?.description || user?.bio || ""); }}
+                                className="account-profile__bio-cancel"
+                                onClick={handleCancelEdit}
                                 disabled={isSaving}
-                                style={{ padding: '6px 12px', borderRadius: '4px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', backgroundColor: '#333', color: '#fff', fontSize: '12px' }}
                             >
-                                <X size={14} /> Cancelar
+                                <X size={14} /> Cancel
                             </button>
                             <button
-                                onClick={handleSaveBio}
+                                className="account-profile__bio-save"
+                                onClick={handleSave}
                                 disabled={isSaving}
-                                style={{ padding: '6px 12px', borderRadius: '4px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', backgroundColor: '#a0845f', color: '#fff', fontSize: '12px', fontWeight: 'bold' }}
                             >
-                                <Save size={14} /> {isSaving ? 'A guardar...' : 'Guardar'}
+                                <Save size={14} /> {isSaving ? 'Saving...' : 'Save'}
                             </button>
                         </div>
                     </div>
-                ) : (
-                    <p className="account-stats-bio">{displayBio}</p>
-                )}
+                ) : displayBio ? (
+                    <p className="account-profile__bio">{displayBio}</p>
+                ) : null}
             </div>
+
+            {/* Avatar Crop Modal — portalled to document.body to escape
+                the backdrop-filter stacking context on .account-profile */}
+            {cropImageSrc && createPortal(
+                <AvatarCropModal
+                    imageSrc={cropImageSrc}
+                    onCancel={handleCropCancel}
+                    onConfirm={handleCropConfirm}
+                />,
+                document.body
+            )}
         </div>
     )
 }

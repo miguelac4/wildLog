@@ -1,9 +1,9 @@
 import { useState, useRef, useEffect, memo } from 'react'
-import { MapPin, Compass } from 'lucide-react'
 import 'cesium/Build/Cesium/Widgets/widgets.css'
 import * as Cesium from 'cesium'
 import { loadCountryOverlays } from '../map/countryOverlays.js'
 import { useAppReady } from '../../context/AppReadyContext'
+import WildLogSpinner from '../WildLogSpinner'
 
 function ExploreMap({ posts, userPostIds = new Set(), bookmarkedIds = new Set(), regions, onPostClick, flyToTarget, onFlyComplete, onMoveEnd }) {
     const [globeReady, setGlobeReady] = useState(false)
@@ -257,27 +257,11 @@ function ExploreMap({ posts, userPostIds = new Set(), bookmarkedIds = new Set(),
             {/* Placeholder FORA do container do Cesium — evita flicker */}
             {!globeReady && (
                 <div className="main-globe__placeholder">
-                    <div className="main-globe__planet" />
-                    <div className="main-globe__glow" />
-                    <p className="main-globe__hint">
-                        <Compass size={20} />
-                        Globe loading…
-                    </p>
-
-                    {posts.map((post) => (
-                        <button
-                            key={post.id}
-                            className="main-globe__mock-pin"
-                            style={{
-                                left: `${((Number(post.lng) + 10) / 4) * 100}%`,
-                                top: `${((42 - Number(post.lat)) / 8) * 100}%`,
-                            }}
-                            onClick={() => onPostClick(post)}
-                            title={post.title}
-                        >
-                            <MapPin size={20} />
-                        </button>
-                    ))}
+                    <WildLogSpinner
+                        size={90}
+                        message="Loading map"
+                        overlay={false}
+                    />
                 </div>
             )}
 

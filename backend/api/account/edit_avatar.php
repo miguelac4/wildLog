@@ -74,10 +74,13 @@ try {
     $avatarDir = $baseDir . '/' . $id;
 
     if (!is_dir($avatarDir)) {
-        if (!mkdir($avatarDir, 0770, true) && !is_dir($avatarDir)) {
+        if (!mkdir($avatarDir, 0755, true) && !is_dir($avatarDir)) {
             $pdo->rollBack();
             api_json_error(500, 'INTERNAL_ERROR', 'Falha ao criar diretoria de avatares.');
         }
+
+        // Diretory with OTHER Premission
+        @chmod($avatarDir, 0755);
     }
 
     $ext = $allowed[$mime];

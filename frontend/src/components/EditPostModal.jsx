@@ -1,19 +1,35 @@
-import { X, Plus, Trash2, Camera } from 'lucide-react'
+import { X, Plus, Trash2, Camera, Save } from 'lucide-react'
 import { useState } from 'react'
 import { postUserService } from '../api/postUserService'
+import { normalizeImageUrl } from '../config/mediaConfig'
+import '../styles/Account.css'
 
+/**
+ * EditPostModal — Dark-themed modal for editing a user's post.
+ *
+ * Supports:
+ *   - Edit title, description, visibility (editPostBasic)
+ *   - Add/remove tags (addPostTag / deletePostTag)
+ *   - Upload/remove images (uploadPostImg / deletePostImg)
+ *   - Delete post (deletePost)
+ */
 export default function EditPostModal({ post, onClose, onUpdate }) {
     const [title, setTitle] = useState(post.title || '')
     const [description, setDescription] = useState(post.description || '')
     const [visibility, setVisibility] = useState(post.visibility || 'public')
     const [tags, setTags] = useState(post.tags || [])
-    const [images, setImages] = useState(post.images?.length ? post.images : (post.image ? [post.image] : []))
-    
+    const [images, setImages] = useState(() => {
+        if (post.images?.length) return post.images
+        if (post.image) return [post.image]
+        return []
+    })
+
     const [newTag, setNewTag] = useState('')
     const [uploadingImage, setUploadingImage] = useState(false)
     const [saving, setSaving] = useState(false)
     const [deleting, setDeleting] = useState(false)
 
+    /* ── Save basic info ── */
     const handleSaveBasicInfo = async (e) => {
         e.preventDefault()
         setSaving(true)
@@ -22,65 +38,64 @@ export default function EditPostModal({ post, onClose, onUpdate }) {
                 postId: post.id,
                 title,
                 description,
-                visibility
+                visibility,
             })
-            // Inform parent
             onUpdate({ ...post, title, description, visibility, tags, images })
-            alert('Post guardado com sucesso!')
         } catch (err) {
             console.error(err)
-            alert('Erro ao guardar as alterações básicas.')
         } finally {
             setSaving(false)
         }
     }
 
+    /* ── Tags ── */
     const handleAddTag = async () => {
-        if (!newTag.trim()) return
+        const trimmed = newTag.trim()
+        if (!trimmed) return
         try {
-            await postUserService.addPostTag({ postId: post.id, newTag: newTag.trim() })
-            const tagObj = { id: Date.now(), name: newTag.trim() } // Temporary id if backend doesn't return one immediately
-            const updatedTags = [...tags, tagObj]
-            setTags(updatedTags)
+            await postUserService.addPostTag({ postId: post.id, newTag: trimmed })
+            const tagObj = { id: Date.now(), name: trimmed }
+            const updated = [...tags, tagObj]
+            setTags(updated)
             setNewTag('')
-            onUpdate({ ...post, tags: updatedTags })
+            onUpdate({ ...post, tags: updated })
         } catch (err) {
             console.error(err)
-            alert('Erro ao adicionar tag.')
         }
     }
 
     const handleRemoveTag = async (tag) => {
         try {
-            // Need tag_id. If tag is object, use tag.id.
             const tagId = tag.id || tag
             await postUserService.deletePostTag({ postId: post.id, tagId })
-            const updatedTags = tags.filter(t => (t.id || t) !== tagId)
-            setTags(updatedTags)
-            onUpdate({ ...post, tags: updatedTags })
+            const updated = tags.filter(t => (t.id || t) !== tagId)
+            setTags(updated)
+            onUpdate({ ...post, tags: updated })
         } catch (err) {
             console.error(err)
-            alert('Erro ao remover tag.')
         }
     }
 
+    const handleTagKeyDown = (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault()
+            handleAddTag()
+        }
+    }
+
+    /* ── Images ── */
     const handleImageUpload = async (e) => {
-        const file = e.target.files[0]
+        const file = e.target.files?.[0]
         if (!file) return
         setUploadingImage(true)
         try {
             await postUserService.uploadPostImg({ postId: post.id, images: [file] })
-            // To immediately show it, we might need the image URL from backend,
-            // but we can just use a local object URL temporarily or refetch post.
-            // For now, let's just create a local URL.
             const localUrl = URL.createObjectURL(file)
-            const updatedImages = [...images, localUrl]
-            setImages(updatedImages)
-            onUpdate({ ...post, images: updatedImages })
-            alert('Imagem adicionada com sucesso!')
+            const updated = [...images, localUrl]
+            setImages(updated)
+            onUpdate({ ...post, images: updated })
         } catch (err) {
             console.error(err)
-            alert('Erro ao fazer upload da imagem.')
         } finally {
             setUploadingImage(false)
         }
@@ -88,160 +103,183 @@ export default function EditPostModal({ post, onClose, onUpdate }) {
 
     const handleRemoveImage = async (imgObjOrUrl, index) => {
         try {
-            // Se as imagens na API têm ID, precisamos passar o ID da imagem.
-            // Aqui vamos assumir que passam o index ou que a backend precisa do nome. 
-            // O backend espera "image_id".
-            // Se as imagens são apenas strings (URLs), teremos dificuldade em saber o ID.
-            // Vou passar um valor para tentar.
-            let imageId = imgObjOrUrl.id || imgObjOrUrl
-            // Extract from URL if necessary. Assuming we have imageId.
-            // If post user service requires a specific ID format and we only have URLs, 
-            // we might have to just send the URL string if the backend parses it.
+            const imageId = imgObjOrUrl.id || imgObjOrUrl
             await postUserService.deletePostImg({ postId: post.id, imageId })
-            
-            const updatedImages = [...images]
-            updatedImages.splice(index, 1)
-            setImages(updatedImages)
-            onUpdate({ ...post, images: updatedImages })
+            const updated = [...images]
+            updated.splice(index, 1)
+            setImages(updated)
+            onUpdate({ ...post, images: updated })
         } catch (err) {
             console.error(err)
-            alert('Erro ao remover imagem.')
         }
     }
 
+    /* ── Delete post ── */
     const handleDeletePost = async () => {
-        if (!window.confirm('Tens a certeza absoluta que queres apagar este post? Esta ação não pode ser desfeita.')) return
-        
+        if (!window.confirm('Are you sure you want to delete this post permanently?')) return
         setDeleting(true)
         try {
             await postUserService.deletePost({ postId: post.id })
-            alert('Post apagado com sucesso!')
-            onUpdate(null) // Signal that the post is deleted
+            onUpdate(null)
             onClose()
         } catch (err) {
             console.error(err)
-            alert('Erro ao apagar post.')
             setDeleting(false)
         }
     }
 
+    const resolveImgUrl = (img) => {
+        if (typeof img === 'string') {
+            if (img.startsWith('blob:')) return img
+            return normalizeImageUrl(img)
+        }
+        return normalizeImageUrl(img.url || img.image_url || img)
+    }
+
     return (
-        <div className="main-post-panel__backdrop" style={{ zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <div className="main-post-panel__card" style={{ maxHeight: '90vh', overflowY: 'auto', padding: '24px', width: '100%', maxWidth: '500px' }} onClick={(e) => e.stopPropagation()}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                    <h2 style={{ margin: 0 }}>Editar Post</h2>
-                    <button onClick={onClose} style={{ background: 'transparent', border: 'none', cursor: 'pointer' }}>
-                        <X size={24} />
+        <div className="edit-modal-backdrop" onClick={onClose}>
+            <div className="edit-modal" onClick={e => e.stopPropagation()}>
+                {/* Header */}
+                <div className="edit-modal__header">
+                    <h2 className="edit-modal__title">Edit Post</h2>
+                    <button className="edit-modal__close" onClick={onClose}>
+                        <X size={18} />
                     </button>
                 </div>
 
-                <form onSubmit={handleSaveBasicInfo}>
-                    <div style={{ marginBottom: '16px' }}>
-                        <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>Título</label>
-                        <input 
-                            type="text" 
-                            value={title} 
-                            onChange={(e) => setTitle(e.target.value)} 
-                            style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc', color: '#000' }}
+                {/* Basic info form */}
+                <form className="edit-modal__form" onSubmit={handleSaveBasicInfo}>
+                    <div className="edit-modal__field">
+                        <label className="edit-modal__label">Title</label>
+                        <input
+                            className="edit-modal__input"
+                            type="text"
+                            value={title}
+                            onChange={e => setTitle(e.target.value)}
+                            placeholder="Post title"
                             required
+                            maxLength={100}
                         />
                     </div>
 
-                    <div style={{ marginBottom: '16px' }}>
-                        <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>Descrição</label>
-                        <textarea 
-                            value={description} 
-                            onChange={(e) => setDescription(e.target.value)} 
-                            style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc', minHeight: '100px', color: '#000' }}
+                    <div className="edit-modal__field">
+                        <label className="edit-modal__label">Description</label>
+                        <textarea
+                            className="edit-modal__textarea"
+                            value={description}
+                            onChange={e => setDescription(e.target.value)}
+                            placeholder="Describe your post..."
+                            maxLength={500}
                         />
                     </div>
 
-                    <div style={{ marginBottom: '16px' }}>
-                        <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>Visibilidade</label>
-                        <select 
-                            value={visibility} 
-                            onChange={(e) => setVisibility(e.target.value)}
-                            style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc', color: '#000' }}
+                    <div className="edit-modal__field">
+                        <label className="edit-modal__label">Visibility</label>
+                        <select
+                            className="edit-modal__select"
+                            value={visibility}
+                            onChange={e => setVisibility(e.target.value)}
                         >
-                            <option value="public">Pública</option>
-                            <option value="private">Privada</option>
+                            <option value="public">Public</option>
+                            <option value="private">Private</option>
                         </select>
                     </div>
 
-                    <button type="submit" disabled={saving} style={{ background: '#a0845f', color: 'white', padding: '10px 16px', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>
-                        {saving ? 'A Guardar...' : 'Guardar Alterações Básicas'}
+                    <button className="edit-modal__save-btn" type="submit" disabled={saving}>
+                        <Save size={16} />
+                        {saving ? 'Saving...' : 'Save Changes'}
                     </button>
                 </form>
 
-                <hr style={{ margin: '24px 0', borderColor: '#eee' }} />
+                <hr className="edit-modal__divider" />
 
-                <div style={{ marginBottom: '16px' }}>
-                    <h3 style={{ marginBottom: '12px' }}>Tags</h3>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '12px' }}>
-                        {tags.map((tag) => {
-                            const tagId = tag.id || tag;
-                            const tagName = tag.name || tag;
+                {/* Tags */}
+                <div>
+                    <h3 className="edit-modal__section-title">Tags</h3>
+                    <div className="edit-modal__tags">
+                        {tags.map(tag => {
+                            const tagName = tag.name || tag
+                            const tagKey = tag.id || tag
                             return (
-                                <span key={tagId} style={{ background: '#e0e0e0', padding: '4px 8px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '4px', color: '#333', fontSize: '14px' }}>
+                                <span key={tagKey} className="edit-modal__tag">
                                     #{tagName}
-                                    <button onClick={() => handleRemoveTag(tag)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', color: '#888' }} title="Remover Tag">
-                                        <X size={14} />
+                                    <button
+                                        className="edit-modal__tag-remove"
+                                        onClick={() => handleRemoveTag(tag)}
+                                        title="Remove tag"
+                                    >
+                                        <X size={12} />
                                     </button>
                                 </span>
                             )
                         })}
+                        {tags.length === 0 && (
+                            <span style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.25)' }}>
+                                No tags added yet.
+                            </span>
+                        )}
                     </div>
-                    <div style={{ display: 'flex', gap: '8px' }}>
-                        <input 
-                            type="text" 
-                            value={newTag} 
-                            onChange={(e) => setNewTag(e.target.value)} 
-                            placeholder="Nova tag" 
-                            style={{ flex: 1, padding: '8px', borderRadius: '4px', border: '1px solid #ccc', color: '#000' }}
+                    <div className="edit-modal__tag-add">
+                        <input
+                            className="edit-modal__input"
+                            type="text"
+                            value={newTag}
+                            onChange={e => setNewTag(e.target.value)}
+                            onKeyDown={handleTagKeyDown}
+                            placeholder="New tag"
+                            maxLength={30}
                         />
-                        <button onClick={handleAddTag} style={{ background: '#333', color: 'white', padding: '8px 12px', border: 'none', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
-                            <Plus size={16} /> Adicionar
+                        <button className="edit-modal__tag-add-btn" type="button" onClick={handleAddTag}>
+                            <Plus size={14} /> Add
                         </button>
                     </div>
                 </div>
 
-                <hr style={{ margin: '24px 0', borderColor: '#eee' }} />
+                <hr className="edit-modal__divider" />
 
-                <div style={{ marginBottom: '24px' }}>
-                    <h3 style={{ marginBottom: '12px' }}>Imagens</h3>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginBottom: '12px' }}>
-                        {images.map((img, index) => {
-                            const imgUrl = img.url || img;
-                            return (
-                                <div key={index} style={{ position: 'relative', aspectRatio: '1', background: '#f0f0f0', borderRadius: '4px', overflow: 'hidden' }}>
-                                    <img src={imgUrl} alt="Post" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                    <button onClick={() => handleRemoveImage(img, index)} style={{ position: 'absolute', top: '4px', right: '4px', background: 'rgba(0,0,0,0.5)', color: 'white', border: 'none', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }} title="Remover imagem">
-                                        <X size={14} />
-                                    </button>
-                                </div>
-                            )
-                        })}
+                {/* Images */}
+                <div>
+                    <h3 className="edit-modal__section-title">Images</h3>
+                    <div className="edit-modal__images-grid">
+                        {images.map((img, idx) => (
+                            <div key={idx} className="edit-modal__image-item">
+                                <img src={resolveImgUrl(img)} alt={`Post image ${idx + 1}`} />
+                                <button
+                                    className="edit-modal__image-remove"
+                                    onClick={() => handleRemoveImage(img, idx)}
+                                    title="Remove image"
+                                >
+                                    <X size={12} />
+                                </button>
+                            </div>
+                        ))}
                     </div>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#f0f0f0', padding: '10px', borderRadius: '4px', cursor: 'pointer', width: 'max-content', color: '#333' }}>
+                    <label className="edit-modal__upload-btn">
                         <Camera size={16} />
-                        {uploadingImage ? 'A enviar...' : 'Upload Imagem'}
-                        <input type="file" style={{ display: 'none' }} onChange={handleImageUpload} accept="image/*" disabled={uploadingImage} />
+                        {uploadingImage ? 'Uploading...' : 'Upload Image'}
+                        <input
+                            type="file"
+                            accept="image/*"
+                            style={{ display: 'none' }}
+                            onChange={handleImageUpload}
+                            disabled={uploadingImage}
+                        />
                     </label>
                 </div>
 
-                <hr style={{ margin: '24px 0', borderColor: '#eee' }} />
+                <hr className="edit-modal__divider" />
 
-                <div style={{ textAlign: 'right' }}>
-                    <button 
-                        onClick={handleDeletePost} 
+                {/* Delete */}
+                <div className="edit-modal__delete-section">
+                    <button
+                        className="edit-modal__delete-btn"
+                        onClick={handleDeletePost}
                         disabled={deleting}
-                        style={{ background: '#ff4d4f', color: 'white', padding: '12px 16px', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px', marginLeft: 'auto' }}
                     >
                         <Trash2 size={16} />
-                        {deleting ? 'A Apagar...' : 'Apagar Post Definitivamente'}
+                        {deleting ? 'Deleting...' : 'Delete Post'}
                     </button>
                 </div>
-
             </div>
         </div>
     )

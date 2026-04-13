@@ -12,7 +12,7 @@ export const postBookmarkService = {
 
     unsavePost: async (postId) => {
         return apiFetch("/post/bookmark/unsave_post.php", {
-            method: "DELETE",
+            method: "POST",
             headers: {
                 "Content-Type": "application/json"
             },

@@ -9,6 +9,7 @@ import {
     MessageCircle,
 } from 'lucide-react'
 import useLenisContainer from '../../hooks/useLenisContainer.js'
+import WildLogSpinner from '../WildLogSpinner'
 
 function ExploreSidebar({
                             sidebarOpen,
@@ -17,6 +18,7 @@ function ExploreSidebar({
                             selectedPost,
                             onPostClick,
                             regions,
+                            loading,
                         }) {
 
     const { wrapperRef: sidebarListRef } = useLenisContainer({
@@ -46,7 +48,20 @@ function ExploreSidebar({
                     </div>
 
                     <div className="main-sidebar__list" ref={sidebarListRef}>
-                        {filteredPosts.map((post) => (
+                        {loading ? (
+                            <WildLogSpinner
+                                size={52}
+                                message="Loading"
+                                overlay={false}
+                                className="wl-spinner--sidebar"
+                            />
+                        ) : filteredPosts.length === 0 ? (
+                            <div className="main-sidebar__empty">
+                                <Search size={32} />
+                                <p>No posts found</p>
+                            </div>
+                        ) : (
+                            filteredPosts.map((post) => (
                             <button
                                 key={post.id}
                                 className={`main-post-card ${selectedPost?.id === post.id ? 'main-post-card--active' : ''}`}
@@ -70,14 +85,7 @@ function ExploreSidebar({
                                     <span><MessageCircle size={12} /> {post.comments}</span>
                                 </div>
                             </button>
-                        ))}
-
-                        {filteredPosts.length === 0 && (
-                            <div className="main-sidebar__empty">
-                                <Search size={32} />
-                                <p>No posts found</p>
-                            </div>
-                        )}
+                        )))}
                     </div>
 
                     <div className="main-sidebar__legend">

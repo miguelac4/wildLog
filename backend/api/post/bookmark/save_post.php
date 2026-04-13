@@ -55,6 +55,11 @@ try {
         api_json_error(404, 'NOT_FOUND', 'Public post not found.');
     }
 
+    if ($post['user_id'] == $user_id) {
+        $pdo->rollBack();
+        api_json_error(403, 'FORBIDDEN', 'You own this post.');
+    }
+
     try {
         $stmt = $pdo->prepare("
         INSERT INTO post_bookmark (user_id, post_id)
