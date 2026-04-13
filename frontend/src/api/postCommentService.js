@@ -21,7 +21,7 @@ export const postCommentService = {
      */
     deleteComment: async ({ commentId }) => {
         return apiFetch("/post/comment/delete_comment.php", {
-            method: "DELETE",
+            method: "POST",
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded"
             },
