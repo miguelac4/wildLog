@@ -21,6 +21,7 @@ function ExploreView({
     const [nearbyPosts, setNearbyPosts] = useState([])
     const [userPostIds, setUserPostIds] = useState(new Set())
     const [coords, setCoords] = useState(null)
+    const [loadingNearby, setLoadingNearby] = useState(true)
 
     const [flyToTarget, setFlyToTarget] = useState(null)
     const lastCoordsRef = useRef(null)
@@ -83,6 +84,7 @@ function ExploreView({
     }, [coords?.lat, coords?.lng])
 
     async function loadNearbyPosts(lat, lng) {
+        setLoadingNearby(true)
         try {
             const data = await postExploreService.getNearbyPosts(lat, lng)
 
@@ -113,6 +115,8 @@ function ExploreView({
 
         } catch (err) {
             console.error("Erro nearby:", err)
+        } finally {
+            setLoadingNearby(false)
         }
     }
 
@@ -207,6 +211,7 @@ function ExploreView({
                 selectedPost={selectedPost}
                 onPostClick={handlePostClick}
                 regions={[]} // depois ligas API se quiseres
+                loading={loadingNearby}
             />
 
             <ExploreMap

@@ -4,8 +4,6 @@ import { MEDIA_URLS } from '../config/mediaConfig'
 function MainTopbar({
                         activeView,
                         onChangeView,
-                        searchQuery,
-                        setSearchQuery,
                         user,
                         onLogout,
                     }) {
@@ -50,18 +48,6 @@ function MainTopbar({
                 </button>
             </div>
 
-            <div className="main-topbar__center">
-                <div className="main-search main-search--topbar">
-                    <Search size={15} className="main-search__icon" />
-                    <input
-                        type="text"
-                        placeholder="Search places, people, tags…"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="main-search__input main-search__input--topbar"
-                    />
-                </div>
-            </div>
             <div className="main-topbar__right">
                 <button
                     className={`main-topbar__nav-btn ${activeView === 'account' ? 'main-topbar__nav-btn--active' : ''}`}
