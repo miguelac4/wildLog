@@ -74,13 +74,13 @@ export const postUserService = {
      * Add a Tag to a User Post
      */
     addPostTag: async ({ postId, newTag }) => {
-        const formData = new FormData();
-        formData.append("post_id", postId);
-        formData.append("new_tag", newTag);
+        const body = new URLSearchParams();
+        body.append("post_id", postId);
+        body.append("new_tag", newTag);
 
         return apiFetch("/post/user/add_post_tag.php", {
             method: "POST",
-            body: formData
+            body
         });
     },
 
@@ -88,13 +88,13 @@ export const postUserService = {
      * Delete a Tag from a User Post
      */
     deletePostTag: async ({ postId, tagId }) => {
-        const formData = new FormData();
-        formData.append("post_id", postId);
-        formData.append("tag_id", tagId);
+        const body = new URLSearchParams();
+        body.append("post_id", postId);
+        body.append("tag_id", tagId);
 
         return apiFetch("/post/user/delete_post_tag.php", {
             method: "POST",
-            body: formData
+            body
         });
     },
 
@@ -121,13 +121,13 @@ export const postUserService = {
      * Delete an Image from a User Post
      */
     deletePostImg: async ({ postId, imageId }) => {
-        const formData = new FormData();
-        formData.append("post_id", postId);
-        formData.append("image_id", imageId);
+        const body = new URLSearchParams();
+        body.append("post_id", postId);
+        body.append("image_id", imageId);
 
         return apiFetch("/post/user/delete_post_image.php", {
             method: "POST",
-            body: formData
+            body
         });
     }
 
