@@ -18,7 +18,7 @@
  */
 import { useState, useCallback, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Map, Grid } from 'lucide-react'
+import { Grid3X3, Settings } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import '../styles/Main.css'
 import '../styles/Create.css'
@@ -31,6 +31,7 @@ import { postExploreService } from '../api/postExploreService'
 import { postUserService } from '../api/postUserService'
 import AccountStats from '../components/Account/AccountStats'
 import AccountPosts from '../components/Account/AccountPosts'
+import AccountSettings from '../components/Account/AccountSettings'
 import { postBookmarkService } from '../api/postBookmarkService'
 import { normalizeImageUrl } from '../config/mediaConfig'
 
@@ -57,6 +58,7 @@ function Main() {
   const [loadingAccountPosts, setLoadingAccountPosts] = useState(false)
 
   const [bookmarkedIds, setBookmarkedIds] = useState(new Set())
+  const [accountTab, setAccountTab] = useState('posts') // 'posts' | 'settings'
 
   /* ── Deteção responsiva de mobile ───────── */
   useEffect(() => {
@@ -161,7 +163,8 @@ function Main() {
       })
   }, [])
 
-  const publicPostCount = accountPosts.filter(p => p.visibility === 'public').length;
+  const publicPostCount = accountPosts.filter(p => p.visibility === 'public' || !p.visibility).length;
+  const privatePostCount = accountPosts.filter(p => p.visibility === 'private').length;
 
   return (
     <div className="main-page">
@@ -212,19 +215,46 @@ function Main() {
         {activeView === 'account' && (
           <div className="account-page-wrapper" data-lenis-prevent>
             <div className="account-page-inner">
-              {/* 1. Classe das Estatísticas e Bio no topo */}
-              <div className="account-stats-container">
-                <AccountStats user={user} publicPostCount={publicPostCount} />
+              {/* Profile header */}
+              <AccountStats
+                user={user}
+                publicPostCount={publicPostCount}
+                privatePostCount={privatePostCount}
+              />
+
+              {/* Sub-navigation: Posts / Settings */}
+              <div className="account-view-tabs">
+                <button
+                  className={`account-view-tab ${accountTab === 'posts' ? 'account-view-tab--active' : ''}`}
+                  onClick={() => setAccountTab('posts')}
+                >
+                  <Grid3X3 size={15} /> Posts
+                </button>
+                <button
+                  className={`account-view-tab ${accountTab === 'settings' ? 'account-view-tab--active' : ''}`}
+                  onClick={() => setAccountTab('settings')}
+                >
+                  <Settings size={15} /> Settings
+                </button>
               </div>
 
-              <div className="account-content-box is-posts">
-                <AccountPosts 
-                    posts={accountPosts} 
-                    bookmarkedIds={bookmarkedIds} 
-                    onPostClick={handlePostClick} 
-                />
-              </div>
+              {/* Tab content */}
+              {accountTab === 'posts' && (
+                <div className="account-content-box is-posts">
+                  <AccountPosts
+                    posts={accountPosts}
+                    bookmarkedIds={bookmarkedIds}
+                    onPostClick={handlePostClick}
+                    loading={loadingAccountPosts}
+                  />
+                </div>
+              )}
 
+              {accountTab === 'settings' && (
+                <div className="account-content-box">
+                  <AccountSettings />
+                </div>
+              )}
             </div>
           </div>
         )}
