@@ -12,7 +12,6 @@ function PostDetailPanel({ post: initialPost, onClose, isBookmarked = false, onT
     const [post, setPost] = useState(initialPost)
     const { user } = useContext(AuthContext)
     const isAuthor = user && (user.username === post.author || user.id === post.user_id || user.name === post.author)
-    console.log("DEBUG Edit Button:", { user, postAuthor: post.author, isAuthor })
 
     const [imageIndex, setImageIndex] = useState(0)
     const [slideDirection, setSlideDirection] = useState(null) // 'left' | 'right'
@@ -269,9 +268,8 @@ function PostDetailPanel({ post: initialPost, onClose, isBookmarked = false, onT
                             <span className="main-post-panel__author">@{post.author || post.username}</span>
                             <span className="main-post-panel__date">{post.createdAt || post.created_at}</span>
                         </div>
-                        
-                        {/* Botão de Bookmark alinhado à direita */}
-                        {user && (post.visibility === 'public' || post.user_id !== user.id) && (
+
+                        {user && !isAuthor && (
                             <button
                                 onClick={handleBookmarkClick}
                                 style={{
@@ -284,10 +282,10 @@ function PostDetailPanel({ post: initialPost, onClose, isBookmarked = false, onT
                                 }}
                                 title={isBookmarked ? "Remover Bookmark" : "Guardar Bookmark"}
                             >
-                                <Bookmark 
-                                    size={20} 
-                                    fill={isBookmarked ? "#f97316" : "none"} 
-                                    color={isBookmarked ? "#f97316" : "#333"} 
+                                <Bookmark
+                                    size={20}
+                                    fill={isBookmarked ? "#f97316" : "none"}
+                                    color={isBookmarked ? "#f97316" : "#333"}
                                 />
                             </button>
                         )}
