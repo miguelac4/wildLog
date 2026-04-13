@@ -24,6 +24,7 @@
   padding: 28px 24px 48px;
   display: flex;
   justify-content: center;
+  align-items: flex-start;
   flex: 1;
   height: 100%;
   width: 100%;
@@ -368,7 +369,7 @@
 }
 
 .account-content-box.is-posts {
-  min-height: 380px;
+  overflow: visible;
 }
 
 .account-content-box.is-settings {
