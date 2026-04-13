@@ -1,0 +1,345 @@
+/**
+ * AvatarCropModal.css — Crop modal for avatar selection.
+ *
+ * Palette matches the WildLog dark-nature theme:
+ *   Background:  #060d09 / rgba(12, 21, 17, 0.96)
+ *   Accent gold: #a0845f / #C8A97E / rgba(160, 132, 95, …)
+ *   Text:        #fff / rgba(255, 255, 255, 0.4–0.85)
+ *   Borders:     rgba(255, 255, 255, 0.06–0.12)
+ *
+ * Layout strategy:
+ *   The modal is a flex column constrained to the viewport via max-height.
+ *   Header, controls, and actions are fixed-height (flex-shrink: 0).
+ *   The crop area is flexible (flex: 1 / min-height: 0) — it absorbs
+ *   remaining space so nothing overflows the screen.
+ */
+
+/* ── Backdrop ── */
+.avatar-crop-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 20px;
+  animation: avatarCropFadeIn 0.2s ease;
+}
+
+@keyframes avatarCropFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ── Modal card ──
+   max-height keeps everything inside the viewport.
+   flex column lets the crop area shrink to fit. */
+.avatar-crop-modal {
+  position: relative;
+  width: 100%;
+  max-width: 440px;
+  max-height: calc(100dvh - 40px);
+  background: rgba(12, 21, 17, 0.97);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(160, 132, 95, 0.18);
+  border-radius: 22px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: avatarCropSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow:
+    0 24px 80px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(160, 132, 95, 0.06);
+}
+
+@keyframes avatarCropSlideIn {
+  from { opacity: 0; transform: scale(0.94) translateY(12px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* ── Header ── */
+.avatar-crop-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  flex-shrink: 0;
+}
+
+.avatar-crop-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+  letter-spacing: 0.15px;
+}
+
+.avatar-crop-close {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.avatar-crop-close:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.15);
+  color: #fff;
+}
+
+/* ── Crop area ──
+   flex: 1 + min-height: 0 makes this shrink when the viewport
+   is short.  react-easy-crop positions itself absolutely inside,
+   so only position: relative is needed. */
+.avatar-crop-area {
+  position: relative;
+  width: 100%;
+  flex: 1 1 0;
+  min-height: 200px;
+  background: #060d09;
+}
+
+/* Override react-easy-crop internals */
+.avatar-crop-area .reactEasyCrop_Container {
+  background: #060d09;
+}
+
+/* ── Controls bar (zoom + rotate) ── */
+.avatar-crop-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(6, 13, 9, 0.5);
+  flex-shrink: 0;
+}
+
+.avatar-crop-zoom {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+}
+
+/* Zoom slider — WildLog gold accent */
+.avatar-crop-slider {
+  flex: 1;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  outline: none;
+  cursor: pointer;
+}
+
+.avatar-crop-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #a0845f;
+  border: 2px solid rgba(12, 21, 17, 0.9);
+  cursor: pointer;
+  box-shadow: 0 0 8px rgba(160, 132, 95, 0.35);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.avatar-crop-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+  box-shadow: 0 0 14px rgba(160, 132, 95, 0.5);
+}
+
+.avatar-crop-slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #a0845f;
+  border: 2px solid rgba(12, 21, 17, 0.9);
+  cursor: pointer;
+  box-shadow: 0 0 8px rgba(160, 132, 95, 0.35);
+}
+
+.avatar-crop-slider::-moz-range-track {
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  border: none;
+}
+
+/* Small icon buttons (zoom in/out, rotate) */
+.avatar-crop-ctrl-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.avatar-crop-ctrl-btn:hover {
+  background: rgba(160, 132, 95, 0.12);
+  border-color: rgba(160, 132, 95, 0.25);
+  color: #C8A97E;
+}
+
+/* ── Action buttons ── */
+.avatar-crop-actions {
+  display: flex;
+  gap: 10px;
+  padding: 14px 20px;
+  justify-content: flex-end;
+  flex-shrink: 0;
+}
+
+.avatar-crop-cancel,
+.avatar-crop-save {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 10px 20px;
+  border-radius: 12px;
+  font-family: inherit;
+  font-size: 0.86rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  border: none;
+  white-space: nowrap;
+}
+
+.avatar-crop-cancel {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.avatar-crop-cancel:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+.avatar-crop-save {
+  background: rgba(160, 132, 95, 0.18);
+  border: 1px solid rgba(160, 132, 95, 0.35);
+  color: #C8A97E;
+}
+
+.avatar-crop-save:hover:not(:disabled) {
+  background: rgba(160, 132, 95, 0.3);
+  border-color: rgba(160, 132, 95, 0.55);
+  color: #fff;
+}
+
+.avatar-crop-save:disabled,
+.avatar-crop-cancel:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* ══════════════════════════════════════════
+   RESPONSIVE — tablets
+   ══════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .avatar-crop-backdrop {
+    padding: 14px;
+  }
+
+  .avatar-crop-modal {
+    max-width: 100%;
+    max-height: calc(100dvh - 28px);
+  }
+
+  .avatar-crop-area {
+    min-height: 180px;
+  }
+}
+
+/* ══════════════════════════════════════════
+   RESPONSIVE — phones (bottom-sheet)
+   ══════════════════════════════════════════ */
+@media (max-width: 480px) {
+  .avatar-crop-backdrop {
+    padding: 0;
+    align-items: flex-end;
+  }
+
+  .avatar-crop-modal {
+    max-width: 100%;
+    max-height: 94dvh;
+    border-radius: 22px 22px 0 0;
+    animation: avatarCropSlideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  @keyframes avatarCropSlideUp {
+    from { opacity: 0; transform: translateY(40px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .avatar-crop-header {
+    padding: 14px 16px;
+  }
+
+  .avatar-crop-area {
+    min-height: 160px;
+  }
+
+  .avatar-crop-controls {
+    padding: 10px 16px;
+    gap: 8px;
+  }
+
+  /* Larger touch targets on mobile */
+  .avatar-crop-ctrl-btn {
+    width: 40px;
+    height: 40px;
+  }
+
+  .avatar-crop-slider::-webkit-slider-thumb {
+    width: 22px;
+    height: 22px;
+  }
+
+  .avatar-crop-slider::-moz-range-thumb {
+    width: 22px;
+    height: 22px;
+  }
+
+  .avatar-crop-actions {
+    padding: 12px 16px calc(env(safe-area-inset-bottom, 8px) + 12px);
+  }
+
+  .avatar-crop-cancel,
+  .avatar-crop-save {
+    flex: 1;
+    padding: 12px 16px;
+    font-size: 0.88rem;
+  }
+}
+
+
+

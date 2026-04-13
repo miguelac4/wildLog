@@ -1,15 +1,17 @@
 import { useState, useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { User, Camera, Edit2, Save, X, Image, Calendar, Check, AlertCircle } from 'lucide-react'
 import '../../styles/Account.css'
 import { accountService } from '../../api/accountService'
 import { normalizeImageUrl } from '../../config/mediaConfig'
 import WildLogSpinner from '../WildLogSpinner'
+import AvatarCropModal from './AvatarCropModal'
 
 /**
  * AccountStats — Profile header card.
  *
  * Fetches account data via accountService.getAccount() on mount.
- * Supports avatar upload and inline name/bio editing.
+ * Supports avatar upload (with crop modal) and inline name/bio editing.
  */
 function AccountStats({ user, publicPostCount = 0, privatePostCount = 0 }) {
     const [account, setAccount] = useState(null)
@@ -21,6 +23,12 @@ function AccountStats({ user, publicPostCount = 0, privatePostCount = 0 }) {
     const [uploadingAvatar, setUploadingAvatar] = useState(false)
     const [alert, setAlert] = useState(null) // { type: 'success'|'error', message }
     const avatarInputRef = useRef(null)
+
+    // Crop modal state
+    const [cropImageSrc, setCropImageSrc] = useState(null)
+
+    // Cache-busting counter — forces the browser to reload the avatar image
+    const [avatarCacheBust, setAvatarCacheBust] = useState(null)
 
     // Fetch account data from the correct endpoint
     useEffect(() => {
@@ -83,14 +91,35 @@ function AccountStats({ user, publicPostCount = 0, privatePostCount = 0 }) {
         avatarInputRef.current?.click()
     }
 
-    const handleAvatarChange = async (e) => {
+    // When a file is selected, open the crop modal instead of uploading directly
+    const handleAvatarChange = (e) => {
         const file = e.target.files?.[0]
         if (!file) return
+        // Create an object URL for the cropper preview
+        const objectUrl = URL.createObjectURL(file)
+        setCropImageSrc(objectUrl)
+        // Reset input so the same file can be re-selected later
+        if (avatarInputRef.current) avatarInputRef.current.value = ''
+    }
+
+    const handleCropCancel = () => {
+        if (cropImageSrc) URL.revokeObjectURL(cropImageSrc)
+        setCropImageSrc(null)
+    }
+
+    const handleCropConfirm = async (croppedFile) => {
+        // Close modal immediately
+        if (cropImageSrc) URL.revokeObjectURL(cropImageSrc)
+        setCropImageSrc(null)
+
+        // Upload the cropped file
         setUploadingAvatar(true)
         try {
-            const res = await accountService.editAvatar(file)
+            const res = await accountService.editAvatar(croppedFile)
             if (res.account?.avatar) {
                 setAccount(prev => ({ ...prev, avatar: res.account.avatar }))
+                // Bust the browser cache so the new image loads immediately
+                setAvatarCacheBust(Date.now())
             }
             setAlert({ type: 'success', message: 'Avatar updated!' })
         } catch (err) {
@@ -98,8 +127,6 @@ function AccountStats({ user, publicPostCount = 0, privatePostCount = 0 }) {
             setAlert({ type: 'error', message: err.message || 'Error uploading avatar.' })
         } finally {
             setUploadingAvatar(false)
-            // Reset input so the same file can be re-selected
-            if (avatarInputRef.current) avatarInputRef.current.value = ''
         }
     }
 
@@ -120,7 +147,11 @@ function AccountStats({ user, publicPostCount = 0, privatePostCount = 0 }) {
 
     const displayName = account?.name || user?.username || 'Explorer'
     const displayBio = account?.description || ''
-    const avatarUrl = account?.avatar ? normalizeImageUrl(account.avatar) : null
+    // Build avatar URL with optional cache-bust to force reload after upload
+    const rawAvatarUrl = account?.avatar ? normalizeImageUrl(account.avatar) : null
+    const avatarUrl = rawAvatarUrl
+        ? (avatarCacheBust ? `${rawAvatarUrl}?t=${avatarCacheBust}` : rawAvatarUrl)
+        : null
 
     return (
         <div className="account-profile">
@@ -140,7 +171,11 @@ function AccountStats({ user, publicPostCount = 0, privatePostCount = 0 }) {
                         {uploadingAvatar ? (
                             <WildLogSpinner size={40} overlay={false} />
                         ) : avatarUrl ? (
-                            <img src={avatarUrl} alt={displayName} />
+                            <img
+                                src={avatarUrl}
+                                alt={displayName}
+                                style={{ borderRadius: '50%' }}
+                            />
                         ) : (
                             <User size={42} strokeWidth={1.5} color="#a0845f" />
                         )}
@@ -240,6 +275,17 @@ function AccountStats({ user, publicPostCount = 0, privatePostCount = 0 }) {
                     <p className="account-profile__bio">{displayBio}</p>
                 ) : null}
             </div>
+
+            {/* Avatar Crop Modal — portalled to document.body to escape
+                the backdrop-filter stacking context on .account-profile */}
+            {cropImageSrc && createPortal(
+                <AvatarCropModal
+                    imageSrc={cropImageSrc}
+                    onCancel={handleCropCancel}
+                    onConfirm={handleCropConfirm}
+                />,
+                document.body
+            )}
         </div>
     )
 }
