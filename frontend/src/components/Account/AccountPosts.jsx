@@ -142,8 +142,24 @@ function AccountPosts({ posts = [], bookmarkedIds = new Set(), onPostClick, load
                                 <div className="account-post-overlay">
                                     <p className="account-post-overlay__title">{post.title}</p>
                                     <div className="account-post-overlay__stats">
-                                        <span><Heart size={11} /> {post.likes || 0}</span>
-                                        <span><MessageCircle size={11} /> {post.comments || 0}</span>
+                                        <span>
+                                            <Heart size={11} /> {
+                                            Array.isArray(post.likes)
+                                                ? post.likes.length
+                                                : typeof post.likes === 'number'
+                                                    ? post.likes
+                                                    : 0
+                                        }
+                                        </span>
+                                        <span>
+                                            <MessageCircle size={11} /> {
+                                            Array.isArray(post.comments)
+                                                ? post.comments.length
+                                                : typeof post.comments === 'number'
+                                                    ? post.comments
+                                                    : 0
+                                        }
+                                        </span>
                                     </div>
                                 </div>
                             </div>
