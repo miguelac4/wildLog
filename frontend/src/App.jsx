@@ -16,6 +16,14 @@ import { useAppReady } from './context/AppReadyContext'
 function App() {
     useLenis()
     const location = useLocation()
+
+    useEffect(() => {
+        if (typeof window === 'undefined') return
+        if (typeof window.clarity !== 'function') return
+
+        window.clarity('set', 'route', `${location.pathname}${location.search}`)
+    }, [location.pathname, location.search])
+
     const { appReady, resetReady } = useAppReady()
 
     /* Once the intro has fully played (exit slide-up finished),
