@@ -52,10 +52,21 @@ export default function EditPostModal({ post, onClose, onUpdate }) {
     const handleAddTag = async () => {
         const trimmed = newTag.trim()
         if (!trimmed) return
+
         try {
-            await postUserService.addPostTag({ postId: post.id, newTag: trimmed })
-            const tagObj = { id: Date.now(), name: trimmed }
-            const updated = [...tags, tagObj]
+            const response = await postUserService.addPostTag({
+                postId: post.id,
+                newTag: trimmed,
+            })
+
+            const createdTag = response.tag ?? response.data?.tag ?? response
+
+            if (!createdTag?.id) {
+                console.error('API did not return a valid tag object:', response)
+                return
+            }
+
+            const updated = [...tags, createdTag]
             setTags(updated)
             setNewTag('')
             onUpdate({ ...post, tags: updated })

@@ -116,9 +116,11 @@ try {
 
     echo json_encode([
         'created' => true,
-        'post_id' => $post_id,
-        'tag' => $new_tag,
-        'tag_id' => $tagId
+        'post_id' => (int) $post_id,
+        'tag' => [
+            'id' => (int) $tagId,
+            'name' => $new_tag
+        ]
     ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     exit;
 
