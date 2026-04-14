@@ -117,8 +117,11 @@ function AccountStats({ user, publicPostCount = 0, privatePostCount = 0 }) {
         try {
             const res = await accountService.editAvatar(croppedFile)
             if (res.account?.avatar) {
-                setAccount(prev => ({ ...prev, avatar: res.account.avatar }))
-                // Bust the browser cache so the new image loads immediately
+                setAccount(prev => ({
+                    ...prev,
+                    avatar: res.account.avatar,
+                    avatar_version: res.account.avatar_version ?? Date.now(),
+                }))
                 setAvatarCacheBust(Date.now())
             }
             setAlert({ type: 'success', message: 'Avatar updated!' })
@@ -149,8 +152,10 @@ function AccountStats({ user, publicPostCount = 0, privatePostCount = 0 }) {
     const displayBio = account?.description || ''
     // Build avatar URL with optional cache-bust to force reload after upload
     const rawAvatarUrl = account?.avatar ? normalizeImageUrl(account.avatar) : null
+    const avatarVersion = account?.avatar_version || avatarCacheBust
+
     const avatarUrl = rawAvatarUrl
-        ? (avatarCacheBust ? `${rawAvatarUrl}?t=${avatarCacheBust}` : rawAvatarUrl)
+        ? `${rawAvatarUrl}${rawAvatarUrl.includes('?') ? '&' : '?'}v=${avatarVersion || 1}`
         : null
 
     return (
