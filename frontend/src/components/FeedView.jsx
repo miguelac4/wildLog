@@ -2,18 +2,9 @@ import { useEffect, useRef, useState, useCallback } from 'react'
 import { Search } from 'lucide-react'
 import SwipeDeck from './feed/SwipeDeck'
 import { postExploreService } from '../api/postExploreService'
+import { normalizeImageUrl } from '../config/mediaConfig'
 import WildLogSpinner from './WildLogSpinner'
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL
-const BASE_URL = API_BASE.replace('/api', '')
-
-function normalizeImageUrl(path) {
-    if (!path) return ''
-    if (BASE_URL.includes('localhost')) {
-        path = path.replace('/backend', '')
-    }
-    return `${BASE_URL}${path}`
-}
 
 /**
  * FeedView — Layout container for the Community Feed.
@@ -90,8 +81,8 @@ function FeedView({ onViewPost }) {
                         : []),
 
                 images: Array.isArray(data.post.images)
-                    ? data.post.images.map(img => normalizeImageUrl(img.image_url))
-                    : (post.image ? [post.image] : []),
+                    ? data.post.images
+                    : (post.image ? [{ image_url: post.image }] : []),
 
                 comments: data.post.comments || 0,
             }

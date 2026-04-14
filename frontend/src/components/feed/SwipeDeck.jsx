@@ -7,6 +7,9 @@ import SwipeControls from './SwipeControls'
  * SwipeDeck — Manages the stacked card deck with swipe gestures
  *             AND vertical scroll/wheel navigation (prev / next).
  *
+ * First-time onboarding: the top card physically swipes right then left
+ * with floating labels ("Bookmark" / "Skip") before the user interacts.
+ *
  * Two distinct gesture axes:
  *   • Horizontal drag → Tinder-style swipe (favorite / skip)
  *   • Vertical scroll / wheel → browse posts without action
@@ -18,32 +21,100 @@ import SwipeControls from './SwipeControls'
  *   onSkip          — callback when user skips a post (swipe left)
  */
 
-const SWIPE_THRESHOLD     = 120   // px — minimum drag distance to trigger swipe
-const SWIPE_VELOCITY      = 0.5   // px/ms — velocity shortcut
-const MIN_DRAG_DISTANCE   = 12    // px — ignore micro-movements (fixes desktop auto-skip)
+const SWIPE_THRESHOLD     = 120
+const SWIPE_VELOCITY      = 0.5
+const MIN_DRAG_DISTANCE   = 12
 const MAX_VISIBLE         = 3
 const FLY_OUT_DURATION    = 350
-const SCROLL_COOLDOWN     = 400   // ms — debounce between scroll navigations
+const SCROLL_COOLDOWN     = 400
+
+const LS_KEY = 'wildlog_swipe_onboarding_seen'
+
+/* ── Demo animation config ── */
+const DEMO_PAUSE_BEFORE   = 600   // ms before starting
+const DEMO_SWING_DURATION = 700   // ms per swing
+const DEMO_HOLD_DURATION  = 600   // ms hold at peak
+const DEMO_SWING_PX       = 110   // how far the card moves
+const DEMO_ROTATION       = 6     // degrees at peak
 
 function SwipeDeck({ posts, onViewPost, onFavorite, onSkip }) {
     const [currentIndex, setCurrentIndex]   = useState(0)
     const [dragState, setDragState]         = useState({ x: 0, y: 0, dragging: false })
     const [flyAway, setFlyAway]             = useState(null)
-    /* Direction the scroll-transition animates: 'up' (next) or 'down' (prev) */
     const [scrollDir, setScrollDir]         = useState(null)
 
     const startRef      = useRef({ x: 0, y: 0, time: 0 })
     const draggingRef   = useRef(false)
-    const [dragIntent, setDragIntent] = useState(null)  // 'horizontal' | 'vertical' | null
-    const dragIntentRef = useRef(null)  // mirror for sync access in handlers
+    const [dragIntent, setDragIntent] = useState(null)
+    const dragIntentRef = useRef(null)
     const scrollTimer   = useRef(null)
     const deckRef       = useRef(null)
 
     const activePost = posts[currentIndex] ?? null
     const isEmpty    = currentIndex >= posts.length
 
+    /* ═══════════════════════════════════
+       ONBOARDING DEMO — card auto-swipe
+       ═══════════════════════════════════ */
+    const [showDemo, setShowDemo] = useState(() => {
+        try { return !localStorage.getItem(LS_KEY) } catch { return false }
+    })
+    // demo offset animated via state: { x, rotation, phase }
+    // phases: 'idle' → 'swing-right' → 'hold-right' → 'return-center'
+    //       → 'swing-left' → 'hold-left' → 'return-center' → 'done'
+    const [demoOffset, setDemoOffset] = useState({ x: 0, rotation: 0, phase: 'idle' })
+    const demoTimerRef = useRef(null)
+
+    const finishDemo = useCallback(() => {
+        clearTimeout(demoTimerRef.current)
+        setShowDemo(false)
+        setDemoOffset({ x: 0, rotation: 0, phase: 'done' })
+        try { localStorage.setItem(LS_KEY, '1') } catch { /* */ }
+    }, [])
+
+    /* Run the demo sequence */
+    useEffect(() => {
+        if (!showDemo || isEmpty) return
+
+        let cancelled = false
+        const seq = async () => {
+            const wait = (ms) => new Promise(r => { demoTimerRef.current = setTimeout(r, ms) })
+
+            await wait(DEMO_PAUSE_BEFORE)
+            if (cancelled) return
+
+            // 1) Swing right
+            setDemoOffset({ x: DEMO_SWING_PX, rotation: DEMO_ROTATION, phase: 'swing-right' })
+            await wait(DEMO_SWING_DURATION + DEMO_HOLD_DURATION)
+            if (cancelled) return
+
+            // 2) Return to center
+            setDemoOffset({ x: 0, rotation: 0, phase: 'return-center' })
+            await wait(DEMO_SWING_DURATION)
+            if (cancelled) return
+
+            // 3) Swing left
+            setDemoOffset({ x: -DEMO_SWING_PX, rotation: -DEMO_ROTATION, phase: 'swing-left' })
+            await wait(DEMO_SWING_DURATION + DEMO_HOLD_DURATION)
+            if (cancelled) return
+
+            // 4) Return to center
+            setDemoOffset({ x: 0, rotation: 0, phase: 'return-center' })
+            await wait(DEMO_SWING_DURATION)
+            if (cancelled) return
+
+            // Done
+            finishDemo()
+        }
+
+        seq()
+        return () => { cancelled = true; clearTimeout(demoTimerRef.current) }
+    }, [showDemo, isEmpty, finishDemo])
+
     /* ── Advance card (swipe action) ──────── */
     const advanceCard = useCallback((direction) => {
+        if (showDemo) finishDemo()
+
         setFlyAway({ direction })
         setTimeout(() => {
             setFlyAway(null)
@@ -62,35 +133,35 @@ function SwipeDeck({ posts, onViewPost, onFavorite, onSkip }) {
             }
 
         }, FLY_OUT_DURATION)
-    }, [activePost, onFavorite, onSkip, posts.length])
+    }, [activePost, onFavorite, onSkip, posts.length, showDemo, finishDemo])
 
-    /* ── Scroll navigation (no action, just browse) ── */
+    /* ── Scroll navigation ── */
     const goToNext = useCallback(() => {
         if (currentIndex >= posts.length - 1 || flyAway || scrollDir) return
+        if (showDemo) finishDemo()
 
         const remaining = posts.length - currentIndex - 1
-
-        if (remaining <= 3) {
-            onSkip?.(posts[currentIndex], remaining)
-        }
+        if (remaining <= 3) onSkip?.(posts[currentIndex], remaining)
 
         setScrollDir('up')
         setTimeout(() => {
             setCurrentIndex((prev) => prev + 1)
             setScrollDir(null)
         }, 280)
-    }, [currentIndex, posts, flyAway, scrollDir, onSkip])
+    }, [currentIndex, posts, flyAway, scrollDir, onSkip, showDemo, finishDemo])
 
     const goToPrev = useCallback(() => {
         if (currentIndex <= 0 || flyAway || scrollDir) return
+        if (showDemo) finishDemo()
+
         setScrollDir('down')
         setTimeout(() => {
             setCurrentIndex((prev) => prev - 1)
             setScrollDir(null)
         }, 280)
-    }, [currentIndex, flyAway, scrollDir])
+    }, [currentIndex, flyAway, scrollDir, showDemo, finishDemo])
 
-    /* ── Wheel handler — vertical scroll navigates ── */
+    /* ── Wheel handler ── */
     useEffect(() => {
         const deck = deckRef.current
         if (!deck) return
@@ -99,7 +170,6 @@ function SwipeDeck({ posts, onViewPost, onFavorite, onSkip }) {
             e.preventDefault()
             if (draggingRef.current || flyAway) return
 
-            // Debounce fast scroll
             if (scrollTimer.current) return
             scrollTimer.current = setTimeout(() => { scrollTimer.current = null }, SCROLL_COOLDOWN)
 
@@ -111,7 +181,7 @@ function SwipeDeck({ posts, onViewPost, onFavorite, onSkip }) {
         return () => deck.removeEventListener('wheel', onWheel)
     }, [goToNext, goToPrev, flyAway])
 
-    /* ── Keyboard nav (arrow up/down) ── */
+    /* ── Keyboard nav ── */
     useEffect(() => {
         const onKey = (e) => {
             if (e.key === 'ArrowDown')  { e.preventDefault(); goToNext() }
@@ -125,6 +195,7 @@ function SwipeDeck({ posts, onViewPost, onFavorite, onSkip }) {
     const handlePointerDown = useCallback((e) => {
         if (flyAway || scrollDir) return
         if (e.target.closest('button')) return
+        if (showDemo) { finishDemo(); return }
 
         startRef.current  = { x: e.clientX, y: e.clientY, time: Date.now() }
         dragIntentRef.current = null
@@ -132,7 +203,7 @@ function SwipeDeck({ posts, onViewPost, onFavorite, onSkip }) {
         draggingRef.current = true
         setDragState({ x: 0, y: 0, dragging: true })
         e.currentTarget.setPointerCapture(e.pointerId)
-    }, [flyAway, scrollDir])
+    }, [flyAway, scrollDir, showDemo, finishDemo])
 
     const handlePointerMove = useCallback((e) => {
         if (!draggingRef.current || flyAway) return
@@ -142,7 +213,6 @@ function SwipeDeck({ posts, onViewPost, onFavorite, onSkip }) {
         const absDx = Math.abs(dx)
         const absDy = Math.abs(dy)
 
-        /* Determine intent on first significant movement */
         if (!dragIntentRef.current && (absDx > MIN_DRAG_DISTANCE || absDy > MIN_DRAG_DISTANCE)) {
             const intent = absDx >= absDy ? 'horizontal' : 'vertical'
             dragIntentRef.current = intent
@@ -152,7 +222,6 @@ function SwipeDeck({ posts, onViewPost, onFavorite, onSkip }) {
         if (dragIntentRef.current === 'horizontal') {
             setDragState({ x: dx, y: dy, dragging: true })
         }
-        /* vertical drag is ignored — wheel / buttons handle scroll */
     }, [flyAway])
 
     const handlePointerUp = useCallback((e) => {
@@ -166,7 +235,6 @@ function SwipeDeck({ posts, onViewPost, onFavorite, onSkip }) {
         const dt = Date.now() - startRef.current.time
         const velocity = absDx / Math.max(dt, 1)
 
-        /* Only trigger swipe if intent was horizontal AND exceeded threshold */
         if (
             dragIntentRef.current === 'horizontal' &&
             absDx > MIN_DRAG_DISTANCE &&
@@ -177,12 +245,10 @@ function SwipeDeck({ posts, onViewPost, onFavorite, onSkip }) {
             dragIntentRef.current === 'vertical' &&
             absDy > 40
         ) {
-            /* Vertical drag → navigate */
             if (dy < 0) goToNext()
             else goToPrev()
             setDragState({ x: 0, y: 0, dragging: false })
         } else {
-            /* No significant drag — treat as tap → open post */
             setDragState({ x: 0, y: 0, dragging: false })
             if (absDx < MIN_DRAG_DISTANCE && absDy < MIN_DRAG_DISTANCE && activePost) {
                 onViewPost?.(activePost)
@@ -193,7 +259,7 @@ function SwipeDeck({ posts, onViewPost, onFavorite, onSkip }) {
         setDragIntent(null)
     }, [flyAway, advanceCard, goToNext, goToPrev, activePost, onViewPost])
 
-    /* ── Button handlers ──────────── */
+    /* ── Button handlers ── */
     const handleSkipBtn = useCallback(() => {
         if (isEmpty || flyAway) return
         advanceCard('left')
@@ -208,7 +274,7 @@ function SwipeDeck({ posts, onViewPost, onFavorite, onSkip }) {
         if (activePost) onViewPost?.(activePost)
     }, [activePost, onViewPost])
 
-    /* ── Restart deck ──────────────── */
+    /* ── Restart deck ── */
     const handleRestart = useCallback(() => {
         setCurrentIndex(0)
         setDragState({ x: 0, y: 0, dragging: false })
@@ -219,11 +285,15 @@ function SwipeDeck({ posts, onViewPost, onFavorite, onSkip }) {
         setScrollDir(null)
     }, [])
 
-    /* ── Render ────────────────────── */
+    /* ── Render ── */
     const visiblePosts = posts.slice(currentIndex, currentIndex + MAX_VISIBLE)
     const hintProgress = Math.min(Math.abs(dragState.x) / SWIPE_THRESHOLD, 1)
     const skipOpacity  = dragState.x < 0 ? hintProgress : 0
     const favOpacity   = dragState.x > 0 ? hintProgress : 0
+
+    /* Demo state for labels */
+    const demoIsRight = demoOffset.phase === 'swing-right'
+    const demoIsLeft  = demoOffset.phase === 'swing-left'
 
     return (
         <div className="swipe-deck" ref={deckRef}>
@@ -252,13 +322,13 @@ function SwipeDeck({ posts, onViewPost, onFavorite, onSkip }) {
                 </div>
             </div>
 
-            {/* ── Card counter ── */}
+            {/* ── Card counter (debug only) ──
             {!isEmpty && (
                 <div className="swipe-deck__counter">
                     {currentIndex + 1} / {posts.length}
                 </div>
             )}
-
+            */}
 
             <div className="swipe-deck__stack">
                 {isEmpty ? (
@@ -286,7 +356,6 @@ function SwipeDeck({ posts, onViewPost, onFavorite, onSkip }) {
                             transform  = `translate(${flyX}px, -80px) rotate(${flyAway.direction === 'right' ? 25 : -25}deg)`
                             transition = `transform ${FLY_OUT_DURATION}ms cubic-bezier(0.2, 0, 0.6, 1)`
                         } else if (isTop && scrollDir) {
-                            /* Scroll transition — card slides up or down */
                             const yOff = scrollDir === 'up' ? -40 : 40
                             transform  = `translateY(${yOff}px) scale(0.96)`
                             transition = 'transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.28s ease'
@@ -294,6 +363,13 @@ function SwipeDeck({ posts, onViewPost, onFavorite, onSkip }) {
                             const rotation = dragState.x * 0.06
                             transform  = `translate(${dragState.x}px, ${dragState.y * 0.3}px) rotate(${rotation}deg)`
                             transition = 'none'
+                        } else if (isTop && showDemo && demoOffset.x !== 0) {
+                            /* Demo animation — card physically swings */
+                            transform  = `translate(${demoOffset.x}px, 0) rotate(${demoOffset.rotation}deg)`
+                            transition = `transform ${DEMO_SWING_DURATION}ms cubic-bezier(0.34, 1.56, 0.64, 1)`
+                        } else if (isTop && showDemo && demoOffset.phase === 'return-center') {
+                            transform  = `translateY(0) scale(1)`
+                            transition = `transform ${DEMO_SWING_DURATION}ms cubic-bezier(0.16, 1, 0.3, 1)`
                         } else {
                             transform = `translateY(${stackOffset}px) scale(${stackScale})`
                         }
@@ -329,13 +405,30 @@ function SwipeDeck({ posts, onViewPost, onFavorite, onSkip }) {
                                     post={post}
                                     isActive={isTop}
                                 />
+
+                                {/* Demo label — inside card-wrapper, bottom center */}
+                                {isTop && showDemo && (
+                                    <div className={`swipe-demo-label swipe-demo-label--skip ${demoIsLeft ? 'swipe-demo-label--visible' : ''}`}>
+                                        <X size={15} /> Skip
+                                    </div>
+                                )}
+                                {isTop && showDemo && (
+                                    <div className={`swipe-demo-label swipe-demo-label--fav ${demoIsRight ? 'swipe-demo-label--visible' : ''}`}>
+                                        <Star size={15} /> Bookmark
+                                    </div>
+                                )}
                             </div>
                         )
                     })
                 )}
+
+                {/* ── Tap hint during demo (inside stack, absolute — no layout shift) ── */}
+                {showDemo && !isEmpty && (
+                    <p className="swipe-demo-tap">Tap card or swipe to start</p>
+                )}
             </div>
 
-            {/* ── Scroll navigation (both always visible, greyed at boundaries) ── */}
+            {/* ── Scroll navigation ── */}
             {!isEmpty && (
                 <div className="swipe-deck__nav-row">
                     <button
