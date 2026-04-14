@@ -33,7 +33,20 @@ try {
         api_json_error(404, 'NOT_FOUND', 'Conta não encontrada.');
     }
 
-    echo json_encode(['account' => $account], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    $account['id'] = (int) $account['id'];
+    $account['avatar_version'] = null;
+
+    if (!empty($account['avatar'])) {
+        $avatarFile = __DIR__ . '/../../' . ltrim($account['avatar'], '/');
+
+        if (is_file($avatarFile)) {
+            $account['avatar_version'] = filemtime($avatarFile);
+        }
+    }
+
+    echo json_encode([
+        'account' => $account
+    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     exit;
 
 } catch (Throwable $e) {

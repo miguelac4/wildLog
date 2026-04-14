@@ -114,8 +114,9 @@ try {
 
     echo json_encode([
         'account' => [
-            'id'     => $id,
+            'id' => $id,
             'avatar' => $avatarPath,
+            'avatar_version' => time(),
         ]
     ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     exit;
