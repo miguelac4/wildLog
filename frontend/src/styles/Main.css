@@ -1092,6 +1092,10 @@
   object-fit: cover;
   object-position: center;
   display: block;
+  pointer-events: none;
+  user-drag: none;
+  -webkit-user-drag: none;
+  -moz-user-select: none;
 }
 
 /* ── Card content ── */
@@ -1288,6 +1292,76 @@
   border-color: rgba(255, 255, 255, 0.2);
   color: rgba(255, 255, 255, 0.8);
 }
+
+/* ═══════════════════════════════════
+   SWIPE DEMO — first-card tutorial animation
+   ═══════════════════════════════════ */
+
+/* Label pill — absolute inside card-wrapper, bottom center */
+.swipe-demo-label {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%) scale(0.9);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 18px;
+  border-radius: 12px;
+  font-size: 0.88rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  white-space: nowrap;
+}
+
+.swipe-demo-label--visible {
+  opacity: 1;
+  transform: translateX(-50%) scale(1);
+}
+
+.swipe-demo-label--skip {
+  color: rgba(255, 100, 100, 0.95);
+  border: 2px solid rgba(255, 100, 100, 0.55);
+  background: rgba(255, 60, 60, 0.08);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.swipe-demo-label--fav {
+  color: #C8A97E;
+  border: 2px solid rgba(200, 169, 126, 0.55);
+  background: rgba(155, 128, 93, 0.08);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+/* Tap-to-start hint — absolute inside the stack, no layout impact */
+.swipe-demo-tap {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 55;
+  font-size: 0.76rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.25);
+  letter-spacing: 0.6px;
+  animation: demotapPulse 2s ease-in-out infinite;
+  margin: 0;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+@keyframes demotapPulse {
+  0%, 100% { opacity: 0.25; }
+  50%      { opacity: 0.55; }
+}
+
 
 /* POST DETAIL PANEL (overlay) */
 .main-post-panel {
@@ -2222,7 +2296,7 @@
 
 /* ══════════════════════════════════════════
    WILDLOG SPINNER — branded loading indicator
-   ══════════════════════════════════════════ */
+   ════════════════════════════════════════════ */
 .wl-spinner {
   display: flex;
   flex-direction: column;
@@ -2310,7 +2384,7 @@
   50%      { opacity: 0.9; }
 }
 
-/* ── Sidebar spinner (inline, not overlay) ── */
+/* ── Sidebar spinner (inline, not overlay) */
 .wl-spinner--sidebar {
   padding: 40px 0;
 }

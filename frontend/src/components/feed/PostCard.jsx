@@ -1,4 +1,5 @@
 import { Heart, MessageCircle } from 'lucide-react'
+import { normalizeImageUrl } from '../../config/mediaConfig'
 
 /**
  * PostCard — A single swipe card displaying post information.
@@ -8,6 +9,17 @@ import { Heart, MessageCircle } from 'lucide-react'
  *   isActive    — whether this is the top (interactive) card
  */
 function PostCard({ post, isActive }) {
+    /* Resolve the first image URL — handles both string and object shapes */
+    const imgSrc = (() => {
+        if (post.images?.length) {
+            const first = post.images[0]
+            if (typeof first === 'string') return first
+            return normalizeImageUrl(first.image_url || first.url || first)
+        }
+        if (post.image) return typeof post.image === 'string' ? post.image : normalizeImageUrl(post.image)
+        return null
+    })()
+
     return (
         <div
             className={`swipe-card ${isActive ? 'swipe-card--active' : ''}`}
@@ -18,13 +30,17 @@ function PostCard({ post, isActive }) {
                 <span className="swipe-card__date">{post.createdAt}</span>
             </div>
 
-            {/* Images */}
-            {(post.images?.length || post.image) && (
+            {/* Image — draggable=false prevents native img drag from hijacking swipe */}
+            {imgSrc && (
                 <div className="swipe-card__image">
-                    <img src={post.images?.[0] || post.image} alt={post.title} />
+                    <img
+                        src={imgSrc}
+                        alt={post.title}
+                        draggable="false"
+                        onDragStart={(e) => e.preventDefault()}
+                    />
                 </div>
             )}
-
 
             {/* Title */}
             <h3 className="swipe-card__title">{post.title}</h3>
@@ -34,9 +50,13 @@ function PostCard({ post, isActive }) {
 
             {/* Tags */}
             <div className="swipe-card__tags">
-                {post.tags.map((tag) => (
-                    <span key={tag} className="swipe-card__tag">#{tag}</span>
-                ))}
+                {(post.tags || []).map((tag) => {
+                    const tagName = typeof tag === 'object' ? tag.name : tag
+                    const tagKey = typeof tag === 'object' ? tag.id : tag
+                    return (
+                        <span key={tagKey} className="swipe-card__tag">#{tagName}</span>
+                    )
+                })}
             </div>
 
             {/* Footer metrics */}
