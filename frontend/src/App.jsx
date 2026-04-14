@@ -12,7 +12,6 @@ import ResetPassword from './pages/ResetPassword'
 import { useState, useEffect, useCallback } from 'react'
 import IntroLogo from './components/intro/IntroLogo'
 import { useAppReady } from './context/AppReadyContext'
-import Clarity from '@microsoft/clarity'
 
 function App() {
     useLenis()
@@ -20,10 +19,10 @@ function App() {
 
     useEffect(() => {
         if (typeof window === 'undefined') return
-        if (typeof Clarity?.setTag !== 'function') return
+        if (typeof window.clarity !== 'function') return
 
-        Clarity.setTag('route', location.pathname)
-    }, [location.pathname])
+        window.clarity('set', 'route', `${location.pathname}${location.search}`)
+    }, [location.pathname, location.search])
 
     const { appReady, resetReady } = useAppReady()
 
