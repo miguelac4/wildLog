@@ -19,8 +19,8 @@ export default function EditPostModal({ post, onClose, onUpdate }) {
     const [visibility, setVisibility] = useState(post.visibility || 'public')
     const [tags, setTags] = useState(post.tags || [])
     const [images, setImages] = useState(() => {
-        if (post.images?.length) return post.images
-        if (post.image) return [post.image]
+        if (Array.isArray(post.images) && post.images.length) return post.images
+        if (post.image) return [{ image_url: post.image }]
         return []
     })
 
@@ -91,7 +91,7 @@ export default function EditPostModal({ post, onClose, onUpdate }) {
         try {
             await postUserService.uploadPostImg({ postId: post.id, images: [file] })
             const localUrl = URL.createObjectURL(file)
-            const updated = [...images, localUrl]
+            const updated = [...images, { preview_url: localUrl, isLocal: true }]
             setImages(updated)
             onUpdate({ ...post, images: updated })
         } catch (err) {
@@ -103,8 +103,38 @@ export default function EditPostModal({ post, onClose, onUpdate }) {
 
     const handleRemoveImage = async (imgObjOrUrl, index) => {
         try {
-            const imageId = imgObjOrUrl.id || imgObjOrUrl
+            if (
+                typeof imgObjOrUrl === 'object' &&
+                imgObjOrUrl?.isLocal &&
+                imgObjOrUrl?.preview_url
+            ) {
+                const updated = [...images]
+                updated.splice(index, 1)
+                setImages(updated)
+                onUpdate({ ...post, images: updated })
+                return
+            }
+
+            if (typeof imgObjOrUrl === 'string' && imgObjOrUrl.startsWith('blob:')) {
+                const updated = [...images]
+                updated.splice(index, 1)
+                setImages(updated)
+                onUpdate({ ...post, images: updated })
+                return
+            }
+
+            const imageId =
+                typeof imgObjOrUrl === 'object'
+                    ? (imgObjOrUrl.id ?? imgObjOrUrl.image_id ?? null)
+                    : null
+
+            if (!imageId) {
+                console.error('Invalid image id:', imgObjOrUrl)
+                return
+            }
+
             await postUserService.deletePostImg({ postId: post.id, imageId })
+
             const updated = [...images]
             updated.splice(index, 1)
             setImages(updated)
@@ -133,7 +163,12 @@ export default function EditPostModal({ post, onClose, onUpdate }) {
             if (img.startsWith('blob:')) return img
             return normalizeImageUrl(img)
         }
-        return normalizeImageUrl(img.url || img.image_url || img)
+
+        if (img?.isLocal && img?.preview_url) return img.preview_url
+        if (img?.image_url) return normalizeImageUrl(img.image_url)
+        if (img?.url) return normalizeImageUrl(img.url)
+
+        return null
     }
 
     return (

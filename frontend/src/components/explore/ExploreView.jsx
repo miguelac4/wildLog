@@ -166,7 +166,18 @@ function ExploreView({
                         : []),
 
                 images: Array.isArray(data.post.images)
-                    ? data.post.images.map(img => normalizeImageUrl(img.image_url))
+                    ? data.post.images.map(img => {
+                        if (typeof img === 'string') {
+                            return { image_url: normalizeImageUrl(img) }
+                        }
+
+                        return {
+                            ...img,
+                            id: img.id ?? img.image_id ?? null,
+                            image_id: img.image_id ?? img.id ?? null,
+                            image_url: normalizeImageUrl(img.image_url || img.url || img),
+                        }
+                    })
                     : [],
 
                 comments: data.post.comments || 0,
