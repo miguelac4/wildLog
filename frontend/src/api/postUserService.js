@@ -42,7 +42,7 @@ export const postUserService = {
      */
     deletePost: async ({ postId }) => {
         return apiFetch(`/post/user/delete.php?post_id=${postId}`, {
-            method: "DELETE"
+            method: "POST"
         });
     },
 

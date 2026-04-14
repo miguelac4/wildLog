@@ -7,7 +7,7 @@ $requestId = api_request_id();
 
 require_once __DIR__ . '/../../../includes/db.php';
 
-if ($_SERVER["REQUEST_METHOD"] !== "DELETE") {
+if ($_SERVER["REQUEST_METHOD"] !== "POST") {
     api_json_error(405, 'METHOD_NOT_ALLOWED', 'Método não permitido.');
 }
 
