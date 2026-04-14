@@ -94,16 +94,21 @@ ORDER BY p.created_at DESC
     $postImagesMap = [];
 
     foreach ($images as $img) {
-        $postImagesMap[$img['post_id']][] = [
-            'id' => (int)$img['id'],
-            'url' => $img['image_url']
+        $postId = (int) $img['post_id'];
+        $postImagesMap[$postId][] = [
+            'id' => (int) $img['id'],
+            'image_url' => $img['image_url']
         ];
     }
 
     foreach ($user_posts as &$post) {
+        $post['id'] = (int) $post['id'];
+        $post['likes'] = (int) $post['likes'];
+        $post['comments'] = (int) $post['comments'];
         $post['tags'] = $postTagsMap[$post['id']] ?? [];
         $post['images'] = $postImagesMap[$post['id']] ?? [];
     }
+    unset($post);
 
 
     echo json_encode([

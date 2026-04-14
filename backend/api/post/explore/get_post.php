@@ -65,6 +65,7 @@ try {
 
     $stmt = $pdo->prepare("
         SELECT
+            id,
             image_url,
             position
         FROM post_images
@@ -73,7 +74,16 @@ try {
     ");
 
     $stmt->execute([$post_id]);
-    $images = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $rawImages = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    $images = [];
+    foreach ($rawImages as $img) {
+        $images[] = [
+            'id' => (int) $img['id'],
+            'image_url' => $img['image_url'],
+            'position' => (int) $img['position'],
+        ];
+    }
 
     $stmt = $pdo->prepare("
         SELECT
